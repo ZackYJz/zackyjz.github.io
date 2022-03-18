@@ -2,17 +2,17 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>IO on 🌏 ZackYJ&#39;s Blog</title>
-    <link>https://zackyjz.github.io/tags/io/</link>
+    <link>http://blog.wvuuvw.xyz/tags/io/</link>
     <description>Recent content in IO on 🌏 ZackYJ&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-CN</language>
-    <lastBuildDate>Sat, 02 May 2020 13:31:23 +0800</lastBuildDate><atom:link href="https://zackyjz.github.io/tags/io/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sat, 02 May 2020 13:31:23 +0800</lastBuildDate><atom:link href="http://blog.wvuuvw.xyz/tags/io/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>简易多人聊天室[2]-NIO模型实现</title>
-      <link>https://zackyjz.github.io/posts/%E7%AE%80%E6%98%93%E5%A4%9A%E4%BA%BA%E8%81%8A%E5%A4%A9%E5%AE%A4-nio%E5%AE%9E%E7%8E%B0/</link>
+      <link>http://blog.wvuuvw.xyz/posts/%E7%AE%80%E6%98%93%E5%A4%9A%E4%BA%BA%E8%81%8A%E5%A4%A9%E5%AE%A4-nio%E5%AE%9E%E7%8E%B0/</link>
       <pubDate>Sat, 02 May 2020 13:31:23 +0800</pubDate>
       
-      <guid>https://zackyjz.github.io/posts/%E7%AE%80%E6%98%93%E5%A4%9A%E4%BA%BA%E8%81%8A%E5%A4%A9%E5%AE%A4-nio%E5%AE%9E%E7%8E%B0/</guid>
+      <guid>http://blog.wvuuvw.xyz/posts/%E7%AE%80%E6%98%93%E5%A4%9A%E4%BA%BA%E8%81%8A%E5%A4%A9%E5%AE%A4-nio%E5%AE%9E%E7%8E%B0/</guid>
       <description>总体流程    ServerSocketChannel 注册 ACCEPT 事件监听到 Selector 中，用于监听 accept 事件
  当有一个客户端发出连接请求，服务器接收了客户端连接请求时，即触发了 ServerSocketChannel 的 accept 事件 与 BIO 模型中 ServerSocket.accept() 执行的事件相同，即接收了该客户端的连接请求    ServerSocketChannel 触发 accept 事件后，服务器端处理新建立连接的客户端
  得到客户端对应的 SocketChannel 将新连接的客户端的 SocketChannel 注册 READ 事件在 Selector 中   即让 Selector 监控客户端的 SocketChannel 是否触发 READ (可读) 事件

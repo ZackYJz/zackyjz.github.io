@@ -2,27 +2,27 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>数据库 on 🌏 ZackYJ&#39;s Blog</title>
-    <link>https://zackyjz.github.io/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/</link>
+    <link>http://blog.wvuuvw.xyz/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/</link>
     <description>Recent content in 数据库 on 🌏 ZackYJ&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-CN</language>
-    <lastBuildDate>Wed, 18 Nov 2020 11:25:05 -0400</lastBuildDate><atom:link href="https://zackyjz.github.io/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Wed, 18 Nov 2020 11:25:05 -0400</lastBuildDate><atom:link href="http://blog.wvuuvw.xyz/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>常见三大数据库连接池使用及工具类抽取</title>
-      <link>https://zackyjz.github.io/posts/%E5%B8%B8%E7%94%A8%E6%95%B0%E6%8D%AE%E5%BA%93%E8%BF%9E%E6%8E%A5%E6%B1%A0/</link>
+      <link>http://blog.wvuuvw.xyz/posts/%E5%B8%B8%E7%94%A8%E6%95%B0%E6%8D%AE%E5%BA%93%E8%BF%9E%E6%8E%A5%E6%B1%A0/</link>
       <pubDate>Wed, 18 Nov 2020 11:25:05 -0400</pubDate>
       
-      <guid>https://zackyjz.github.io/posts/%E5%B8%B8%E7%94%A8%E6%95%B0%E6%8D%AE%E5%BA%93%E8%BF%9E%E6%8E%A5%E6%B1%A0/</guid>
+      <guid>http://blog.wvuuvw.xyz/posts/%E5%B8%B8%E7%94%A8%E6%95%B0%E6%8D%AE%E5%BA%93%E8%BF%9E%E6%8E%A5%E6%B1%A0/</guid>
       <description>DBCP DBCP 是Apache成员之一，在企业开发中也比较常见，也是tomcat内置的连接池
 DBCP 工具类 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60  public class DBCPUtils { //1.</description>
     </item>
     
     <item>
       <title>自定义数据库连接池的实现</title>
-      <link>https://zackyjz.github.io/posts/jdbc%E8%BF%9E%E6%8E%A5%E6%B1%A0%E5%AE%9E%E7%8E%B0/</link>
+      <link>http://blog.wvuuvw.xyz/posts/jdbc%E8%BF%9E%E6%8E%A5%E6%B1%A0%E5%AE%9E%E7%8E%B0/</link>
       <pubDate>Sat, 14 Nov 2020 11:25:05 -0400</pubDate>
       
-      <guid>https://zackyjz.github.io/posts/jdbc%E8%BF%9E%E6%8E%A5%E6%B1%A0%E5%AE%9E%E7%8E%B0/</guid>
+      <guid>http://blog.wvuuvw.xyz/posts/jdbc%E8%BF%9E%E6%8E%A5%E6%B1%A0%E5%AE%9E%E7%8E%B0/</guid>
       <description>背景 数据库连接池用于分配、管理和释放（归还）数据库连接对象 Connection
  有了数据库连接池，可以允许应用重复使用一个现有的数据库连接 从而避免了频繁创建和释放连接，消耗系统资源  最常用的第三方连接池有DBCP、 C3p0、Druid 等，本文实现一个具有基本功能的连接池
 基本功能 JDBC 中 java.sql.DataSource 接口定义了数据库连接池的规范

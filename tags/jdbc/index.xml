@@ -2,17 +2,17 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>JDBC on 🌏 ZackYJ&#39;s Blog</title>
-    <link>https://zackyjz.github.io/tags/jdbc/</link>
+    <link>http://blog.wvuuvw.xyz/tags/jdbc/</link>
     <description>Recent content in JDBC on 🌏 ZackYJ&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-CN</language>
-    <lastBuildDate>Sat, 14 Nov 2020 11:25:05 -0400</lastBuildDate><atom:link href="https://zackyjz.github.io/tags/jdbc/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sat, 14 Nov 2020 11:25:05 -0400</lastBuildDate><atom:link href="http://blog.wvuuvw.xyz/tags/jdbc/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>自定义数据库连接池的实现</title>
-      <link>https://zackyjz.github.io/posts/jdbc%E8%BF%9E%E6%8E%A5%E6%B1%A0%E5%AE%9E%E7%8E%B0/</link>
+      <link>http://blog.wvuuvw.xyz/posts/jdbc%E8%BF%9E%E6%8E%A5%E6%B1%A0%E5%AE%9E%E7%8E%B0/</link>
       <pubDate>Sat, 14 Nov 2020 11:25:05 -0400</pubDate>
       
-      <guid>https://zackyjz.github.io/posts/jdbc%E8%BF%9E%E6%8E%A5%E6%B1%A0%E5%AE%9E%E7%8E%B0/</guid>
+      <guid>http://blog.wvuuvw.xyz/posts/jdbc%E8%BF%9E%E6%8E%A5%E6%B1%A0%E5%AE%9E%E7%8E%B0/</guid>
       <description>背景 数据库连接池用于分配、管理和释放（归还）数据库连接对象 Connection
  有了数据库连接池，可以允许应用重复使用一个现有的数据库连接 从而避免了频繁创建和释放连接，消耗系统资源  最常用的第三方连接池有DBCP、 C3p0、Druid 等，本文实现一个具有基本功能的连接池
 基本功能 JDBC 中 java.sql.DataSource 接口定义了数据库连接池的规范
