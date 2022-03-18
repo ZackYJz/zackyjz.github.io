@@ -1,0 +1,1358 @@
+<!DOCTYPE html>
+<html><head>
+<title>常见三大数据库连接池使用及工具类抽取</title>
+
+
+
+
+<meta charset="utf-8">
+<meta name="X-UA-Compatible" content="IE=edge">
+<meta name="google-site-verification" content="">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
+<meta content="telephone=no" name="format-detection">
+<meta name="description" content="介绍DBCP、C3P0、Druid连接池的使用和常见配置">
+<meta name="renderer" content="webkit">
+<meta name="theme-color" content="#ffffff">
+
+
+
+
+
+
+
+
+
+
+
+<link type="text/css" rel="stylesheet" href="/vendor/css/bootstrap.min.css">
+
+
+  
+
+
+
+
+
+
+<link rel="stylesheet" href="https://zackyjz.github.io/scss/journal.min.3f72a5fc8f5b5dd732a4b476aced0eece2156958d9d414316494ddb10593ddf7.css" integrity="sha256-P3Kl/I9bXdcypLR2rO0O7OIVaVjZ1BQxZJTdsQWT3fc=" media="screen">
+
+
+
+<link rel="stylesheet" href="https://zackyjz.github.io/scss/dark-mode.min.f7c2efa7183435a6bd1842f91c541481c7a5137b5991629a870f24e4a516ad4b.css" integrity="sha256-98Lvpxg0Naa9GEL5HFQUgcelE3tZkWKahw8k5KUWrUs=" media="screen">
+
+
+<script src="/vendor/js/loadCSS.js"></script>
+<script>
+  loadCSS("https://fonts.googleapis.com/css?family=Fira+Mono|Material+Icons");
+</script>
+
+
+
+
+
+
+  <script src="/js/toc.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+<body>
+    	<div id="app"><div id="sideContainer" class="side-container">
+    
+    <a class="a-block nav-head false" href="https://zackyjz.github.io/">
+    
+        <div class="nav-title">
+            🌏 ZackYJ&#39;s Blog
+        </div>
+        
+        <div class="nav-subtitle">
+            Stay hungry , Stay foolish
+        </div>
+        
+    </a>
+
+    <div class="nav-link-list">
+        
+        
+            
+            
+            
+                
+            
+            
+            
+            <a class="a-block nav-link-item active" href="/posts">
+                📑 文章
+            </a>
+            
+        
+            
+            
+            
+            
+            
+            <a class="a-block nav-link-item false" href="/categories">
+                🗄 分类
+            </a>
+            
+        
+            
+            
+            
+            
+            
+            <a class="a-block nav-link-item false" href="/tags">
+                🏷 标签 
+            </a>
+            
+        
+            
+            
+            
+            
+            
+            <a class="a-block nav-link-item false" href="/about/aboutme">
+                👨‍💻 关于
+            </a>
+            
+        
+    </div>
+
+    
+
+    <div class="nav-footer">
+        
+Hugo Theme <a href="https://github.com/amazingrise/hugo-theme-diary">Diary</a> by <a href="https://amazingrise.net">Rise</a>
+<br>
+移植自 <a href="https://mak1t0.cc/" target="_blank" rel="noreferrer noopener">Makito</a>'s <a href="https://github.com/SumiMakito/hexo-theme-journal/" target="_blank" rel="noreferrer noopener">Journal.</a> <br>
+<br>
+
+&copy;
+	
+	2021 🌏 ZackYJ&#39;s Blog
+	
+
+    </div>
+    
+</div><div id="extraContainer" class="extra-container">
+    
+    
+    <div class="toc animated-visibility" :class="{ invisible: scrollY <= 140 }">
+
+
+	<div class="toc-content">
+	
+		
+		
+		
+		<center>- 目录 -</center>
+		
+		
+		<ul>
+			
+				
+				
+					
+						
+						
+						
+						
+							
+								
+									<ul>
+								
+							
+								
+									<ul>
+								
+							
+						
+						
+							<li>
+								<a href="#dbcp" onclick="onNavClick(`#dbcp-nav`)" id="dbcp-nav">
+									DBCP
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+						
+							
+								
+									<ul>
+								
+							
+						
+						
+							<li>
+								<a href="#dbcp-%e5%b7%a5%e5%85%b7%e7%b1%bb" onclick="onNavClick(`#dbcp-工具类-nav`)" id="dbcp-工具类-nav">
+									DBCP 工具类
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+						
+						
+							<li>
+								<a href="#%e5%b8%b8%e8%a7%81%e9%85%8d%e7%bd%ae%e9%a1%b9" onclick="onNavClick(`#常见配置项-nav`)" id="常见配置项-nav">
+									常见配置项
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+							
+								</ul>
+							
+						
+						
+						
+							<li>
+								<a href="#c3p0" onclick="onNavClick(`#c3p0-nav`)" id="c3p0-nav">
+									C3P0
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+						
+							
+								
+									<ul>
+								
+							
+						
+						
+							<li>
+								<a href="#xml-%e9%85%8d%e7%bd%ae" onclick="onNavClick(`#xml-配置-nav`)" id="xml-配置-nav">
+									XML 配置
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+						
+						
+							<li>
+								<a href="#%e5%b8%b8%e8%a7%81%e9%85%8d%e7%bd%ae" onclick="onNavClick(`#常见配置-nav`)" id="常见配置-nav">
+									常见配置
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+						
+						
+							<li>
+								<a href="#%e5%b7%a5%e5%85%b7%e7%b1%bb" onclick="onNavClick(`#工具类-nav`)" id="工具类-nav">
+									工具类
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+							
+								</ul>
+							
+						
+						
+						
+							<li>
+								<a href="#druid" onclick="onNavClick(`#druid-nav`)" id="druid-nav">
+									Druid
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+						
+							
+								
+									<ul>
+								
+							
+						
+						
+							<li>
+								<a href="#properties-%e9%85%8d%e7%bd%ae%e6%96%87%e4%bb%b6" onclick="onNavClick(`#properties-配置文件-nav`)" id="properties-配置文件-nav">
+									properties 配置文件
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+						
+						
+							<li>
+								<a href="#%e5%b7%a5%e5%85%b7%e7%b1%bb-1" onclick="onNavClick(`#工具类-1-nav`)" id="工具类-1-nav">
+									工具类
+								</a>
+							</li>
+						
+						
+					
+				
+			
+		</ul>
+	</div>
+
+</div>
+    
+    <div class="pagination">
+        <a id="globalBackToTop" class="pagination-action animated-visibility" href="#top" :class="{ invisible: scrollY == 0 }">
+            <i class="material-icons pagination-action-icon">
+                keyboard_arrow_up
+            </i>
+        </a>
+        
+        <a type="button" class="pagination-action" id="darkModeToggleButton">
+            <span class="material-icons pagination-action-icon" id="darkModeToggleIcon">
+                dark_mode
+            </span>
+        </a>
+        
+        
+    </div>
+</div>
+<div class="single-column-drawer-container" id="drawer"
+     v-bind:class="{ 'single-column-drawer-container-active': isDrawerOpen }">
+    <div class="drawer-content">
+        <div class="drawer-menu">
+            
+            
+            
+                
+                
+                
+                    
+                
+                
+                
+                <a class="a-block drawer-menu-item active" href="/posts">
+                    📑 文章
+                </a>
+                
+            
+                
+                
+                
+                
+                
+                <a class="a-block drawer-menu-item false" href="/categories">
+                    🗄 分类
+                </a>
+                
+            
+                
+                
+                
+                
+                
+                <a class="a-block drawer-menu-item false" href="/tags">
+                    🏷 标签 
+                </a>
+                
+            
+                
+                
+                
+                
+                
+                <a class="a-block drawer-menu-item false" href="/about/aboutme">
+                    👨‍💻 关于
+                </a>
+                
+            
+            
+            <div class="toc">
+
+
+	<div class="toc-content">
+	
+		
+		
+		
+		<center>- 目录 -</center>
+		
+		
+		<ul>
+			
+				
+				
+					
+						
+						
+						
+						
+							
+								
+									<ul>
+								
+							
+								
+									<ul>
+								
+							
+						
+						
+							<li>
+								<a href="#dbcp" onclick="onNavClick(`#dbcp-nav`)" id="dbcp-nav">
+									DBCP
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+						
+							
+								
+									<ul>
+								
+							
+						
+						
+							<li>
+								<a href="#dbcp-%e5%b7%a5%e5%85%b7%e7%b1%bb" onclick="onNavClick(`#dbcp-工具类-nav`)" id="dbcp-工具类-nav">
+									DBCP 工具类
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+						
+						
+							<li>
+								<a href="#%e5%b8%b8%e8%a7%81%e9%85%8d%e7%bd%ae%e9%a1%b9" onclick="onNavClick(`#常见配置项-nav`)" id="常见配置项-nav">
+									常见配置项
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+							
+								</ul>
+							
+						
+						
+						
+							<li>
+								<a href="#c3p0" onclick="onNavClick(`#c3p0-nav`)" id="c3p0-nav">
+									C3P0
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+						
+							
+								
+									<ul>
+								
+							
+						
+						
+							<li>
+								<a href="#xml-%e9%85%8d%e7%bd%ae" onclick="onNavClick(`#xml-配置-nav`)" id="xml-配置-nav">
+									XML 配置
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+						
+						
+							<li>
+								<a href="#%e5%b8%b8%e8%a7%81%e9%85%8d%e7%bd%ae" onclick="onNavClick(`#常见配置-nav`)" id="常见配置-nav">
+									常见配置
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+						
+						
+							<li>
+								<a href="#%e5%b7%a5%e5%85%b7%e7%b1%bb" onclick="onNavClick(`#工具类-nav`)" id="工具类-nav">
+									工具类
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+							
+								</ul>
+							
+						
+						
+						
+							<li>
+								<a href="#druid" onclick="onNavClick(`#druid-nav`)" id="druid-nav">
+									Druid
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+						
+							
+								
+									<ul>
+								
+							
+						
+						
+							<li>
+								<a href="#properties-%e9%85%8d%e7%bd%ae%e6%96%87%e4%bb%b6" onclick="onNavClick(`#properties-配置文件-nav`)" id="properties-配置文件-nav">
+									properties 配置文件
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+						
+						
+							<li>
+								<a href="#%e5%b7%a5%e5%85%b7%e7%b1%bb-1" onclick="onNavClick(`#工具类-1-nav`)" id="工具类-1-nav">
+									工具类
+								</a>
+							</li>
+						
+						
+					
+				
+			
+		</ul>
+	</div>
+
+</div>
+            
+        </div>
+    </div>
+</div>
+<transition name="fade">
+    <div id="drawer-mask" v-bind:class="{ 'single-column-drawer-mask': mounted }" v-if="isDrawerOpen" v-on:click="toggleDrawer"></div>
+</transition>
+<nav id="navBar" class="navbar sticky-top navbar-light single-column-nav-container">
+    <div id="navBackground" class="nav-background"></div>
+    <div class="container container-narrow nav-content">
+        <button id="nav_dropdown_btn" class="nav-dropdown-toggle" type="button" v-on:click="toggleDrawer">
+            <i class="material-icons">
+                menu
+            </i>
+        </button>
+        <a id="navTitle" class="navbar-brand" href="https://zackyjz.github.io/">
+            🌏 ZackYJ&#39;s Blog
+        </a>
+        
+        <button type="button" class="nav-darkmode-toggle" id="darkModeToggleButton2">
+            <i class="material-icons" id="darkModeToggleIcon2">
+                dark_mode
+            </i>
+        </button>
+        
+    </div>
+</nav>
+<div class="single-column-header-container" id="pageHead"
+     v-bind:style="{ transform: 'translateZ(0px) translateY('+.3*scrollY+'px)', opacity: 1-navOpacity }">
+    <a href="https://zackyjz.github.io/">
+        <div class="single-column-header-title">🌏 ZackYJ&#39;s Blog</div>
+        
+        <div class="single-column-header-subtitle">Stay hungry , Stay foolish</div>
+        
+
+    </a>
+</div>
+
+            <div id="content">
+                <div id="streamContainer" class="stream-container">
+
+    <div class="post-list-container post-list-container-shadow">
+        <div class="post">
+            
+            
+            
+                
+            
+
+            <div class="post-head-wrapper"
+                
+                    
+                    
+                    style="background-image: url('https://images.unsplash.com/photo-1472148083604-64f1084980b9?ixlib=rb-1.2.1&amp;ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&amp;auto=format&amp;fit=crop&amp;w=2070&amp;q=80')"
+                    
+                
+            >
+                <div class="post-title">
+                    常见三大数据库连接池使用及工具类抽取
+                    
+                    <div class="post-subtitle">
+                        介绍DBCP、C3P0、Druid连接池的使用和常见配置
+                    </div>
+                    
+                    <div class="post-meta">
+                        
+                        <time itemprop="datePublished">
+                            2020-11-18 11:25
+                        </time>
+                        
+
+                        
+                            <i class="material-icons" style="">folder</i>
+                                <a href="/categories/java">Java</a>
+                                &nbsp;
+                        
+
+                        
+                            <i class="material-icons" style="">label</i>
+                            
+                                <a href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%93">数据库</a>
+                                &nbsp;
+                            
+                                <a href="/tags/%E8%BF%9E%E6%8E%A5%E6%B1%A0">连接池</a>
+                                &nbsp;
+                            
+                        
+                        
+                            <i class="material-icons" style="">schedule</i>
+                            
+
+                            
+                            
+
+                            
+                            6 min
+                            
+                            55 s.
+                        
+                    </div>
+                </div>
+            </div>
+            
+            <div class="post-body-wrapper">
+                
+                <div class="post-body" v-pre>
+                
+                    <h3 id="dbcp">DBCP</h3>
+<p>DBCP 是Apache成员之一，在企业开发中也比较常见，也是tomcat内置的连接池</p>
+<h4 id="dbcp-工具类">DBCP 工具类</h4>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">21
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">22
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">23
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">24
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">25
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">26
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">27
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">28
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">29
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">30
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">31
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">32
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">33
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">34
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">35
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">36
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">37
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">38
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">39
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">40
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">41
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">42
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">43
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">44
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">45
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">46
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">47
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">48
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">49
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">50
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">51
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">52
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">53
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">54
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">55
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">56
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">57
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">58
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">59
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">60
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">class</span> <span style="color:#50fa7b">DBCPUtils</span> <span style="color:#ff79c6">{</span>
+
+    <span style="color:#6272a4">//1.定义常量 保存数据库连接的相关信息
+</span><span style="color:#6272a4"></span>    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#8be9fd;font-style:italic">final</span> String DRIVERNAME <span style="color:#ff79c6">=</span> <span style="color:#f1fa8c">&#34;com.mysql.jdbc.Driver&#34;</span><span style="color:#ff79c6">;</span>
+    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#8be9fd;font-style:italic">final</span> String URL <span style="color:#ff79c6">=</span> <span style="color:#f1fa8c">&#34;jdbc:mysql://localhost:3306/db5?characterEncoding=UTF-8&#34;</span><span style="color:#ff79c6">;</span>
+    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#8be9fd;font-style:italic">final</span> String USERNAME <span style="color:#ff79c6">=</span> <span style="color:#f1fa8c">&#34;root&#34;</span><span style="color:#ff79c6">;</span>
+    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#8be9fd;font-style:italic">final</span> String PASSWORD <span style="color:#ff79c6">=</span> <span style="color:#f1fa8c">&#34;123456&#34;</span><span style="color:#ff79c6">;</span>
+
+    <span style="color:#6272a4">//2.创建连接池对象 (有DBCP提供的实现类)
+</span><span style="color:#6272a4"></span>    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">static</span> BasicDataSource dataSource <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">new</span> BasicDataSource<span style="color:#ff79c6">();</span>
+
+    <span style="color:#6272a4">//3.使用静态代码块进行配置
+</span><span style="color:#6272a4"></span>    <span style="color:#8be9fd;font-style:italic">static</span><span style="color:#ff79c6">{</span>
+        dataSource<span style="color:#ff79c6">.</span><span style="color:#50fa7b">setDriverClassName</span><span style="color:#ff79c6">(</span>DRIVERNAME<span style="color:#ff79c6">);</span>
+        dataSource<span style="color:#ff79c6">.</span><span style="color:#50fa7b">setUrl</span><span style="color:#ff79c6">(</span>URL<span style="color:#ff79c6">);</span>
+        dataSource<span style="color:#ff79c6">.</span><span style="color:#50fa7b">setUsername</span><span style="color:#ff79c6">(</span>USERNAME<span style="color:#ff79c6">);</span>
+        dataSource<span style="color:#ff79c6">.</span><span style="color:#50fa7b">setPassword</span><span style="color:#ff79c6">(</span>PASSWORD<span style="color:#ff79c6">);</span>
+        dataSource<span style="color:#ff79c6">.</span><span style="color:#50fa7b">setMaxActive</span><span style="color:#ff79c6">(</span>20<span style="color:#ff79c6">);</span>
+    <span style="color:#ff79c6">}</span>
+
+    <span style="color:#6272a4">//4.获取连接的方法
+</span><span style="color:#6272a4"></span>    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">static</span> Connection <span style="color:#50fa7b">getConnection</span><span style="color:#ff79c6">()</span> <span style="color:#8be9fd;font-style:italic">throws</span> SQLException <span style="color:#ff79c6">{</span>
+
+        <span style="color:#6272a4">//从连接池中获取连接
+</span><span style="color:#6272a4"></span>        Connection connection <span style="color:#ff79c6">=</span> dataSource<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getConnection</span><span style="color:#ff79c6">();</span>
+        <span style="color:#ff79c6">return</span> connection<span style="color:#ff79c6">;</span>
+    <span style="color:#ff79c6">}</span>
+
+    <span style="color:#6272a4">//5.释放资源方法
+</span><span style="color:#6272a4"></span>    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">close</span><span style="color:#ff79c6">(</span>Connection con<span style="color:#ff79c6">,</span> Statement statement<span style="color:#ff79c6">){</span>
+
+        <span style="color:#ff79c6">if</span><span style="color:#ff79c6">(</span>con <span style="color:#ff79c6">!=</span> <span style="color:#ff79c6">null</span> <span style="color:#ff79c6">&amp;&amp;</span> statement <span style="color:#ff79c6">!=</span> <span style="color:#ff79c6">null</span><span style="color:#ff79c6">){</span>
+            <span style="color:#ff79c6">try</span> <span style="color:#ff79c6">{</span>
+                statement<span style="color:#ff79c6">.</span><span style="color:#50fa7b">close</span><span style="color:#ff79c6">();</span>
+                <span style="color:#6272a4">//归还连接
+</span><span style="color:#6272a4"></span>                con<span style="color:#ff79c6">.</span><span style="color:#50fa7b">close</span><span style="color:#ff79c6">();</span>
+            <span style="color:#ff79c6">}</span> <span style="color:#ff79c6">catch</span> <span style="color:#ff79c6">(</span>SQLException e<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+                e<span style="color:#ff79c6">.</span><span style="color:#50fa7b">printStackTrace</span><span style="color:#ff79c6">();</span>
+            <span style="color:#ff79c6">}</span>
+        <span style="color:#ff79c6">}</span>
+
+    <span style="color:#ff79c6">}</span>
+
+    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">close</span><span style="color:#ff79c6">(</span>Connection con<span style="color:#ff79c6">,</span> Statement statement<span style="color:#ff79c6">,</span> ResultSet resultSet<span style="color:#ff79c6">){</span>
+
+        <span style="color:#ff79c6">if</span><span style="color:#ff79c6">(</span>con <span style="color:#ff79c6">!=</span> <span style="color:#ff79c6">null</span> <span style="color:#ff79c6">&amp;&amp;</span> statement <span style="color:#ff79c6">!=</span> <span style="color:#ff79c6">null</span> <span style="color:#ff79c6">&amp;&amp;</span> resultSet <span style="color:#ff79c6">!=</span> <span style="color:#ff79c6">null</span><span style="color:#ff79c6">){</span>
+            <span style="color:#ff79c6">try</span> <span style="color:#ff79c6">{</span>
+                resultSet<span style="color:#ff79c6">.</span><span style="color:#50fa7b">close</span><span style="color:#ff79c6">();</span>
+                statement<span style="color:#ff79c6">.</span><span style="color:#50fa7b">close</span><span style="color:#ff79c6">();</span>
+                <span style="color:#6272a4">//归还连接
+</span><span style="color:#6272a4"></span>                con<span style="color:#ff79c6">.</span><span style="color:#50fa7b">close</span><span style="color:#ff79c6">();</span>
+            <span style="color:#ff79c6">}</span> <span style="color:#ff79c6">catch</span> <span style="color:#ff79c6">(</span>SQLException e<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+                e<span style="color:#ff79c6">.</span><span style="color:#50fa7b">printStackTrace</span><span style="color:#ff79c6">();</span>
+            <span style="color:#ff79c6">}</span>
+        <span style="color:#ff79c6">}</span>
+
+    <span style="color:#ff79c6">}</span>
+
+<span style="color:#ff79c6">}</span>
+
+</code></pre></td></tr></table>
+</div>
+</div><h4 id="常见配置项">常见配置项</h4>
+<ul>
+<li>
+<p>driverClassName 数据库驱动名称</p>
+</li>
+<li>
+<p>url 数据库地址</p>
+</li>
+<li>
+<p>username 用户名</p>
+</li>
+<li>
+<p>password 密码</p>
+</li>
+<li>
+<p>maxActive 最大连接数量</p>
+</li>
+<li>
+<p>maxIdle 最大空闲连接</p>
+</li>
+<li>
+<p>minIdle 最小空闲连接</p>
+</li>
+<li>
+<p>initialSize 初始化连接</p>
+</li>
+</ul>
+<h3 id="c3p0">C3P0</h3>
+<h4 id="xml-配置">XML 配置</h4>
+<p>c3p0-config.xml 配置文件名不可更改</p>
+<p>放置在 src 或资源目录下，资源目录需要在 IDEA 中 mark as：</p>
+<p><img src="https://logseq.oss-cn-chengdu.aliyuncs.com/noteImg/202203042120320.png" alt=""></p>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">21
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">22
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">23
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">24
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">25
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">26
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">27
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">28
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">29
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">30
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml"><span style="color:#ff79c6">&lt;c3p0-config&gt;</span>
+<span style="color:#6272a4">&lt;!--默认配置--&gt;</span>
+  <span style="color:#ff79c6">&lt;default-config&gt;</span>
+      <span style="color:#ff79c6">&lt;property</span> <span style="color:#50fa7b">name=</span><span style="color:#f1fa8c">&#34;driverClass&#34;</span><span style="color:#ff79c6">&gt;</span>com.mysql.jdbc.Driver<span style="color:#ff79c6">&lt;/property&gt;</span>
+      <span style="color:#ff79c6">&lt;property</span> <span style="color:#50fa7b">name=</span><span style="color:#f1fa8c">&#34;jdbcUrl&#34;</span><span style="color:#ff79c6">&gt;</span>jdbc:mysql://localhost:3306/db5?characterEncoding=UTF-8<span style="color:#ff79c6">&lt;/property&gt;</span>
+      <span style="color:#ff79c6">&lt;property</span> <span style="color:#50fa7b">name=</span><span style="color:#f1fa8c">&#34;user&#34;</span><span style="color:#ff79c6">&gt;</span>root<span style="color:#ff79c6">&lt;/property&gt;</span>
+      <span style="color:#ff79c6">&lt;property</span> <span style="color:#50fa7b">name=</span><span style="color:#f1fa8c">&#34;password&#34;</span><span style="color:#ff79c6">&gt;</span>123456<span style="color:#ff79c6">&lt;/property&gt;</span>
+      <span style="color:#6272a4">&lt;!-- initialPoolSize：初始化时获取三个连接，
+</span><span style="color:#6272a4">      取值应在minPoolSize与maxPoolSize之间。 --&gt;</span>
+      <span style="color:#ff79c6">&lt;property</span> <span style="color:#50fa7b">name=</span><span style="color:#f1fa8c">&#34;initialPoolSize&#34;</span><span style="color:#ff79c6">&gt;</span>3<span style="color:#ff79c6">&lt;/property&gt;</span>
+      <span style="color:#6272a4">&lt;!-- maxIdleTime：最大空闲时间,60秒内未使用则连接被丢弃。若为0则永不丢弃。--&gt;</span>
+      <span style="color:#ff79c6">&lt;property</span> <span style="color:#50fa7b">name=</span><span style="color:#f1fa8c">&#34;maxIdleTime&#34;</span><span style="color:#ff79c6">&gt;</span>60<span style="color:#ff79c6">&lt;/property&gt;</span>
+      <span style="color:#6272a4">&lt;!-- maxPoolSize：连接池中保留的最大连接数 --&gt;</span>
+      <span style="color:#ff79c6">&lt;property</span> <span style="color:#50fa7b">name=</span><span style="color:#f1fa8c">&#34;maxPoolSize&#34;</span><span style="color:#ff79c6">&gt;</span>100<span style="color:#ff79c6">&lt;/property&gt;</span>
+      <span style="color:#6272a4">&lt;!-- minPoolSize: 连接池中保留的最小连接数 --&gt;</span>
+      <span style="color:#ff79c6">&lt;property</span> <span style="color:#50fa7b">name=</span><span style="color:#f1fa8c">&#34;minPoolSize&#34;</span><span style="color:#ff79c6">&gt;</span>10<span style="color:#ff79c6">&lt;/property&gt;</span>
+  <span style="color:#ff79c6">&lt;/default-config&gt;</span>
+  <span style="color:#6272a4">&lt;!--配置连接池mysql--&gt;</span>
+  <span style="color:#ff79c6">&lt;named-config</span> <span style="color:#50fa7b">name=</span><span style="color:#f1fa8c">&#34;mysql&#34;</span><span style="color:#ff79c6">&gt;</span>
+      <span style="color:#ff79c6">&lt;property</span> <span style="color:#50fa7b">name=</span><span style="color:#f1fa8c">&#34;driverClass&#34;</span><span style="color:#ff79c6">&gt;</span>com.mysql.jdbc.Driver<span style="color:#ff79c6">&lt;/property&gt;</span>
+      <span style="color:#ff79c6">&lt;property</span> <span style="color:#50fa7b">name=</span><span style="color:#f1fa8c">&#34;jdbcUrl&#34;</span><span style="color:#ff79c6">&gt;</span>jdbc:mysql://localhost:3306/db5<span style="color:#ff79c6">&lt;/property&gt;</span>
+      <span style="color:#ff79c6">&lt;property</span> <span style="color:#50fa7b">name=</span><span style="color:#f1fa8c">&#34;user&#34;</span><span style="color:#ff79c6">&gt;</span>root<span style="color:#ff79c6">&lt;/property&gt;</span>
+      <span style="color:#ff79c6">&lt;property</span> <span style="color:#50fa7b">name=</span><span style="color:#f1fa8c">&#34;password&#34;</span><span style="color:#ff79c6">&gt;</span>123456<span style="color:#ff79c6">&lt;/property&gt;</span>
+      <span style="color:#ff79c6">&lt;property</span> <span style="color:#50fa7b">name=</span><span style="color:#f1fa8c">&#34;initialPoolSize&#34;</span><span style="color:#ff79c6">&gt;</span>10<span style="color:#ff79c6">&lt;/property&gt;</span>
+      <span style="color:#ff79c6">&lt;property</span> <span style="color:#50fa7b">name=</span><span style="color:#f1fa8c">&#34;maxIdleTime&#34;</span><span style="color:#ff79c6">&gt;</span>30<span style="color:#ff79c6">&lt;/property&gt;</span>
+      <span style="color:#ff79c6">&lt;property</span> <span style="color:#50fa7b">name=</span><span style="color:#f1fa8c">&#34;maxPoolSize&#34;</span><span style="color:#ff79c6">&gt;</span>100<span style="color:#ff79c6">&lt;/property&gt;</span>
+      <span style="color:#ff79c6">&lt;property</span> <span style="color:#50fa7b">name=</span><span style="color:#f1fa8c">&#34;minPoolSize&#34;</span><span style="color:#ff79c6">&gt;</span>10<span style="color:#ff79c6">&lt;/property&gt;</span>
+  <span style="color:#ff79c6">&lt;/named-config&gt;</span>
+<span style="color:#6272a4">&lt;!--配置连接池2,可以配置多个--&gt;</span>
+<span style="color:#ff79c6">&lt;/c3p0-config&gt;</span>
+</code></pre></td></tr></table>
+</div>
+</div><h4 id="常见配置">常见配置</h4>
+<p><img src="https://logseq.oss-cn-chengdu.aliyuncs.com/noteImg/202203042122442.png" alt=""></p>
+<h4 id="工具类">工具类</h4>
+<p>C3P0提供的核心工具类, ComboPooledDataSource ,</p>
+<p>如果想使用连接池,就必须创建该类的对象</p>
+<ul>
+<li>new ComboPooledDataSource(); 使用 默认配置</li>
+<li>new ComboPooledDataSource(&ldquo;mysql&rdquo;); 使用命名配置</li>
+</ul>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">21
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">22
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">23
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">24
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">25
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">26
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">27
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">28
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">29
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">30
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">31
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">32
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">33
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">34
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">35
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">36
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">37
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">38
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">39
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">40
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">41
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">42
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">43
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">44
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">45
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">46
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">47
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">class</span> <span style="color:#50fa7b">C3P0Utils</span> <span style="color:#ff79c6">{</span>
+
+    <span style="color:#6272a4">//1.创建连接池对象 C3P0对DataSource接口的实现类
+</span><span style="color:#6272a4"></span>    <span style="color:#6272a4">//使用的配置是 配置文件中的默认配置
+</span><span style="color:#6272a4"></span>    <span style="color:#6272a4">//public static ComboPooledDataSource dataSource = new ComboPooledDataSource();
+</span><span style="color:#6272a4"></span>
+    <span style="color:#6272a4">//使用指定的配置
+</span><span style="color:#6272a4"></span>    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">static</span> ComboPooledDataSource dataSource <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">new</span> ComboPooledDataSource<span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;mysql&#34;</span><span style="color:#ff79c6">);</span>
+
+    <span style="color:#6272a4">//获取连接的方法
+</span><span style="color:#6272a4"></span>    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">static</span> Connection <span style="color:#50fa7b">getConnection</span><span style="color:#ff79c6">()</span> <span style="color:#8be9fd;font-style:italic">throws</span> SQLException <span style="color:#ff79c6">{</span>
+
+        <span style="color:#ff79c6">return</span> dataSource<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getConnection</span><span style="color:#ff79c6">();</span>
+    <span style="color:#ff79c6">}</span>
+
+    <span style="color:#6272a4">//释放资源
+</span><span style="color:#6272a4"></span>    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">close</span><span style="color:#ff79c6">(</span>Connection con<span style="color:#ff79c6">,</span> Statement statement<span style="color:#ff79c6">){</span>
+
+
+        <span style="color:#ff79c6">if</span><span style="color:#ff79c6">(</span>con <span style="color:#ff79c6">!=</span> <span style="color:#ff79c6">null</span> <span style="color:#ff79c6">&amp;&amp;</span> statement <span style="color:#ff79c6">!=</span> <span style="color:#ff79c6">null</span><span style="color:#ff79c6">){</span>
+            <span style="color:#ff79c6">try</span> <span style="color:#ff79c6">{</span>
+                statement<span style="color:#ff79c6">.</span><span style="color:#50fa7b">close</span><span style="color:#ff79c6">();</span>
+                <span style="color:#6272a4">//归还连接
+</span><span style="color:#6272a4"></span>                con<span style="color:#ff79c6">.</span><span style="color:#50fa7b">close</span><span style="color:#ff79c6">();</span>
+            <span style="color:#ff79c6">}</span> <span style="color:#ff79c6">catch</span> <span style="color:#ff79c6">(</span>SQLException e<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+                e<span style="color:#ff79c6">.</span><span style="color:#50fa7b">printStackTrace</span><span style="color:#ff79c6">();</span>
+            <span style="color:#ff79c6">}</span>
+        <span style="color:#ff79c6">}</span>
+
+    <span style="color:#ff79c6">}</span>
+
+    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">close</span><span style="color:#ff79c6">(</span>Connection con<span style="color:#ff79c6">,</span> Statement statement<span style="color:#ff79c6">,</span> ResultSet resultSet<span style="color:#ff79c6">){</span>
+
+        <span style="color:#ff79c6">if</span><span style="color:#ff79c6">(</span>con <span style="color:#ff79c6">!=</span> <span style="color:#ff79c6">null</span> <span style="color:#ff79c6">&amp;&amp;</span> statement <span style="color:#ff79c6">!=</span> <span style="color:#ff79c6">null</span> <span style="color:#ff79c6">&amp;&amp;</span> resultSet <span style="color:#ff79c6">!=</span> <span style="color:#ff79c6">null</span><span style="color:#ff79c6">){</span>
+            <span style="color:#ff79c6">try</span> <span style="color:#ff79c6">{</span>
+                resultSet<span style="color:#ff79c6">.</span><span style="color:#50fa7b">close</span><span style="color:#ff79c6">();</span>
+                statement<span style="color:#ff79c6">.</span><span style="color:#50fa7b">close</span><span style="color:#ff79c6">();</span>
+                <span style="color:#6272a4">//归还连接
+</span><span style="color:#6272a4"></span>                con<span style="color:#ff79c6">.</span><span style="color:#50fa7b">close</span><span style="color:#ff79c6">();</span>
+            <span style="color:#ff79c6">}</span> <span style="color:#ff79c6">catch</span> <span style="color:#ff79c6">(</span>SQLException e<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+                e<span style="color:#ff79c6">.</span><span style="color:#50fa7b">printStackTrace</span><span style="color:#ff79c6">();</span>
+            <span style="color:#ff79c6">}</span>
+        <span style="color:#ff79c6">}</span>
+
+    <span style="color:#ff79c6">}</span>
+<span style="color:#ff79c6">}</span>
+
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="druid">Druid</h3>
+<p>阿里巴巴开发的号称为监控而生的数据库连接池，Druid是目前最好的数据库连接池。在功能、性能、扩展性方面，都超过其他数据库连接池，同时加入了日志监控，可以很好的监控DB池连接和SQL的执行情况</p>
+<h4 id="properties-配置文件">properties 配置文件</h4>
+<ul>
+<li>.properties 格式</li>
+<li>文件名任意，目录也任意</li>
+</ul>
+<pre tabindex="0"><code class="language-properties" data-lang="properties">driverClassName=com.mysql.jdbc.Driver
+url=jdbc:mysql://127.0.0.1:3306/db5?characterEncoding=UTF-8
+username=root
+password=123456
+initialSize=5
+maxActive=10
+maxWait=3000
+</code></pre><h4 id="工具类-1">工具类</h4>
+<p>通过工厂来来获取 DruidDataSourceFactory类的createDataSource方法</p>
+<p>createDataSource(Properties p) 方法参数可以是一个属性集对象</p>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">21
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">22
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">23
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">24
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">25
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">26
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">27
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">28
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">29
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">30
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">31
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">32
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">33
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">34
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">35
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">36
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">37
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">38
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">39
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">40
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">41
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">42
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">43
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">44
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">45
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">46
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">47
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">48
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">49
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">50
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">51
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">52
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">53
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">54
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">55
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">56
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">57
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">58
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">59
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">60
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">61
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">62
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">63
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">64
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">65
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">66
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">67
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">68
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">69
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">70
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">71
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">72
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">73
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">74
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">75
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">76
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">class</span> <span style="color:#50fa7b">DruidUtils</span> <span style="color:#ff79c6">{</span>
+
+    <span style="color:#6272a4">//1.定义成员变量
+</span><span style="color:#6272a4"></span>    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">static</span> DataSource dataSource<span style="color:#ff79c6">;</span>
+
+    <span style="color:#6272a4">//2.静态代码块
+</span><span style="color:#6272a4"></span>    <span style="color:#8be9fd;font-style:italic">static</span><span style="color:#ff79c6">{</span>
+        <span style="color:#ff79c6">try</span> <span style="color:#ff79c6">{</span>
+            <span style="color:#6272a4">//3.创建属性集对象
+</span><span style="color:#6272a4"></span>            Properties p <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">new</span> Properties<span style="color:#ff79c6">();</span>
+
+            <span style="color:#6272a4">//4.加载配置文件 Druid 连接池不能够主动加载配置文件 ,需要指定文件
+</span><span style="color:#6272a4"></span>            InputStream inputStream <span style="color:#ff79c6">=</span> DruidUtils<span style="color:#ff79c6">.</span><span style="color:#50fa7b">class</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">getClassLoader</span><span style="color:#ff79c6">().</span><span style="color:#50fa7b">getResourceAsStream</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;druid.properties&#34;</span><span style="color:#ff79c6">);</span>
+
+            <span style="color:#6272a4">//5. 使用Properties对象的 load方法 从字节流中读取配置信息
+</span><span style="color:#6272a4"></span>            p<span style="color:#ff79c6">.</span><span style="color:#50fa7b">load</span><span style="color:#ff79c6">(</span>inputStream<span style="color:#ff79c6">);</span>
+
+            <span style="color:#6272a4">//6. 通过工厂类获取连接池对象
+</span><span style="color:#6272a4"></span>            dataSource <span style="color:#ff79c6">=</span> DruidDataSourceFactory<span style="color:#ff79c6">.</span><span style="color:#50fa7b">createDataSource</span><span style="color:#ff79c6">(</span>p<span style="color:#ff79c6">);</span>
+
+        <span style="color:#ff79c6">}</span> <span style="color:#ff79c6">catch</span> <span style="color:#ff79c6">(</span>Exception e<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+            e<span style="color:#ff79c6">.</span><span style="color:#50fa7b">printStackTrace</span><span style="color:#ff79c6">();</span>
+        <span style="color:#ff79c6">}</span>
+    <span style="color:#ff79c6">}</span>
+
+    <span style="color:#6272a4">//获取连接的方法
+</span><span style="color:#6272a4"></span>    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">static</span> Connection <span style="color:#50fa7b">getConnection</span><span style="color:#ff79c6">(){</span>
+
+        <span style="color:#ff79c6">try</span> <span style="color:#ff79c6">{</span>
+
+            <span style="color:#ff79c6">return</span> dataSource<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getConnection</span><span style="color:#ff79c6">();</span>
+
+        <span style="color:#ff79c6">}</span> <span style="color:#ff79c6">catch</span> <span style="color:#ff79c6">(</span>SQLException e<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+            e<span style="color:#ff79c6">.</span><span style="color:#50fa7b">printStackTrace</span><span style="color:#ff79c6">();</span>
+            <span style="color:#ff79c6">return</span> <span style="color:#ff79c6">null</span><span style="color:#ff79c6">;</span>
+        <span style="color:#ff79c6">}</span>
+    <span style="color:#ff79c6">}</span>
+
+    <span style="color:#6272a4">//获取Druid连接池对象的方法
+</span><span style="color:#6272a4"></span>    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">static</span> DataSource <span style="color:#50fa7b">getDataSource</span><span style="color:#ff79c6">(){</span>
+        <span style="color:#ff79c6">return</span> dataSource<span style="color:#ff79c6">;</span>
+    <span style="color:#ff79c6">}</span>
+
+
+    <span style="color:#6272a4">//释放资源
+</span><span style="color:#6272a4"></span>    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">close</span><span style="color:#ff79c6">(</span>Connection con<span style="color:#ff79c6">,</span> Statement statement<span style="color:#ff79c6">){</span>
+
+        <span style="color:#ff79c6">if</span><span style="color:#ff79c6">(</span>con <span style="color:#ff79c6">!=</span> <span style="color:#ff79c6">null</span> <span style="color:#ff79c6">&amp;&amp;</span> statement <span style="color:#ff79c6">!=</span> <span style="color:#ff79c6">null</span><span style="color:#ff79c6">){</span>
+            <span style="color:#ff79c6">try</span> <span style="color:#ff79c6">{</span>
+                statement<span style="color:#ff79c6">.</span><span style="color:#50fa7b">close</span><span style="color:#ff79c6">();</span>
+                <span style="color:#6272a4">//归还连接
+</span><span style="color:#6272a4"></span>                con<span style="color:#ff79c6">.</span><span style="color:#50fa7b">close</span><span style="color:#ff79c6">();</span>
+            <span style="color:#ff79c6">}</span> <span style="color:#ff79c6">catch</span> <span style="color:#ff79c6">(</span>SQLException e<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+                e<span style="color:#ff79c6">.</span><span style="color:#50fa7b">printStackTrace</span><span style="color:#ff79c6">();</span>
+            <span style="color:#ff79c6">}</span>
+        <span style="color:#ff79c6">}</span>
+
+    <span style="color:#ff79c6">}</span>
+
+    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">close</span><span style="color:#ff79c6">(</span>Connection con<span style="color:#ff79c6">,</span> Statement statement<span style="color:#ff79c6">,</span> ResultSet resultSet<span style="color:#ff79c6">){</span>
+
+        <span style="color:#ff79c6">if</span><span style="color:#ff79c6">(</span>con <span style="color:#ff79c6">!=</span> <span style="color:#ff79c6">null</span> <span style="color:#ff79c6">&amp;&amp;</span> statement <span style="color:#ff79c6">!=</span> <span style="color:#ff79c6">null</span> <span style="color:#ff79c6">&amp;&amp;</span> resultSet <span style="color:#ff79c6">!=</span> <span style="color:#ff79c6">null</span><span style="color:#ff79c6">){</span>
+            <span style="color:#ff79c6">try</span> <span style="color:#ff79c6">{</span>
+                resultSet<span style="color:#ff79c6">.</span><span style="color:#50fa7b">close</span><span style="color:#ff79c6">();</span>
+                statement<span style="color:#ff79c6">.</span><span style="color:#50fa7b">close</span><span style="color:#ff79c6">();</span>
+                <span style="color:#6272a4">//归还连接
+</span><span style="color:#6272a4"></span>                con<span style="color:#ff79c6">.</span><span style="color:#50fa7b">close</span><span style="color:#ff79c6">();</span>
+            <span style="color:#ff79c6">}</span> <span style="color:#ff79c6">catch</span> <span style="color:#ff79c6">(</span>SQLException e<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+                e<span style="color:#ff79c6">.</span><span style="color:#50fa7b">printStackTrace</span><span style="color:#ff79c6">();</span>
+            <span style="color:#ff79c6">}</span>
+        <span style="color:#ff79c6">}</span>
+
+    <span style="color:#ff79c6">}</span>
+
+<span style="color:#ff79c6">}</span>
+
+</code></pre></td></tr></table>
+</div>
+</div>
+                    
+                    <HR width="100%" id="EOF">
+		    <p style="color:#777;">最后修改于 2020-11-18</p>
+                    
+                </div>
+            </div>
+            
+            
+            <nav class="post-pagination">
+
+                
+                <a class="newer-posts" href="https://zackyjz.github.io/posts/%E8%BD%AC%E8%B4%A6%E6%A1%88%E4%BE%8B-%E5%BC%95%E5%85%A5%E4%BA%8B%E5%8A%A1%E5%92%8C-aop-%E6%94%B9%E9%80%A0/">
+			下回<br>转账案例-引入事务和AOP改造
+                </a>
+                
+                
+                
+                <a class="older-posts" href="https://zackyjz.github.io/posts/jdbc%E8%BF%9E%E6%8E%A5%E6%B1%A0%E5%AE%9E%E7%8E%B0/">
+			上回<br>自定义数据库连接池的实现
+                </a>
+                
+            </nav>
+            <div class="post-comment-wrapper">
+                
+
+
+
+
+
+
+
+
+
+
+            </div>
+        </div>
+    </div>
+
+
+                    </div>
+            </div><div id="single-column-footer">
+Hugo Theme <a href="https://github.com/amazingrise/hugo-theme-diary">Diary</a> by <a href="https://amazingrise.net">Rise</a>
+<br>
+移植自 <a href="https://mak1t0.cc/" target="_blank" rel="noreferrer noopener">Makito</a>'s <a href="https://github.com/SumiMakito/hexo-theme-journal/" target="_blank" rel="noreferrer noopener">Journal.</a> <br>
+<br>
+
+&copy;
+	
+	2021 🌏 ZackYJ&#39;s Blog
+	
+</div>
+            </div>
+    
+    <script src="/js/journal.js"></script>
+    </body>
+</html>

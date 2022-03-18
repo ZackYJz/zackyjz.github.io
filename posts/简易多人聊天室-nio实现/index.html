@@ -1,0 +1,1625 @@
+<!DOCTYPE html>
+<html><head>
+<title>简易多人聊天室[2]-NIO模型实现</title>
+
+
+
+
+<meta charset="utf-8">
+<meta name="X-UA-Compatible" content="IE=edge">
+<meta name="google-site-verification" content="">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
+<meta content="telephone=no" name="format-detection">
+<meta name="description" content="利用NIO包下的 Buffer 和 Channel 实现简单的多人聊天室，和 BIO 实现进行比较">
+<meta name="renderer" content="webkit">
+<meta name="theme-color" content="#ffffff">
+
+
+
+
+
+
+
+
+
+
+
+<link type="text/css" rel="stylesheet" href="/vendor/css/bootstrap.min.css">
+
+
+  
+
+
+
+
+
+
+<link rel="stylesheet" href="https://zackyjz.github.io/scss/journal.min.3f72a5fc8f5b5dd732a4b476aced0eece2156958d9d414316494ddb10593ddf7.css" integrity="sha256-P3Kl/I9bXdcypLR2rO0O7OIVaVjZ1BQxZJTdsQWT3fc=" media="screen">
+
+
+
+<link rel="stylesheet" href="https://zackyjz.github.io/scss/dark-mode.min.f7c2efa7183435a6bd1842f91c541481c7a5137b5991629a870f24e4a516ad4b.css" integrity="sha256-98Lvpxg0Naa9GEL5HFQUgcelE3tZkWKahw8k5KUWrUs=" media="screen">
+
+
+<script src="/vendor/js/loadCSS.js"></script>
+<script>
+  loadCSS("https://fonts.googleapis.com/css?family=Fira+Mono|Material+Icons");
+</script>
+
+
+
+
+
+
+  <script src="/js/toc.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+<body>
+    	<div id="app"><div id="sideContainer" class="side-container">
+    
+    <a class="a-block nav-head false" href="https://zackyjz.github.io/">
+    
+        <div class="nav-title">
+            🌏 ZackYJ&#39;s Blog
+        </div>
+        
+        <div class="nav-subtitle">
+            Stay hungry , Stay foolish
+        </div>
+        
+    </a>
+
+    <div class="nav-link-list">
+        
+        
+            
+            
+            
+                
+            
+            
+            
+            <a class="a-block nav-link-item active" href="/posts">
+                📑 文章
+            </a>
+            
+        
+            
+            
+            
+            
+            
+            <a class="a-block nav-link-item false" href="/categories">
+                🗄 分类
+            </a>
+            
+        
+            
+            
+            
+            
+            
+            <a class="a-block nav-link-item false" href="/tags">
+                🏷 标签 
+            </a>
+            
+        
+            
+            
+            
+            
+            
+            <a class="a-block nav-link-item false" href="/about/aboutme">
+                👨‍💻 关于
+            </a>
+            
+        
+    </div>
+
+    
+
+    <div class="nav-footer">
+        
+Hugo Theme <a href="https://github.com/amazingrise/hugo-theme-diary">Diary</a> by <a href="https://amazingrise.net">Rise</a>
+<br>
+移植自 <a href="https://mak1t0.cc/" target="_blank" rel="noreferrer noopener">Makito</a>'s <a href="https://github.com/SumiMakito/hexo-theme-journal/" target="_blank" rel="noreferrer noopener">Journal.</a> <br>
+<br>
+
+&copy;
+	
+	2021 🌏 ZackYJ&#39;s Blog
+	
+
+    </div>
+    
+</div><div id="extraContainer" class="extra-container">
+    
+    
+    <div class="toc animated-visibility" :class="{ invisible: scrollY <= 140 }">
+
+
+	<div class="toc-content">
+	
+		
+		
+		
+		<center>- 目录 -</center>
+		
+		
+		<ul>
+			
+				
+				
+					
+						
+						
+						
+						
+							
+								
+									<ul>
+								
+							
+						
+						
+							<li>
+								<a href="#%e6%80%bb%e4%bd%93%e6%b5%81%e7%a8%8b" onclick="onNavClick(`#总体流程-nav`)" id="总体流程-nav">
+									总体流程
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+						
+						
+							<li>
+								<a href="#%e6%9c%8d%e5%8a%a1%e7%ab%af" onclick="onNavClick(`#服务端-nav`)" id="服务端-nav">
+									服务端
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+						
+							
+								
+									<ul>
+								
+							
+						
+						
+							<li>
+								<a href="#%e5%87%86%e5%a4%87%e5%b7%a5%e4%bd%9c" onclick="onNavClick(`#准备工作-nav`)" id="准备工作-nav">
+									准备工作
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+						
+							
+								
+									<ul>
+								
+							
+						
+						
+							<li>
+								<a href="#%e6%88%90%e5%91%98--%e6%9e%84%e9%80%a0%e6%96%b9%e6%b3%95" onclick="onNavClick(`#成员--构造方法-nav`)" id="成员--构造方法-nav">
+									成员 &amp; 构造方法
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+						
+						
+							<li>
+								<a href="#help-func" onclick="onNavClick(`#help-func-nav`)" id="help-func-nav">
+									Help func
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+							
+								</ul>
+							
+						
+						
+						
+							<li>
+								<a href="#%e4%b8%bb%e6%b5%81%e7%a8%8bstart" onclick="onNavClick(`#主流程start-nav`)" id="主流程start-nav">
+									主流程：start()
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+						
+						
+							<li>
+								<a href="#%e4%ba%8b%e4%bb%b6%e5%a4%84%e7%90%86handles" onclick="onNavClick(`#事件处理handles-nav`)" id="事件处理handles-nav">
+									事件处理：handles()
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+						
+							
+								
+									<ul>
+								
+							
+						
+						
+							<li>
+								<a href="#accept-%e4%ba%8b%e4%bb%b6" onclick="onNavClick(`#accept-事件-nav`)" id="accept-事件-nav">
+									ACCEPT 事件
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+						
+						
+							<li>
+								<a href="#read-%e4%ba%8b%e4%bb%b6" onclick="onNavClick(`#read-事件-nav`)" id="read-事件-nav">
+									READ 事件
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+						
+						
+							<li>
+								<a href="#%e6%b6%88%e6%81%af%e8%bd%ac%e5%8f%91" onclick="onNavClick(`#消息转发-nav`)" id="消息转发-nav">
+									消息转发
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+							
+								</ul>
+							
+								</ul>
+							
+						
+						
+						
+							<li>
+								<a href="#%e5%ae%a2%e6%88%b7%e7%ab%af" onclick="onNavClick(`#客户端-nav`)" id="客户端-nav">
+									客户端
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+						
+							
+								
+									<ul>
+								
+							
+						
+						
+							<li>
+								<a href="#%e4%b8%bb%e6%b5%81%e7%a8%8bstart-1" onclick="onNavClick(`#主流程start-1-nav`)" id="主流程start-1-nav">
+									主流程：start()
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+						
+						
+							<li>
+								<a href="#%e4%ba%8b%e4%bb%b6%e5%a4%84%e7%90%86handles-1" onclick="onNavClick(`#事件处理handles-1-nav`)" id="事件处理handles-1-nav">
+									事件处理：handles()
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+							
+								</ul>
+							
+						
+						
+						
+							<li>
+								<a href="#%e6%b5%8b%e8%af%95" onclick="onNavClick(`#测试-nav`)" id="测试-nav">
+									测试
+								</a>
+							</li>
+						
+						
+					
+				
+			
+		</ul>
+	</div>
+
+</div>
+    
+    <div class="pagination">
+        <a id="globalBackToTop" class="pagination-action animated-visibility" href="#top" :class="{ invisible: scrollY == 0 }">
+            <i class="material-icons pagination-action-icon">
+                keyboard_arrow_up
+            </i>
+        </a>
+        
+        <a type="button" class="pagination-action" id="darkModeToggleButton">
+            <span class="material-icons pagination-action-icon" id="darkModeToggleIcon">
+                dark_mode
+            </span>
+        </a>
+        
+        
+    </div>
+</div>
+<div class="single-column-drawer-container" id="drawer"
+     v-bind:class="{ 'single-column-drawer-container-active': isDrawerOpen }">
+    <div class="drawer-content">
+        <div class="drawer-menu">
+            
+            
+            
+                
+                
+                
+                    
+                
+                
+                
+                <a class="a-block drawer-menu-item active" href="/posts">
+                    📑 文章
+                </a>
+                
+            
+                
+                
+                
+                
+                
+                <a class="a-block drawer-menu-item false" href="/categories">
+                    🗄 分类
+                </a>
+                
+            
+                
+                
+                
+                
+                
+                <a class="a-block drawer-menu-item false" href="/tags">
+                    🏷 标签 
+                </a>
+                
+            
+                
+                
+                
+                
+                
+                <a class="a-block drawer-menu-item false" href="/about/aboutme">
+                    👨‍💻 关于
+                </a>
+                
+            
+            
+            <div class="toc">
+
+
+	<div class="toc-content">
+	
+		
+		
+		
+		<center>- 目录 -</center>
+		
+		
+		<ul>
+			
+				
+				
+					
+						
+						
+						
+						
+							
+								
+									<ul>
+								
+							
+						
+						
+							<li>
+								<a href="#%e6%80%bb%e4%bd%93%e6%b5%81%e7%a8%8b" onclick="onNavClick(`#总体流程-nav`)" id="总体流程-nav">
+									总体流程
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+						
+						
+							<li>
+								<a href="#%e6%9c%8d%e5%8a%a1%e7%ab%af" onclick="onNavClick(`#服务端-nav`)" id="服务端-nav">
+									服务端
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+						
+							
+								
+									<ul>
+								
+							
+						
+						
+							<li>
+								<a href="#%e5%87%86%e5%a4%87%e5%b7%a5%e4%bd%9c" onclick="onNavClick(`#准备工作-nav`)" id="准备工作-nav">
+									准备工作
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+						
+							
+								
+									<ul>
+								
+							
+						
+						
+							<li>
+								<a href="#%e6%88%90%e5%91%98--%e6%9e%84%e9%80%a0%e6%96%b9%e6%b3%95" onclick="onNavClick(`#成员--构造方法-nav`)" id="成员--构造方法-nav">
+									成员 &amp; 构造方法
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+						
+						
+							<li>
+								<a href="#help-func" onclick="onNavClick(`#help-func-nav`)" id="help-func-nav">
+									Help func
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+							
+								</ul>
+							
+						
+						
+						
+							<li>
+								<a href="#%e4%b8%bb%e6%b5%81%e7%a8%8bstart" onclick="onNavClick(`#主流程start-nav`)" id="主流程start-nav">
+									主流程：start()
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+						
+						
+							<li>
+								<a href="#%e4%ba%8b%e4%bb%b6%e5%a4%84%e7%90%86handles" onclick="onNavClick(`#事件处理handles-nav`)" id="事件处理handles-nav">
+									事件处理：handles()
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+						
+							
+								
+									<ul>
+								
+							
+						
+						
+							<li>
+								<a href="#accept-%e4%ba%8b%e4%bb%b6" onclick="onNavClick(`#accept-事件-nav`)" id="accept-事件-nav">
+									ACCEPT 事件
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+						
+						
+							<li>
+								<a href="#read-%e4%ba%8b%e4%bb%b6" onclick="onNavClick(`#read-事件-nav`)" id="read-事件-nav">
+									READ 事件
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+						
+						
+							<li>
+								<a href="#%e6%b6%88%e6%81%af%e8%bd%ac%e5%8f%91" onclick="onNavClick(`#消息转发-nav`)" id="消息转发-nav">
+									消息转发
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+							
+								</ul>
+							
+								</ul>
+							
+						
+						
+						
+							<li>
+								<a href="#%e5%ae%a2%e6%88%b7%e7%ab%af" onclick="onNavClick(`#客户端-nav`)" id="客户端-nav">
+									客户端
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+						
+							
+								
+									<ul>
+								
+							
+						
+						
+							<li>
+								<a href="#%e4%b8%bb%e6%b5%81%e7%a8%8bstart-1" onclick="onNavClick(`#主流程start-1-nav`)" id="主流程start-1-nav">
+									主流程：start()
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+						
+						
+							<li>
+								<a href="#%e4%ba%8b%e4%bb%b6%e5%a4%84%e7%90%86handles-1" onclick="onNavClick(`#事件处理handles-1-nav`)" id="事件处理handles-1-nav">
+									事件处理：handles()
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+							
+								</ul>
+							
+						
+						
+						
+							<li>
+								<a href="#%e6%b5%8b%e8%af%95" onclick="onNavClick(`#测试-nav`)" id="测试-nav">
+									测试
+								</a>
+							</li>
+						
+						
+					
+				
+			
+		</ul>
+	</div>
+
+</div>
+            
+        </div>
+    </div>
+</div>
+<transition name="fade">
+    <div id="drawer-mask" v-bind:class="{ 'single-column-drawer-mask': mounted }" v-if="isDrawerOpen" v-on:click="toggleDrawer"></div>
+</transition>
+<nav id="navBar" class="navbar sticky-top navbar-light single-column-nav-container">
+    <div id="navBackground" class="nav-background"></div>
+    <div class="container container-narrow nav-content">
+        <button id="nav_dropdown_btn" class="nav-dropdown-toggle" type="button" v-on:click="toggleDrawer">
+            <i class="material-icons">
+                menu
+            </i>
+        </button>
+        <a id="navTitle" class="navbar-brand" href="https://zackyjz.github.io/">
+            🌏 ZackYJ&#39;s Blog
+        </a>
+        
+        <button type="button" class="nav-darkmode-toggle" id="darkModeToggleButton2">
+            <i class="material-icons" id="darkModeToggleIcon2">
+                dark_mode
+            </i>
+        </button>
+        
+    </div>
+</nav>
+<div class="single-column-header-container" id="pageHead"
+     v-bind:style="{ transform: 'translateZ(0px) translateY('+.3*scrollY+'px)', opacity: 1-navOpacity }">
+    <a href="https://zackyjz.github.io/">
+        <div class="single-column-header-title">🌏 ZackYJ&#39;s Blog</div>
+        
+        <div class="single-column-header-subtitle">Stay hungry , Stay foolish</div>
+        
+
+    </a>
+</div>
+
+            <div id="content">
+                <div id="streamContainer" class="stream-container">
+
+    <div class="post-list-container post-list-container-shadow">
+        <div class="post">
+            
+            
+            
+                
+            
+
+            <div class="post-head-wrapper"
+                
+                    
+                    
+                    style="background-image: url('https://logseq.oss-cn-chengdu.aliyuncs.com/noteImg/202203142007922.png')"
+                    
+                
+            >
+                <div class="post-title">
+                    简易多人聊天室[2]-NIO模型实现
+                    
+                    <div class="post-subtitle">
+                        利用NIO包下的 Buffer 和 Channel 实现简单的多人聊天室，和 BIO 实现进行比较
+                    </div>
+                    
+                    <div class="post-meta">
+                        
+                        <time itemprop="datePublished">
+                            2020-05-02 13:31
+                        </time>
+                        
+
+                        
+                            <i class="material-icons" style="">folder</i>
+                                <a href="/categories/java">Java</a>
+                                &nbsp;
+                        
+
+                        
+                            <i class="material-icons" style="">label</i>
+                            
+                                <a href="/tags/io">IO</a>
+                                &nbsp;
+                            
+                        
+                        
+                            <i class="material-icons" style="">schedule</i>
+                            
+
+                            
+                            
+
+                            
+                            8 min
+                            
+                            51 s.
+                        
+                    </div>
+                </div>
+            </div>
+            
+            <div class="post-body-wrapper">
+                
+                <div class="post-body" v-pre>
+                
+                    <h2 id="总体流程">总体流程</h2>
+<hr>
+<ul>
+<li>
+<p><code>ServerSocketChannel</code> 注册 ACCEPT 事件监听到 Selector 中，用于监听 accept 事件</p>
+<ul>
+<li>当有一个客户端发出连接请求，服务器接收了客户端连接请求时，即触发了 <code>ServerSocketChannel</code> 的 accept 事件</li>
+<li>与 BIO 模型中 <code>ServerSocket.accept()</code> 执行的事件相同，即接收了该客户端的连接请求</li>
+</ul>
+</li>
+<li>
+<p><code>ServerSocketChannel</code> 触发 accept 事件后，服务器端<!-- raw HTML omitted -->处理<!-- raw HTML omitted -->新建立连接的客户端</p>
+<ul>
+<li>得到客户端对应的 SocketChannel</li>
+<li>将新连接的客户端的 SocketChannel 注册 READ 事件在 Selector 中</li>
+</ul>
+<blockquote>
+<p>即让 Selector 监控客户端的 SocketChannel 是否触发 READ (可读) 事件</p>
+</blockquote>
+<blockquote>
+<p>触发时机：当该客户端像服务器发送了数据，其 SocketChannel 上有了可供服务器读取的数据时，触发 READ 事件</p>
+</blockquote>
+<ul>
+<li>
+<p>对可读事件触发后的处理操作和 BIO 类似：读取 SocketChannel 的数据并转发给当前连接到服务器的其他客户端</p>
+<p>但在 NIO 中，处理客户端连接的操作都是<strong>在同一个线程中进行</strong></p>
+</li>
+</ul>
+</li>
+</ul>
+<p><strong>注意</strong></p>
+<ul>
+<li>
+<p>虽然 NIO 模型中各个读写操作支持非阻塞式的调用，但 Selector 监听各个 Channel  的 select() 方法是阻塞调用的</p>
+</li>
+<li>
+<p>也就是说，Selector 上监听的所有 Channel 都没有触发其注册监听的事件，此时 Selector 会阻塞，直到有所要监听事件发生</p>
+</li>
+</ul>
+<h2 id="服务端">服务端</h2>
+<hr>
+<h3 id="准备工作">准备工作</h3>
+<h4 id="成员--构造方法">成员 &amp; 构造方法</h4>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">21
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">22
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">    <span style="color:#8be9fd;font-style:italic">private</span> <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#8be9fd;font-style:italic">final</span> String QUIT <span style="color:#ff79c6">=</span> <span style="color:#f1fa8c">&#34;bye&#34;</span><span style="color:#ff79c6">;</span>
+    <span style="color:#8be9fd;font-style:italic">private</span> <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#8be9fd;font-style:italic">final</span> <span style="color:#8be9fd">int</span> DEFAULT_PORT <span style="color:#ff79c6">=</span> 9988<span style="color:#ff79c6">;</span>
+    <span style="color:#8be9fd;font-style:italic">private</span> <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#8be9fd;font-style:italic">final</span> <span style="color:#8be9fd">int</span> BUFFER_SIZE <span style="color:#ff79c6">=</span> 1024<span style="color:#ff79c6">;</span>
+
+    <span style="color:#8be9fd;font-style:italic">private</span> ServerSocketChannel serverChannel<span style="color:#ff79c6">;</span>
+    <span style="color:#8be9fd;font-style:italic">private</span> Selector selector<span style="color:#ff79c6">;</span>
+    <span style="color:#6272a4">//ServerSocketChannel 从 SocketChannel 中读取数据
+</span><span style="color:#6272a4"></span>    <span style="color:#8be9fd;font-style:italic">private</span> ByteBuffer readBuffer <span style="color:#ff79c6">=</span> ByteBuffer<span style="color:#ff79c6">.</span><span style="color:#50fa7b">allocate</span><span style="color:#ff79c6">(</span>BUFFER_SIZE<span style="color:#ff79c6">);</span>
+    <span style="color:#6272a4">//用于向其他的 SocketChannel 中写数据,负责实现转发消息时写入其他客户端
+</span><span style="color:#6272a4"></span>    <span style="color:#8be9fd;font-style:italic">private</span> ByteBuffer writeBuffer <span style="color:#ff79c6">=</span> ByteBuffer<span style="color:#ff79c6">.</span><span style="color:#50fa7b">allocate</span><span style="color:#ff79c6">(</span>BUFFER_SIZE<span style="color:#ff79c6">);</span>
+    <span style="color:#6272a4">//声明标准化字符集
+</span><span style="color:#6272a4"></span>    <span style="color:#8be9fd;font-style:italic">private</span> Charset charset <span style="color:#ff79c6">=</span> Charset<span style="color:#ff79c6">.</span><span style="color:#50fa7b">forName</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;UTF-8&#34;</span><span style="color:#ff79c6">);</span>
+    <span style="color:#6272a4">//自定监听的端口
+</span><span style="color:#6272a4"></span>    <span style="color:#8be9fd;font-style:italic">private</span> <span style="color:#8be9fd">int</span> port<span style="color:#ff79c6">;</span>
+
+    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#50fa7b">Server</span><span style="color:#ff79c6">(){</span>
+        <span style="color:#ff79c6">this</span><span style="color:#ff79c6">(</span>DEFAULT_PORT<span style="color:#ff79c6">);</span>
+    <span style="color:#ff79c6">}</span>
+
+    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#50fa7b">Server</span><span style="color:#ff79c6">(</span><span style="color:#8be9fd">int</span> port<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+        <span style="color:#ff79c6">this</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">port</span> <span style="color:#ff79c6">=</span> port<span style="color:#ff79c6">;</span>
+    <span style="color:#ff79c6">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h4 id="help-func">Help func</h4>
+<ul>
+<li>
+<p>统一的关闭操作</p>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">5
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">6
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">7
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">8
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">9
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#8be9fd;font-style:italic">private</span> <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">close</span><span style="color:#ff79c6">(</span>Closeable closeable<span style="color:#ff79c6">){</span>
+    <span style="color:#ff79c6">if</span><span style="color:#ff79c6">(</span>closeable <span style="color:#ff79c6">!=</span> <span style="color:#ff79c6">null</span><span style="color:#ff79c6">){</span>
+        <span style="color:#ff79c6">try</span> <span style="color:#ff79c6">{</span>
+          closeable<span style="color:#ff79c6">.</span><span style="color:#50fa7b">close</span><span style="color:#ff79c6">();</span>
+        <span style="color:#ff79c6">}</span> <span style="color:#ff79c6">catch</span> <span style="color:#ff79c6">(</span>IOException e<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+          e<span style="color:#ff79c6">.</span><span style="color:#50fa7b">printStackTrace</span><span style="color:#ff79c6">();</span>
+        <span style="color:#ff79c6">}</span>
+    <span style="color:#ff79c6">}</span>
+<span style="color:#ff79c6">}</span>
+</code></pre></td></tr></table>
+</div>
+</div></li>
+</ul>
+<h3 id="主流程start">主流程：<code>start()</code></h3>
+<hr>
+<p>现在开始实现核心的方法 start</p>
+<ol>
+<li>
+<p>调用静态方法 <code>ServerSocketChannel.open() </code>创建一个 ServerSocketChannel</p>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">serverChannel <span style="color:#ff79c6">=</span> ServerSocketChannel<span style="color:#ff79c6">.</span><span style="color:#50fa7b">open</span><span style="color:#ff79c6">()</span>
+serverChannel<span style="color:#ff79c6">.</span><span style="color:#50fa7b">configureBlocking</span><span style="color:#ff79c6">(</span><span style="color:#ff79c6">false</span><span style="color:#ff79c6">);</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>默认情况下创建的 ServerSocketChannel 为阻塞式调用，这里我们需要设置调用模式为非阻塞式</p>
+</li>
+<li>
+<p>将 ServerSocketChannel 关联的 ServerSocket 绑定到监听端口</p>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">serverChannel<span style="color:#ff79c6">.</span><span style="color:#50fa7b">socket</span><span style="color:#ff79c6">().</span><span style="color:#50fa7b">bind</span><span style="color:#ff79c6">(</span><span style="color:#ff79c6">new</span> InetSocketAddress<span style="color:#ff79c6">(</span>port<span style="color:#ff79c6">));</span>
+</code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p>创建 selector 对象，并将 ServerSocketChannel 的 ACCEPT事件注册到 selector 对象中</p>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">selector <span style="color:#ff79c6">=</span> Selector<span style="color:#ff79c6">.</span><span style="color:#50fa7b">open</span><span style="color:#ff79c6">();</span>
+serverChannel<span style="color:#ff79c6">.</span><span style="color:#50fa7b">register</span><span style="color:#ff79c6">(</span>selector<span style="color:#ff79c6">,</span>SelectionKey<span style="color:#ff79c6">.</span><span style="color:#50fa7b">OP_ACCEPT</span><span style="color:#ff79c6">);</span>
+</code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p>开始监听连接请求</p>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#ff79c6">while</span><span style="color:#ff79c6">(</span><span style="color:#ff79c6">true</span><span style="color:#ff79c6">){</span>
+  selector<span style="color:#ff79c6">.</span><span style="color:#50fa7b">select</span><span style="color:#ff79c6">();</span>
+  Set<span style="color:#ff79c6">&lt;</span>SelectionKey<span style="color:#ff79c6">&gt;</span> keys <span style="color:#ff79c6">=</span> selector<span style="color:#ff79c6">.</span><span style="color:#50fa7b">selectedKeys</span><span style="color:#ff79c6">();</span>
+<span style="color:#ff79c6">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>当没有channel 触发事件时 select() 会阻塞，直到有 channel 的事件触发。服务端需要不断监听，需要在循环中调用</li>
+<li>selectedKeys 返回本次监听到的所有触发了事件的 channel 对应的 selectedKey Set 集合</li>
+</ul>
+</li>
+<li>
+<p>处理触发事件</p>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#ff79c6">for</span> <span style="color:#ff79c6">(</span>SelectionKey key <span style="color:#ff79c6">:</span> keys<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+  handles<span style="color:#ff79c6">(</span>key<span style="color:#ff79c6">);</span>
+<span style="color:#ff79c6">}</span>
+keys<span style="color:#ff79c6">.</span><span style="color:#50fa7b">clear</span><span style="color:#ff79c6">();;</span>
+</code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>对于集合中每一个触发事件，调用 handles() 进行处理，将在后文实现。</li>
+<li>处理完后，需要手动将 selectedKeys 集合清空，保证下一轮不处理过期的重复事件</li>
+</ul>
+</li>
+</ol>
+<h3 id="事件处理handles">事件处理：<code>handles()</code></h3>
+<hr>
+<h4 id="accept-事件">ACCEPT 事件</h4>
+<ul>
+<li>
+<p>发生在服务器通道 <code>serverSocketChannel</code> 上</p>
+<ul>
+<li>触发时机： 和客户端建立了连接</li>
+</ul>
+</li>
+<li>
+<p>处理流程：</p>
+<ul>
+<li>
+<p>调用传入的 selectedKey 的 <code>channel()</code> 获得触发这个事件的 ServerSocketChannel</p>
+</li>
+<li>
+<p>调用 <code>accept()</code> 方法，返回对应的客户端通道 SocketChannel</p>
+<ul>
+<li>客户端的 channel 也要切换到非阻塞调用模式</li>
+</ul>
+</li>
+<li>
+<p>接着客户端的 channel 也需要注册到 selector 上，事件为 READ</p>
+</li>
+</ul>
+</li>
+</ul>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">5
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">6
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">7
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">8
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#ff79c6">if</span><span style="color:#ff79c6">(</span>key<span style="color:#ff79c6">.</span><span style="color:#50fa7b">isAcceptable</span><span style="color:#ff79c6">()){</span>
+    <span style="color:#6272a4">//得到触发了这个事件的通道
+</span><span style="color:#6272a4"></span>    ServerSocketChannel serverChannel <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">(</span>ServerSocketChannel<span style="color:#ff79c6">)</span> key<span style="color:#ff79c6">.</span><span style="color:#50fa7b">channel</span><span style="color:#ff79c6">();</span>
+    SocketChannel clientChannel <span style="color:#ff79c6">=</span> serverChannel<span style="color:#ff79c6">.</span><span style="color:#50fa7b">accept</span><span style="color:#ff79c6">();</span>
+    clientChannel<span style="color:#ff79c6">.</span><span style="color:#50fa7b">configureBlocking</span><span style="color:#ff79c6">(</span><span style="color:#ff79c6">false</span><span style="color:#ff79c6">);</span>
+    clientChannel<span style="color:#ff79c6">.</span><span style="color:#50fa7b">register</span><span style="color:#ff79c6">(</span>selector<span style="color:#ff79c6">,</span>SelectionKey<span style="color:#ff79c6">.</span><span style="color:#50fa7b">OP_READ</span><span style="color:#ff79c6">);</span>
+    System<span style="color:#ff79c6">.</span><span style="color:#50fa7b">out</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">println</span><span style="color:#ff79c6">(</span>getClientName<span style="color:#ff79c6">(</span>clientChannel<span style="color:#ff79c6">)+</span><span style="color:#f1fa8c">&#34;已连接&#34;</span><span style="color:#ff79c6">);</span>
+<span style="color:#ff79c6">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h4 id="read-事件">READ 事件</h4>
+<ol>
+<li>
+<p>利用 Buffer 从客户端 channel 中读出发来的消息，进行打印等处理</p>
+<blockquote>
+<p>关于 Buffer 的操作在之前本地文件拷贝的文章中有介绍：传送门</p>
+</blockquote>
+</li>
+<li>
+<p>将消息转发到其他客户端</p>
+</li>
+<li>
+<p>检查是否退出等业务操作</p>
+</li>
+</ol>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#ff79c6">else</span> <span style="color:#ff79c6">if</span><span style="color:#ff79c6">(</span>key<span style="color:#ff79c6">.</span><span style="color:#50fa7b">isReadable</span><span style="color:#ff79c6">()){</span>
+    SocketChannel clientChannel <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">(</span>SocketChannel<span style="color:#ff79c6">)</span> key<span style="color:#ff79c6">.</span><span style="color:#50fa7b">channel</span><span style="color:#ff79c6">();</span>
+    String fwdMsg <span style="color:#ff79c6">=</span> receive<span style="color:#ff79c6">(</span>clientChannel<span style="color:#ff79c6">);</span>
+    <span style="color:#ff79c6">if</span><span style="color:#ff79c6">(</span>fwdMsg<span style="color:#ff79c6">.</span><span style="color:#50fa7b">isEmpty</span><span style="color:#ff79c6">()){</span>
+        <span style="color:#6272a4">//消息为空，出现异常，不再监听该 channel 的事件
+</span><span style="color:#6272a4"></span>        key<span style="color:#ff79c6">.</span><span style="color:#50fa7b">cancel</span><span style="color:#ff79c6">();</span>
+        <span style="color:#6272a4">//更新 selector 状态，立即返回 select() 方法（多线程下）
+</span><span style="color:#6272a4"></span>        selector<span style="color:#ff79c6">.</span><span style="color:#50fa7b">wakeup</span><span style="color:#ff79c6">();</span>
+    <span style="color:#ff79c6">}</span><span style="color:#ff79c6">else</span><span style="color:#ff79c6">{</span>
+        System<span style="color:#ff79c6">.</span><span style="color:#50fa7b">out</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">println</span><span style="color:#ff79c6">(</span>getClientName<span style="color:#ff79c6">(</span>clientChannel<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">+</span> <span style="color:#f1fa8c">&#34;:&#34;</span> <span style="color:#ff79c6">+</span> fwdMsg<span style="color:#ff79c6">);</span>
+        forwardMessage<span style="color:#ff79c6">(</span>clientChannel<span style="color:#ff79c6">,</span> fwdMsg<span style="color:#ff79c6">);</span>
+        <span style="color:#6272a4">// 检查用户是否退出
+</span><span style="color:#6272a4"></span>        <span style="color:#ff79c6">if</span> <span style="color:#ff79c6">(</span>checkQuit<span style="color:#ff79c6">(</span>fwdMsg<span style="color:#ff79c6">))</span> <span style="color:#ff79c6">{</span>
+            key<span style="color:#ff79c6">.</span><span style="color:#50fa7b">cancel</span><span style="color:#ff79c6">();</span>
+            selector<span style="color:#ff79c6">.</span><span style="color:#50fa7b">wakeup</span><span style="color:#ff79c6">();</span>
+            System<span style="color:#ff79c6">.</span><span style="color:#50fa7b">out</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">println</span><span style="color:#ff79c6">(</span>getClientName<span style="color:#ff79c6">(</span>clientChannel<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">+</span> <span style="color:#f1fa8c">&#34;已断开&#34;</span><span style="color:#ff79c6">);</span>
+        <span style="color:#ff79c6">}</span>
+    <span style="color:#ff79c6">}</span>
+<span style="color:#ff79c6">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h5 id="buffer-接收数据">Buffer 接收数据</h5>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">5
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">6
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">7
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">8
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">    <span style="color:#8be9fd;font-style:italic">private</span> String <span style="color:#50fa7b">receive</span><span style="color:#ff79c6">(</span>SocketChannel client<span style="color:#ff79c6">)</span> <span style="color:#8be9fd;font-style:italic">throws</span> IOException <span style="color:#ff79c6">{</span>
+        <span style="color:#6272a4">//清空缓冲区防止污染
+</span><span style="color:#6272a4"></span>        readBuffer<span style="color:#ff79c6">.</span><span style="color:#50fa7b">clear</span><span style="color:#ff79c6">();</span>
+        <span style="color:#6272a4">//只要 channel 还有字节读，就一直读
+</span><span style="color:#6272a4"></span>        <span style="color:#ff79c6">while</span><span style="color:#ff79c6">(</span>client<span style="color:#ff79c6">.</span><span style="color:#50fa7b">read</span><span style="color:#ff79c6">(</span>readBuffer<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">&gt;</span> 0<span style="color:#ff79c6">);</span>
+        readBuffer<span style="color:#ff79c6">.</span><span style="color:#50fa7b">flip</span><span style="color:#ff79c6">();</span>
+        <span style="color:#ff79c6">return</span> String<span style="color:#ff79c6">.</span><span style="color:#50fa7b">valueOf</span><span style="color:#ff79c6">(</span>charset<span style="color:#ff79c6">.</span><span style="color:#50fa7b">decode</span><span style="color:#ff79c6">(</span>readBuffer<span style="color:#ff79c6">));</span>
+    <span style="color:#ff79c6">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h4 id="消息转发">消息转发</h4>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">    <span style="color:#8be9fd;font-style:italic">private</span> <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">forwardMessage</span><span style="color:#ff79c6">(</span>SocketChannel client<span style="color:#ff79c6">,</span> String fwdMsg<span style="color:#ff79c6">)</span> <span style="color:#8be9fd;font-style:italic">throws</span> IOException <span style="color:#ff79c6">{</span>
+        <span style="color:#6272a4">//遍历所有监听的 selectionKey
+</span><span style="color:#6272a4"></span>        <span style="color:#ff79c6">for</span> <span style="color:#ff79c6">(</span>SelectionKey key<span style="color:#ff79c6">:</span> selector<span style="color:#ff79c6">.</span><span style="color:#50fa7b">keys</span><span style="color:#ff79c6">())</span> <span style="color:#ff79c6">{</span>
+            Channel connectedClient <span style="color:#ff79c6">=</span> key<span style="color:#ff79c6">.</span><span style="color:#50fa7b">channel</span><span style="color:#ff79c6">();</span>
+          	<span style="color:#6272a4">//跳过服务器的 channel
+</span><span style="color:#6272a4"></span>            <span style="color:#ff79c6">if</span> <span style="color:#ff79c6">(</span>connectedClient <span style="color:#ff79c6">instanceof</span> ServerSocketChannel<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+                <span style="color:#ff79c6">continue</span><span style="color:#ff79c6">;</span>
+            <span style="color:#ff79c6">}</span>
+						<span style="color:#6272a4">//跳过发送者客户端的channel
+</span><span style="color:#6272a4"></span>            <span style="color:#ff79c6">if</span> <span style="color:#ff79c6">(</span>key<span style="color:#ff79c6">.</span><span style="color:#50fa7b">isValid</span><span style="color:#ff79c6">()</span> <span style="color:#ff79c6">&amp;&amp;</span> <span style="color:#ff79c6">!</span>client<span style="color:#ff79c6">.</span><span style="color:#50fa7b">equals</span><span style="color:#ff79c6">(</span>connectedClient<span style="color:#ff79c6">))</span> <span style="color:#ff79c6">{</span>
+                writeBuffer<span style="color:#ff79c6">.</span><span style="color:#50fa7b">clear</span><span style="color:#ff79c6">();</span>
+                writeBuffer<span style="color:#ff79c6">.</span><span style="color:#50fa7b">put</span><span style="color:#ff79c6">(</span>charset<span style="color:#ff79c6">.</span><span style="color:#50fa7b">encode</span><span style="color:#ff79c6">(</span>getClientName<span style="color:#ff79c6">(</span>client<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">+</span> <span style="color:#f1fa8c">&#34;:&#34;</span> <span style="color:#ff79c6">+</span> fwdMsg<span style="color:#ff79c6">));</span>
+                writeBuffer<span style="color:#ff79c6">.</span><span style="color:#50fa7b">flip</span><span style="color:#ff79c6">();</span>
+                <span style="color:#ff79c6">while</span> <span style="color:#ff79c6">(</span>writeBuffer<span style="color:#ff79c6">.</span><span style="color:#50fa7b">hasRemaining</span><span style="color:#ff79c6">())</span> <span style="color:#ff79c6">{</span>
+                    <span style="color:#ff79c6">((</span>SocketChannel<span style="color:#ff79c6">)</span>connectedClient<span style="color:#ff79c6">).</span><span style="color:#50fa7b">write</span><span style="color:#ff79c6">(</span>writeBuffer<span style="color:#ff79c6">);</span>
+                <span style="color:#ff79c6">}</span>
+            <span style="color:#ff79c6">}</span>
+        <span style="color:#ff79c6">}</span>
+    <span style="color:#ff79c6">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="客户端">客户端</h2>
+<hr>
+<h3 id="主流程start-1">主流程：<code>start()</code></h3>
+<ol>
+<li>获取 SocketChannel，配置为非阻塞模式</li>
+<li>创建 selector，注册 clientChannel 的 CONNECT 事件</li>
+<li>正式向服务器发送连接请求 clientChannel</li>
+<li>不停 select() 监听触发的事件，遍历这些事件进行处理</li>
+</ol>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">client <span style="color:#ff79c6">=</span> SocketChannel<span style="color:#ff79c6">.</span><span style="color:#50fa7b">open</span><span style="color:#ff79c6">();</span>
+client<span style="color:#ff79c6">.</span><span style="color:#50fa7b">configureBlocking</span><span style="color:#ff79c6">(</span><span style="color:#ff79c6">false</span><span style="color:#ff79c6">);</span>
+
+selector <span style="color:#ff79c6">=</span> Selector<span style="color:#ff79c6">.</span><span style="color:#50fa7b">open</span><span style="color:#ff79c6">();</span>
+client<span style="color:#ff79c6">.</span><span style="color:#50fa7b">register</span><span style="color:#ff79c6">(</span>selector<span style="color:#ff79c6">,</span> SelectionKey<span style="color:#ff79c6">.</span><span style="color:#50fa7b">OP_CONNECT</span><span style="color:#ff79c6">);</span>
+client<span style="color:#ff79c6">.</span><span style="color:#50fa7b">connect</span><span style="color:#ff79c6">(</span><span style="color:#ff79c6">new</span> InetSocketAddress<span style="color:#ff79c6">(</span>host<span style="color:#ff79c6">,</span> port<span style="color:#ff79c6">));</span>
+
+<span style="color:#ff79c6">while</span> <span style="color:#ff79c6">(</span><span style="color:#ff79c6">true</span><span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+    selector<span style="color:#ff79c6">.</span><span style="color:#50fa7b">select</span><span style="color:#ff79c6">();</span>
+    Set<span style="color:#ff79c6">&lt;</span>SelectionKey<span style="color:#ff79c6">&gt;</span> selectionKeys <span style="color:#ff79c6">=</span> selector<span style="color:#ff79c6">.</span><span style="color:#50fa7b">selectedKeys</span><span style="color:#ff79c6">();</span>
+    <span style="color:#ff79c6">for</span> <span style="color:#ff79c6">(</span>SelectionKey key <span style="color:#ff79c6">:</span> selectionKeys<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+      	handles<span style="color:#ff79c6">(</span>key<span style="color:#ff79c6">);</span>
+    <span style="color:#ff79c6">}</span>
+    selectionKeys<span style="color:#ff79c6">.</span><span style="color:#50fa7b">clear</span><span style="color:#ff79c6">();</span>
+<span style="color:#ff79c6">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="事件处理handles-1">事件处理：<code>handles()</code></h3>
+<h5 id="connect">CONNECT</h5>
+<p>连接就绪时触发该事件</p>
+<ul>
+<li>
+<p>获取触发该事件的 clientChannel</p>
+</li>
+<li>
+<p>需要额外的线程来处理键盘的阻塞输入</p>
+</li>
+<li>
+<p>注册该 clientChannel 的 READ 事件到 selector 中</p>
+</li>
+</ul>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#ff79c6">if</span> <span style="color:#ff79c6">(</span>key<span style="color:#ff79c6">.</span><span style="color:#50fa7b">isConnectable</span><span style="color:#ff79c6">())</span> <span style="color:#ff79c6">{</span>
+    SocketChannel client <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">(</span>SocketChannel<span style="color:#ff79c6">)</span> key<span style="color:#ff79c6">.</span><span style="color:#50fa7b">channel</span><span style="color:#ff79c6">();</span>
+    <span style="color:#6272a4">//建立连接的过程是否就绪
+</span><span style="color:#6272a4"></span>    <span style="color:#ff79c6">if</span> <span style="color:#ff79c6">(</span>client<span style="color:#ff79c6">.</span><span style="color:#50fa7b">isConnectionPending</span><span style="color:#ff79c6">())</span> <span style="color:#ff79c6">{</span>
+        client<span style="color:#ff79c6">.</span><span style="color:#50fa7b">finishConnect</span><span style="color:#ff79c6">();</span>
+        <span style="color:#6272a4">// 处理用户的输入
+</span><span style="color:#6272a4"></span>        <span style="color:#ff79c6">new</span> Thread<span style="color:#ff79c6">(</span><span style="color:#ff79c6">new</span> UserInputHandler<span style="color:#ff79c6">(</span><span style="color:#ff79c6">this</span><span style="color:#ff79c6">)).</span><span style="color:#50fa7b">start</span><span style="color:#ff79c6">();</span>
+    <span style="color:#ff79c6">}</span>
+    client<span style="color:#ff79c6">.</span><span style="color:#50fa7b">register</span><span style="color:#ff79c6">(</span>selector<span style="color:#ff79c6">,</span> SelectionKey<span style="color:#ff79c6">.</span><span style="color:#50fa7b">OP_READ</span><span style="color:#ff79c6">);</span>
+<span style="color:#ff79c6">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p><strong>处理键盘输入的线程：</strong></p>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">21
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">22
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">23
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">24
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">25
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#8be9fd;font-style:italic">class</span> <span style="color:#50fa7b">UserInputHandler</span> <span style="color:#8be9fd;font-style:italic">implements</span> Runnable<span style="color:#ff79c6">{</span>
+        <span style="color:#8be9fd;font-style:italic">private</span> Client chatClient<span style="color:#ff79c6">;</span>
+        <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#50fa7b">UserInputHandler</span><span style="color:#ff79c6">(</span>Client chatClient<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+            <span style="color:#ff79c6">this</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">chatClient</span> <span style="color:#ff79c6">=</span> chatClient<span style="color:#ff79c6">;</span>
+        <span style="color:#ff79c6">}</span>
+        @Override
+        <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">run</span><span style="color:#ff79c6">()</span> <span style="color:#ff79c6">{</span>
+            <span style="color:#ff79c6">try</span> <span style="color:#ff79c6">{</span>
+                <span style="color:#6272a4">// 等待用户输入消息
+</span><span style="color:#6272a4"></span>                BufferedReader consoleReader <span style="color:#ff79c6">=</span>
+                        <span style="color:#ff79c6">new</span> BufferedReader<span style="color:#ff79c6">(</span><span style="color:#ff79c6">new</span> InputStreamReader<span style="color:#ff79c6">(</span>System<span style="color:#ff79c6">.</span><span style="color:#50fa7b">in</span><span style="color:#ff79c6">));</span>
+                <span style="color:#ff79c6">while</span> <span style="color:#ff79c6">(</span><span style="color:#ff79c6">true</span><span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+                    String input <span style="color:#ff79c6">=</span> consoleReader<span style="color:#ff79c6">.</span><span style="color:#50fa7b">readLine</span><span style="color:#ff79c6">();</span>
+                    <span style="color:#6272a4">// 向服务器发送消息
+</span><span style="color:#6272a4"></span>                    chatClient<span style="color:#ff79c6">.</span><span style="color:#50fa7b">send</span><span style="color:#ff79c6">(</span>input<span style="color:#ff79c6">);</span>
+                    <span style="color:#6272a4">// 检查用户是否准备退出
+</span><span style="color:#6272a4"></span>                    <span style="color:#ff79c6">if</span> <span style="color:#ff79c6">(</span>chatClient<span style="color:#ff79c6">.</span><span style="color:#50fa7b">checkQuit</span><span style="color:#ff79c6">(</span>input<span style="color:#ff79c6">))</span> <span style="color:#ff79c6">{</span>
+                        <span style="color:#ff79c6">break</span><span style="color:#ff79c6">;</span>
+                    <span style="color:#ff79c6">}</span>
+                <span style="color:#ff79c6">}</span>
+            <span style="color:#ff79c6">}</span> <span style="color:#ff79c6">catch</span> <span style="color:#ff79c6">(</span>IOException e<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+                e<span style="color:#ff79c6">.</span><span style="color:#50fa7b">printStackTrace</span><span style="color:#ff79c6">();</span>
+            <span style="color:#ff79c6">}</span>
+        <span style="color:#ff79c6">}</span>
+    <span style="color:#ff79c6">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p><strong>利用 Buffer 发送消息到服务器：</strong></p>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">send</span><span style="color:#ff79c6">(</span>String msg<span style="color:#ff79c6">)</span> <span style="color:#8be9fd;font-style:italic">throws</span> IOException <span style="color:#ff79c6">{</span>
+    <span style="color:#ff79c6">if</span> <span style="color:#ff79c6">(</span>msg<span style="color:#ff79c6">.</span><span style="color:#50fa7b">isEmpty</span><span style="color:#ff79c6">())</span> <span style="color:#ff79c6">{</span>
+      <span style="color:#ff79c6">return</span><span style="color:#ff79c6">;</span>
+    <span style="color:#ff79c6">}</span>
+
+    writeBuffer<span style="color:#ff79c6">.</span><span style="color:#50fa7b">clear</span><span style="color:#ff79c6">();</span>
+    writeBuffer<span style="color:#ff79c6">.</span><span style="color:#50fa7b">put</span><span style="color:#ff79c6">(</span>charset<span style="color:#ff79c6">.</span><span style="color:#50fa7b">encode</span><span style="color:#ff79c6">(</span>msg<span style="color:#ff79c6">));</span>
+    writeBuffer<span style="color:#ff79c6">.</span><span style="color:#50fa7b">flip</span><span style="color:#ff79c6">();</span>
+    <span style="color:#ff79c6">while</span> <span style="color:#ff79c6">(</span>writeBuffer<span style="color:#ff79c6">.</span><span style="color:#50fa7b">hasRemaining</span><span style="color:#ff79c6">())</span> <span style="color:#ff79c6">{</span>
+      client<span style="color:#ff79c6">.</span><span style="color:#50fa7b">write</span><span style="color:#ff79c6">(</span>writeBuffer<span style="color:#ff79c6">);</span>
+    <span style="color:#ff79c6">}</span>
+
+    <span style="color:#6272a4">// 检查用户是否准备退出
+</span><span style="color:#6272a4"></span>    <span style="color:#ff79c6">if</span> <span style="color:#ff79c6">(</span>checkQuit<span style="color:#ff79c6">(</span>msg<span style="color:#ff79c6">))</span> <span style="color:#ff79c6">{</span>
+      close<span style="color:#ff79c6">(</span>selector<span style="color:#ff79c6">);</span>
+    <span style="color:#ff79c6">}</span>
+<span style="color:#ff79c6">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h5 id="read">READ</h5>
+<p>服务器转发消息来时触发该事件</p>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"> <span style="color:#ff79c6">else</span> <span style="color:#ff79c6">if</span> <span style="color:#ff79c6">(</span>key<span style="color:#ff79c6">.</span><span style="color:#50fa7b">isReadable</span><span style="color:#ff79c6">())</span> <span style="color:#ff79c6">{</span>
+     SocketChannel client <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">(</span>SocketChannel<span style="color:#ff79c6">)</span> key<span style="color:#ff79c6">.</span><span style="color:#50fa7b">channel</span><span style="color:#ff79c6">();</span>
+     String msg <span style="color:#ff79c6">=</span> receive<span style="color:#ff79c6">(</span>client<span style="color:#ff79c6">);</span>
+     <span style="color:#ff79c6">if</span> <span style="color:#ff79c6">(</span>msg<span style="color:#ff79c6">.</span><span style="color:#50fa7b">isEmpty</span><span style="color:#ff79c6">())</span> <span style="color:#ff79c6">{</span>
+       <span style="color:#6272a4">// 服务器异常
+</span><span style="color:#6272a4"></span>       close<span style="color:#ff79c6">(</span>selector<span style="color:#ff79c6">);</span>
+     <span style="color:#ff79c6">}</span> <span style="color:#ff79c6">else</span> <span style="color:#ff79c6">{</span>
+       System<span style="color:#ff79c6">.</span><span style="color:#50fa7b">out</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">println</span><span style="color:#ff79c6">(</span>msg<span style="color:#ff79c6">);</span>
+     <span style="color:#ff79c6">}</span>
+ <span style="color:#ff79c6">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>利用 Buffer 接收服务器的消息：</p>
+<div class="highlight"><div style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">5
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">6
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#8be9fd;font-style:italic">private</span> String <span style="color:#50fa7b">receive</span><span style="color:#ff79c6">(</span>SocketChannel client<span style="color:#ff79c6">)</span> <span style="color:#8be9fd;font-style:italic">throws</span> IOException <span style="color:#ff79c6">{</span>
+    readBuffer<span style="color:#ff79c6">.</span><span style="color:#50fa7b">clear</span><span style="color:#ff79c6">();</span>
+    <span style="color:#ff79c6">while</span> <span style="color:#ff79c6">(</span>client<span style="color:#ff79c6">.</span><span style="color:#50fa7b">read</span><span style="color:#ff79c6">(</span>readBuffer<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">&gt;</span> 0<span style="color:#ff79c6">);</span>
+    readBuffer<span style="color:#ff79c6">.</span><span style="color:#50fa7b">flip</span><span style="color:#ff79c6">();</span>
+    <span style="color:#ff79c6">return</span> String<span style="color:#ff79c6">.</span><span style="color:#50fa7b">valueOf</span><span style="color:#ff79c6">(</span>charset<span style="color:#ff79c6">.</span><span style="color:#50fa7b">decode</span><span style="color:#ff79c6">(</span>readBuffer<span style="color:#ff79c6">));</span>
+<span style="color:#ff79c6">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="测试">测试</h2>
+<hr>
+<p>运行客户端时需要在运行配置中运行多个实例运行：</p>
+<p><img src="https://logseq.oss-cn-chengdu.aliyuncs.com/noteImg/202201242042716.png" alt=""></p>
+<p><img src="https://logseq.oss-cn-chengdu.aliyuncs.com/noteImg/202201242043942.png" alt=""></p>
+<p><img src="https://logseq.oss-cn-chengdu.aliyuncs.com/noteImg/202201242058243.png" alt=""></p>
+
+                    
+                    <HR width="100%" id="EOF">
+		    <p style="color:#777;">最后修改于 2020-05-02</p>
+                    
+                </div>
+            </div>
+            
+            
+            <nav class="post-pagination">
+
+                
+                <a class="newer-posts" href="https://zackyjz.github.io/posts/jdbc%E8%BF%9E%E6%8E%A5%E6%B1%A0%E5%AE%9E%E7%8E%B0/">
+			下回<br>自定义数据库连接池的实现
+                </a>
+                
+                
+                
+                <a class="older-posts" href="https://zackyjz.github.io/posts/java%E6%9C%AC%E5%9C%B0%E6%96%87%E4%BB%B6%E6%8B%B7%E8%B4%9D/">
+			上回<br>Java 四种本地文件拷贝方式比较和测试
+                </a>
+                
+            </nav>
+            <div class="post-comment-wrapper">
+                
+
+
+
+
+
+
+
+
+
+
+            </div>
+        </div>
+    </div>
+
+
+                    </div>
+            </div><div id="single-column-footer">
+Hugo Theme <a href="https://github.com/amazingrise/hugo-theme-diary">Diary</a> by <a href="https://amazingrise.net">Rise</a>
+<br>
+移植自 <a href="https://mak1t0.cc/" target="_blank" rel="noreferrer noopener">Makito</a>'s <a href="https://github.com/SumiMakito/hexo-theme-journal/" target="_blank" rel="noreferrer noopener">Journal.</a> <br>
+<br>
+
+&copy;
+	
+	2021 🌏 ZackYJ&#39;s Blog
+	
+</div>
+            </div>
+    
+    <script src="/js/journal.js"></script>
+    </body>
+</html>
