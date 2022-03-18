@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>IO on 🌏 ZackYJ&#39;s Blog</title>
+    <link>https://zackyjz.github.io/tags/io/</link>
+    <description>Recent content in IO on 🌏 ZackYJ&#39;s Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-CN</language>
+    <lastBuildDate>Sat, 02 May 2020 13:31:23 +0800</lastBuildDate><atom:link href="https://zackyjz.github.io/tags/io/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>简易多人聊天室[2]-NIO模型实现</title>
+      <link>https://zackyjz.github.io/posts/%E7%AE%80%E6%98%93%E5%A4%9A%E4%BA%BA%E8%81%8A%E5%A4%A9%E5%AE%A4-nio%E5%AE%9E%E7%8E%B0/</link>
+      <pubDate>Sat, 02 May 2020 13:31:23 +0800</pubDate>
+      
+      <guid>https://zackyjz.github.io/posts/%E7%AE%80%E6%98%93%E5%A4%9A%E4%BA%BA%E8%81%8A%E5%A4%A9%E5%AE%A4-nio%E5%AE%9E%E7%8E%B0/</guid>
+      <description>总体流程    ServerSocketChannel 注册 ACCEPT 事件监听到 Selector 中，用于监听 accept 事件
+ 当有一个客户端发出连接请求，服务器接收了客户端连接请求时，即触发了 ServerSocketChannel 的 accept 事件 与 BIO 模型中 ServerSocket.accept() 执行的事件相同，即接收了该客户端的连接请求    ServerSocketChannel 触发 accept 事件后，服务器端处理新建立连接的客户端
+ 得到客户端对应的 SocketChannel 将新连接的客户端的 SocketChannel 注册 READ 事件在 Selector 中   即让 Selector 监控客户端的 SocketChannel 是否触发 READ (可读) 事件
+  触发时机：当该客户端像服务器发送了数据，其 SocketChannel 上有了可供服务器读取的数据时，触发 READ 事件
+   对可读事件触发后的处理操作和 BIO 类似：读取 SocketChannel 的数据并转发给当前连接到服务器的其他客户端
+但在 NIO 中，处理客户端连接的操作都是在同一个线程中进行
+    注意</description>
+    </item>
+    
+  </channel>
+</rss>
