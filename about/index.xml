@@ -2,16 +2,16 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Abouts on 🌏 ZackYJ&#39;s Blog</title>
-    <link>https://zackyjz.github.io/about/</link>
+    <link>https://blog.wvuuvw.xyz/about/</link>
     <description>Recent content in Abouts on 🌏 ZackYJ&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
-    <language>zh-CN</language><atom:link href="https://zackyjz.github.io/about/index.xml" rel="self" type="application/rss+xml" />
+    <language>zh-CN</language><atom:link href="https://blog.wvuuvw.xyz/about/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>About</title>
-      <link>https://zackyjz.github.io/about/aboutme/</link>
+      <link>https://blog.wvuuvw.xyz/about/aboutme/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>https://zackyjz.github.io/about/aboutme/</guid>
+      <guid>https://blog.wvuuvw.xyz/about/aboutme/</guid>
       <description>大标题  你好 你也好 哇哦  中标题 1 2 3  public static void main(){ System.out.println(&amp;#34;hello world&amp;#34;) }   小标题 四级标题 </description>
     </item>
     

@@ -2,17 +2,17 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>树 on 🌏 ZackYJ&#39;s Blog</title>
-    <link>https://zackyjz.github.io/tags/%E6%A0%91/</link>
+    <link>https://blog.wvuuvw.xyz/tags/%E6%A0%91/</link>
     <description>Recent content in 树 on 🌏 ZackYJ&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-CN</language>
-    <lastBuildDate>Sun, 14 Nov 2021 11:25:05 -0400</lastBuildDate><atom:link href="https://zackyjz.github.io/tags/%E6%A0%91/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 14 Nov 2021 11:25:05 -0400</lastBuildDate><atom:link href="https://blog.wvuuvw.xyz/tags/%E6%A0%91/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>数据结构：并查集介绍和实现</title>
-      <link>https://zackyjz.github.io/posts/%E5%B9%B6%E6%9F%A5%E9%9B%86%E5%AE%9E%E7%8E%B0/</link>
+      <link>https://blog.wvuuvw.xyz/posts/%E5%B9%B6%E6%9F%A5%E9%9B%86%E5%AE%9E%E7%8E%B0/</link>
       <pubDate>Sun, 14 Nov 2021 11:25:05 -0400</pubDate>
       
-      <guid>https://zackyjz.github.io/posts/%E5%B9%B6%E6%9F%A5%E9%9B%86%E5%AE%9E%E7%8E%B0/</guid>
+      <guid>https://blog.wvuuvw.xyz/posts/%E5%B9%B6%E6%9F%A5%E9%9B%86%E5%AE%9E%E7%8E%B0/</guid>
       <description>并查集也叫不相交集合，是一种树状结构，适合解决集合连接等相关问题
  介绍  并查集解决的问题：
  有若干个样本a、b、c、&amp;hellip;类型假设是V 在并查集中一开始认为每个样本都在单独的集合里   并查集的三个核心操作（常数级复杂度）：

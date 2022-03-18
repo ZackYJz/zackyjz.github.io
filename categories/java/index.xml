@@ -2,17 +2,17 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Java on 🌏 ZackYJ&#39;s Blog</title>
-    <link>https://zackyjz.github.io/categories/java/</link>
+    <link>https://blog.wvuuvw.xyz/categories/java/</link>
     <description>Recent content in Java on 🌏 ZackYJ&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-CN</language>
-    <lastBuildDate>Tue, 05 Jan 2021 15:23:23 +0800</lastBuildDate><atom:link href="https://zackyjz.github.io/categories/java/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 05 Jan 2021 15:23:23 +0800</lastBuildDate><atom:link href="https://blog.wvuuvw.xyz/categories/java/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>SSM整合：分层配置和整合</title>
-      <link>https://zackyjz.github.io/posts/ssm-%E6%A1%86%E6%9E%B6%E6%95%B4%E5%90%88/</link>
+      <link>https://blog.wvuuvw.xyz/posts/ssm-%E6%A1%86%E6%9E%B6%E6%95%B4%E5%90%88/</link>
       <pubDate>Tue, 05 Jan 2021 15:23:23 +0800</pubDate>
       
-      <guid>https://zackyjz.github.io/posts/ssm-%E6%A1%86%E6%9E%B6%E6%95%B4%E5%90%88/</guid>
+      <guid>https://blog.wvuuvw.xyz/posts/ssm-%E6%A1%86%E6%9E%B6%E6%95%B4%E5%90%88/</guid>
       <description>创建 WEB 项目  Web模块支持  在 IDEA 中创建 Maven 项目，添加 web模板，或在一个普通 Maven 项目中添加 Web模块支持 右键项目 Add Framework Support   配置文件准备   [可选]mybatis-config.xml
  Mybatis 核心配置文件，最终会整合到 Spring 中配置    spring-dao：Dao 层 整合 Mybatis 层
  DTO 约束，同 spring-service  1 2 3 4 5 6 7  &amp;lt;?xml version=&amp;#34;1.0&amp;#34; encoding=&amp;#34;UTF-8&amp;#34;?&amp;gt; &amp;lt;beans xmlns=&amp;#34;http://www.springframework.org/schema/beans&amp;#34; xmlns:xsi=&amp;#34;http://www.w3.org/2001/XMLSchema-instance&amp;#34; xsi:schemaLocation=&amp;#34;http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/springbeans. xsd&amp;#34;&amp;gt; &amp;lt;/beans&amp;gt;     spring-service：Service 层，Spring 和配置文件
@@ -21,10 +21,10 @@
     
     <item>
       <title>转账案例-引入事务和AOP改造</title>
-      <link>https://zackyjz.github.io/posts/%E8%BD%AC%E8%B4%A6%E6%A1%88%E4%BE%8B-%E5%BC%95%E5%85%A5%E4%BA%8B%E5%8A%A1%E5%92%8C-aop-%E6%94%B9%E9%80%A0/</link>
+      <link>https://blog.wvuuvw.xyz/posts/%E8%BD%AC%E8%B4%A6%E6%A1%88%E4%BE%8B-%E5%BC%95%E5%85%A5%E4%BA%8B%E5%8A%A1%E5%92%8C-aop-%E6%94%B9%E9%80%A0/</link>
       <pubDate>Sun, 03 Jan 2021 08:31:23 +0800</pubDate>
       
-      <guid>https://zackyjz.github.io/posts/%E8%BD%AC%E8%B4%A6%E6%A1%88%E4%BE%8B-%E5%BC%95%E5%85%A5%E4%BA%8B%E5%8A%A1%E5%92%8C-aop-%E6%94%B9%E9%80%A0/</guid>
+      <guid>https://blog.wvuuvw.xyz/posts/%E8%BD%AC%E8%B4%A6%E6%A1%88%E4%BE%8B-%E5%BC%95%E5%85%A5%E4%BA%8B%E5%8A%A1%E5%92%8C-aop-%E6%94%B9%E9%80%A0/</guid>
       <description>基础功能  spring 整合 DBUtils ，实现简单的用户转账业务
   Account 实体类
 1 2 3 4 5 6  public class Account { private Integer id; private String name; private Double money; // setter getter.... }     AccountDao 接口和实现类
@@ -33,20 +33,20 @@
     
     <item>
       <title>常见三大数据库连接池使用及工具类抽取</title>
-      <link>https://zackyjz.github.io/posts/%E5%B8%B8%E7%94%A8%E6%95%B0%E6%8D%AE%E5%BA%93%E8%BF%9E%E6%8E%A5%E6%B1%A0/</link>
+      <link>https://blog.wvuuvw.xyz/posts/%E5%B8%B8%E7%94%A8%E6%95%B0%E6%8D%AE%E5%BA%93%E8%BF%9E%E6%8E%A5%E6%B1%A0/</link>
       <pubDate>Wed, 18 Nov 2020 11:25:05 -0400</pubDate>
       
-      <guid>https://zackyjz.github.io/posts/%E5%B8%B8%E7%94%A8%E6%95%B0%E6%8D%AE%E5%BA%93%E8%BF%9E%E6%8E%A5%E6%B1%A0/</guid>
+      <guid>https://blog.wvuuvw.xyz/posts/%E5%B8%B8%E7%94%A8%E6%95%B0%E6%8D%AE%E5%BA%93%E8%BF%9E%E6%8E%A5%E6%B1%A0/</guid>
       <description>DBCP DBCP 是Apache成员之一，在企业开发中也比较常见，也是tomcat内置的连接池
 DBCP 工具类 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60  public class DBCPUtils { //1.</description>
     </item>
     
     <item>
       <title>自定义数据库连接池的实现</title>
-      <link>https://zackyjz.github.io/posts/jdbc%E8%BF%9E%E6%8E%A5%E6%B1%A0%E5%AE%9E%E7%8E%B0/</link>
+      <link>https://blog.wvuuvw.xyz/posts/jdbc%E8%BF%9E%E6%8E%A5%E6%B1%A0%E5%AE%9E%E7%8E%B0/</link>
       <pubDate>Sat, 14 Nov 2020 11:25:05 -0400</pubDate>
       
-      <guid>https://zackyjz.github.io/posts/jdbc%E8%BF%9E%E6%8E%A5%E6%B1%A0%E5%AE%9E%E7%8E%B0/</guid>
+      <guid>https://blog.wvuuvw.xyz/posts/jdbc%E8%BF%9E%E6%8E%A5%E6%B1%A0%E5%AE%9E%E7%8E%B0/</guid>
       <description>背景 数据库连接池用于分配、管理和释放（归还）数据库连接对象 Connection
  有了数据库连接池，可以允许应用重复使用一个现有的数据库连接 从而避免了频繁创建和释放连接，消耗系统资源  最常用的第三方连接池有DBCP、 C3p0、Druid 等，本文实现一个具有基本功能的连接池
 基本功能 JDBC 中 java.sql.DataSource 接口定义了数据库连接池的规范
@@ -56,10 +56,10 @@ DBCP 工具类 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25
     
     <item>
       <title>简易多人聊天室[2]-NIO模型实现</title>
-      <link>https://zackyjz.github.io/posts/%E7%AE%80%E6%98%93%E5%A4%9A%E4%BA%BA%E8%81%8A%E5%A4%A9%E5%AE%A4-nio%E5%AE%9E%E7%8E%B0/</link>
+      <link>https://blog.wvuuvw.xyz/posts/%E7%AE%80%E6%98%93%E5%A4%9A%E4%BA%BA%E8%81%8A%E5%A4%A9%E5%AE%A4-nio%E5%AE%9E%E7%8E%B0/</link>
       <pubDate>Sat, 02 May 2020 13:31:23 +0800</pubDate>
       
-      <guid>https://zackyjz.github.io/posts/%E7%AE%80%E6%98%93%E5%A4%9A%E4%BA%BA%E8%81%8A%E5%A4%A9%E5%AE%A4-nio%E5%AE%9E%E7%8E%B0/</guid>
+      <guid>https://blog.wvuuvw.xyz/posts/%E7%AE%80%E6%98%93%E5%A4%9A%E4%BA%BA%E8%81%8A%E5%A4%A9%E5%AE%A4-nio%E5%AE%9E%E7%8E%B0/</guid>
       <description>总体流程    ServerSocketChannel 注册 ACCEPT 事件监听到 Selector 中，用于监听 accept 事件
  当有一个客户端发出连接请求，服务器接收了客户端连接请求时，即触发了 ServerSocketChannel 的 accept 事件 与 BIO 模型中 ServerSocket.accept() 执行的事件相同，即接收了该客户端的连接请求    ServerSocketChannel 触发 accept 事件后，服务器端处理新建立连接的客户端
  得到客户端对应的 SocketChannel 将新连接的客户端的 SocketChannel 注册 READ 事件在 Selector 中   即让 Selector 监控客户端的 SocketChannel 是否触发 READ (可读) 事件
@@ -71,10 +71,10 @@ DBCP 工具类 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25
     
     <item>
       <title>Java 四种本地文件拷贝方式比较和测试</title>
-      <link>https://zackyjz.github.io/posts/java%E6%9C%AC%E5%9C%B0%E6%96%87%E4%BB%B6%E6%8B%B7%E8%B4%9D/</link>
+      <link>https://blog.wvuuvw.xyz/posts/java%E6%9C%AC%E5%9C%B0%E6%96%87%E4%BB%B6%E6%8B%B7%E8%B4%9D/</link>
       <pubDate>Mon, 13 Apr 2020 13:31:23 +0800</pubDate>
       
-      <guid>https://zackyjz.github.io/posts/java%E6%9C%AC%E5%9C%B0%E6%96%87%E4%BB%B6%E6%8B%B7%E8%B4%9D/</guid>
+      <guid>https://blog.wvuuvw.xyz/posts/java%E6%9C%AC%E5%9C%B0%E6%96%87%E4%BB%B6%E6%8B%B7%E8%B4%9D/</guid>
       <description>准备工作  为了便于测试，定义一个文件拷贝的接口让测试类去继承它：
 1 2 3  public interface IFileCopy { void copyFile(File source, File dest); }   无论是 Stream 还是 Channel ，用完都需要调用 close()方法关闭
 为了防止重复代码，这里统一写一个关闭的方法：
