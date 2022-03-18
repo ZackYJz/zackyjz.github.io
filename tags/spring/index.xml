@@ -2,17 +2,17 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>spring on 🌏 ZackYJ&#39;s Blog</title>
-    <link>http://blog.wvuuvw.xyz/tags/spring/</link>
+    <link>https://zackyjz.github.io/tags/spring/</link>
     <description>Recent content in spring on 🌏 ZackYJ&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-CN</language>
-    <lastBuildDate>Tue, 05 Jan 2021 15:23:23 +0800</lastBuildDate><atom:link href="http://blog.wvuuvw.xyz/tags/spring/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 05 Jan 2021 15:23:23 +0800</lastBuildDate><atom:link href="https://zackyjz.github.io/tags/spring/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>SSM整合：分层配置和整合</title>
-      <link>http://blog.wvuuvw.xyz/posts/ssm-%E6%A1%86%E6%9E%B6%E6%95%B4%E5%90%88/</link>
+      <link>https://zackyjz.github.io/posts/ssm-%E6%A1%86%E6%9E%B6%E6%95%B4%E5%90%88/</link>
       <pubDate>Tue, 05 Jan 2021 15:23:23 +0800</pubDate>
       
-      <guid>http://blog.wvuuvw.xyz/posts/ssm-%E6%A1%86%E6%9E%B6%E6%95%B4%E5%90%88/</guid>
+      <guid>https://zackyjz.github.io/posts/ssm-%E6%A1%86%E6%9E%B6%E6%95%B4%E5%90%88/</guid>
       <description>创建 WEB 项目  Web模块支持  在 IDEA 中创建 Maven 项目，添加 web模板，或在一个普通 Maven 项目中添加 Web模块支持 右键项目 Add Framework Support   配置文件准备   [可选]mybatis-config.xml
  Mybatis 核心配置文件，最终会整合到 Spring 中配置    spring-dao：Dao 层 整合 Mybatis 层
  DTO 约束，同 spring-service  1 2 3 4 5 6 7  &amp;lt;?xml version=&amp;#34;1.0&amp;#34; encoding=&amp;#34;UTF-8&amp;#34;?&amp;gt; &amp;lt;beans xmlns=&amp;#34;http://www.springframework.org/schema/beans&amp;#34; xmlns:xsi=&amp;#34;http://www.w3.org/2001/XMLSchema-instance&amp;#34; xsi:schemaLocation=&amp;#34;http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/springbeans. xsd&amp;#34;&amp;gt; &amp;lt;/beans&amp;gt;     spring-service：Service 层，Spring 和配置文件
@@ -21,10 +21,10 @@
     
     <item>
       <title>转账案例-引入事务和AOP改造</title>
-      <link>http://blog.wvuuvw.xyz/posts/%E8%BD%AC%E8%B4%A6%E6%A1%88%E4%BE%8B-%E5%BC%95%E5%85%A5%E4%BA%8B%E5%8A%A1%E5%92%8C-aop-%E6%94%B9%E9%80%A0/</link>
+      <link>https://zackyjz.github.io/posts/%E8%BD%AC%E8%B4%A6%E6%A1%88%E4%BE%8B-%E5%BC%95%E5%85%A5%E4%BA%8B%E5%8A%A1%E5%92%8C-aop-%E6%94%B9%E9%80%A0/</link>
       <pubDate>Sun, 03 Jan 2021 08:31:23 +0800</pubDate>
       
-      <guid>http://blog.wvuuvw.xyz/posts/%E8%BD%AC%E8%B4%A6%E6%A1%88%E4%BE%8B-%E5%BC%95%E5%85%A5%E4%BA%8B%E5%8A%A1%E5%92%8C-aop-%E6%94%B9%E9%80%A0/</guid>
+      <guid>https://zackyjz.github.io/posts/%E8%BD%AC%E8%B4%A6%E6%A1%88%E4%BE%8B-%E5%BC%95%E5%85%A5%E4%BA%8B%E5%8A%A1%E5%92%8C-aop-%E6%94%B9%E9%80%A0/</guid>
       <description>基础功能  spring 整合 DBUtils ，实现简单的用户转账业务
   Account 实体类
 1 2 3 4 5 6  public class Account { private Integer id; private String name; private Double money; // setter getter.... }     AccountDao 接口和实现类

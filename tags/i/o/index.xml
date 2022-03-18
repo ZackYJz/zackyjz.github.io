@@ -2,16 +2,16 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>I/O on 🌏 ZackYJ&#39;s Blog</title>
-    <link>http://blog.wvuuvw.xyz/tags/i/o/</link>
+    <link>https://zackyjz.github.io/tags/i/o/</link>
     <description>Recent content in I/O on 🌏 ZackYJ&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
-    <language>zh-CN</language><atom:link href="http://blog.wvuuvw.xyz/tags/i/o/index.xml" rel="self" type="application/rss+xml" />
+    <language>zh-CN</language><atom:link href="https://zackyjz.github.io/tags/i/o/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Java 四种本地文件拷贝方式比较和测试</title>
-      <link>http://blog.wvuuvw.xyz/posts/java%E6%9C%AC%E5%9C%B0%E6%96%87%E4%BB%B6%E6%8B%B7%E8%B4%9D/</link>
+      <link>https://zackyjz.github.io/posts/java%E6%9C%AC%E5%9C%B0%E6%96%87%E4%BB%B6%E6%8B%B7%E8%B4%9D/</link>
       <pubDate>Mon, 13 Apr 2020 13:31:23 +0800</pubDate>
       
-      <guid>http://blog.wvuuvw.xyz/posts/java%E6%9C%AC%E5%9C%B0%E6%96%87%E4%BB%B6%E6%8B%B7%E8%B4%9D/</guid>
+      <guid>https://zackyjz.github.io/posts/java%E6%9C%AC%E5%9C%B0%E6%96%87%E4%BB%B6%E6%8B%B7%E8%B4%9D/</guid>
       <description>准备工作  为了便于测试，定义一个文件拷贝的接口让测试类去继承它：
 1 2 3  public interface IFileCopy { void copyFile(File source, File dest); }   无论是 Stream 还是 Channel ，用完都需要调用 close()方法关闭
 为了防止重复代码，这里统一写一个关闭的方法：
