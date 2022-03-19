@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>IO on 🌏 ZackYJ&#39;s Blog</title>
+    <title>IO on ZackYJ&#39;s Blog</title>
     <link>https://blog.wvuuvw.xyz/tags/io/</link>
-    <description>Recent content in IO on 🌏 ZackYJ&#39;s Blog</description>
+    <description>Recent content in IO on ZackYJ&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-CN</language>
     <lastBuildDate>Sat, 02 May 2020 13:31:23 +0800</lastBuildDate><atom:link href="https://blog.wvuuvw.xyz/tags/io/index.xml" rel="self" type="application/rss+xml" />
@@ -20,6 +20,21 @@
    对可读事件触发后的处理操作和 BIO 类似：读取 SocketChannel 的数据并转发给当前连接到服务器的其他客户端
 但在 NIO 中，处理客户端连接的操作都是在同一个线程中进行
     注意</description>
+    </item>
+    
+    <item>
+      <title>Java 四种本地文件拷贝方式比较和测试</title>
+      <link>https://blog.wvuuvw.xyz/posts/java%E6%9C%AC%E5%9C%B0%E6%96%87%E4%BB%B6%E6%8B%B7%E8%B4%9D/</link>
+      <pubDate>Mon, 13 Apr 2020 13:31:23 +0800</pubDate>
+      
+      <guid>https://blog.wvuuvw.xyz/posts/java%E6%9C%AC%E5%9C%B0%E6%96%87%E4%BB%B6%E6%8B%B7%E8%B4%9D/</guid>
+      <description>准备工作  为了便于测试，定义一个文件拷贝的接口让测试类去继承它：
+public interface IFileCopy { void copyFile(File source, File dest); } 无论是 Stream 还是 Channel ，用完都需要调用 close()方法关闭
+为了防止重复代码，这里统一写一个关闭的方法：
+static void close(Closeable closeable){ if(closeable != null){ try { closeable.close(); } catch (IOException e) { e.printStackTrace(); } } } 实现  不带缓冲区的流拷贝   最朴素的文件拷贝方式，不使用带任何缓冲区的流装饰
+  从源文件的输入流一个字节一个字节读取
+只要还有数据 （read() 返回 ≠ -1）就循环读取并写入目标文件的输出流
+  static class noBufferedStreamCopy implements IFileCopy{ @Override public void copyFile(File source, File dest) { InputStream is = null; OutputStream os = null; try { //创建文件输入流  is = new FileInputStream(source); //创建文件输出流  os = new FileOutputStream(dest); int result; //一个字节一个字节读，读到就输出到文件输出流  while ((result = is.</description>
     </item>
     
   </channel>

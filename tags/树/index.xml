@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>树 on 🌏 ZackYJ&#39;s Blog</title>
+    <title>树 on ZackYJ&#39;s Blog</title>
     <link>https://blog.wvuuvw.xyz/tags/%E6%A0%91/</link>
-    <description>Recent content in 树 on 🌏 ZackYJ&#39;s Blog</description>
+    <description>Recent content in 树 on ZackYJ&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-CN</language>
     <lastBuildDate>Sun, 14 Nov 2021 11:25:05 -0400</lastBuildDate><atom:link href="https://blog.wvuuvw.xyz/tags/%E6%A0%91/index.xml" rel="self" type="application/rss+xml" />
@@ -21,7 +21,7 @@
  Quick Find   Union -合并：将v1所在集合的所有元素都嫁接到v2的父节点上
   即：将下标v1的元素的值（父节点）改为下标v2元素的值（父节点）
   原来父节点是v1的节点，父节点也改为 v2
-1 2 3 4 5 6 7 8 9 10 11  public void union(int v1,int v2){ int p1 = find(v1); int p2 = find(v2); if(p1 == p2) { return; } for(int i = 0;i&amp;lt;parents.</description>
+public void union(int v1,int v2){ int p1 = find(v1); int p2 = find(v2); if(p1 == p2) { return; } for(int i = 0;i&amp;lt;parents.length;i++){ if(parents[i] == p1){ parents[i] = p2; } } }  扫描了一遍数组，时间复杂度O(n)      Find -查找元素所在集合（父节点）</description>
     </item>
     
   </channel>

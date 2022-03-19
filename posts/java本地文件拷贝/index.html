@@ -32,19 +32,25 @@
 
 
 
-
-
-<link rel="stylesheet" href="https://blog.wvuuvw.xyz/scss/journal.min.960a228c130d3ef3546879f9711d842ae55e73ec6664eada9e19732a5345ff00.css" integrity="sha256-lgoijBMNPvNUaHn5cR2EKuVec&#43;xmZOranhlzKlNF/wA=" media="screen">
+<link rel="icon" href="https://logseq.oss-cn-chengdu.aliyuncs.com/noteImg/202203191023457.png">
 
 
 
-<link rel="stylesheet" href="https://blog.wvuuvw.xyz/scss/dark-mode.min.c1df360214ba4a6540bcf9ca46d9f94dfbd42ad244d037f3b2dc9678a336cd2b.css" integrity="sha256-wd82AhS6SmVAvPnKRtn5TfvUKtJE0DfzstyWeKM2zSs=" media="screen">
+<link rel="stylesheet" href="https://blog.wvuuvw.xyz/scss/journal.min.d4b47c1a226b965a453c18f673ff14c579db90efebfa00ceb20a10a37f3baf8d.css" integrity="sha256-1LR8GiJrllpFPBj2c/8UxXnbkO/r&#43;gDOsgoQo387r40=" media="screen">
+
+
+
+<link rel="stylesheet" href="https://blog.wvuuvw.xyz/scss/dark-mode.min.07540337c956209214b1f26a1db688e388b1527a1a6c0ad02e48926cc34676c4.css" integrity="sha256-B1QDN8lWIJIUsfJqHbaI44ixUnoabArQLkiSbMNGdsQ=" media="screen">
 
 
 <script src="/vendor/js/loadCSS.js"></script>
 <script>
-  loadCSS("https://fonts.googleapis.com/css?family=Fira+Mono|Material+Icons");
+  loadCSS("https://fonts.googleapis.com/css?family=Noto+Sans+SC");
 </script>
+<script>
+  loadCSS("https://fonts.googleapis.com/css?family=Source+Code+Pro|Fira+Mono|Material+Icons");
+</script>
+
 
 
 
@@ -73,7 +79,7 @@
     <a class="a-block nav-head false" href="https://blog.wvuuvw.xyz/">
     
         <div class="nav-title">
-            🌏 ZackYJ&#39;s Blog
+            ZackYJ&#39;s Blog
         </div>
         
         <div class="nav-subtitle">
@@ -122,6 +128,16 @@
             
             
             
+            <a class="a-block nav-link-item false" href="/project/project">
+                📇 项目
+            </a>
+            
+        
+            
+            
+            
+            
+            
             <a class="a-block nav-link-item false" href="/about/aboutme">
                 👨‍💻 关于
             </a>
@@ -138,7 +154,7 @@ Powered by <a href="https://github.com/gohugoio/hugo">hugo</a>
 
 &copy;
 	
-	2021 🌏 ZackYJ&#39;s Blog
+	2021 ZackYJ&#39;s Blog
 	
 
     </div>
@@ -436,6 +452,16 @@ Powered by <a href="https://github.com/gohugoio/hugo">hugo</a>
                 
                 
                 
+                <a class="a-block drawer-menu-item false" href="/project/project">
+                    📇 项目
+                </a>
+                
+            
+                
+                
+                
+                
+                
                 <a class="a-block drawer-menu-item false" href="/about/aboutme">
                     👨‍💻 关于
                 </a>
@@ -687,7 +713,7 @@ Powered by <a href="https://github.com/gohugoio/hugo">hugo</a>
             </i>
         </button>
         <a id="navTitle" class="navbar-brand" href="https://blog.wvuuvw.xyz/">
-            🌏 ZackYJ&#39;s Blog
+            ZackYJ&#39;s Blog
         </a>
         
         <button type="button" class="nav-darkmode-toggle" id="darkModeToggleButton2">
@@ -701,7 +727,7 @@ Powered by <a href="https://github.com/gohugoio/hugo">hugo</a>
 <div class="single-column-header-container" id="pageHead"
      v-bind:style="{ transform: 'translateZ(0px) translateY('+.3*scrollY+'px)', opacity: 1-navOpacity }">
     <a href="https://blog.wvuuvw.xyz/">
-        <div class="single-column-header-title">🌏 ZackYJ&#39;s Blog</div>
+        <div class="single-column-header-title">ZackYJ&#39;s Blog</div>
         
         <div class="single-column-header-subtitle">Stay hungry , Stay foolish</div>
         
@@ -751,24 +777,10 @@ Powered by <a href="https://github.com/gohugoio/hugo">hugo</a>
                         
                             <i class="material-icons" style="">label</i>
                             
-                                <a href="/tags/i/o">I/O</a>
-                                &nbsp;
-                            
-                                <a href="/tags/nio">NIO</a>
+                                <a href="/tags/io">IO</a>
                                 &nbsp;
                             
                         
-                        
-                            <i class="material-icons" style="">schedule</i>
-                            
-
-                            
-                            
-
-                            
-                            6 min
-                            
-                            35 s.
                         
                     </div>
                 </div>
@@ -781,34 +793,12 @@ Powered by <a href="https://github.com/gohugoio/hugo">hugo</a>
                     <h2 id="准备工作">准备工作</h2>
 <hr>
 <p>为了便于测试，定义一个文件拷贝的接口让测试类去继承它：</p>
-<div class="highlight"><div style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
-<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
-<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3
-</span></code></pre></td>
-<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
-<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">  <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">interface</span> <span style="color:#50fa7b">IFileCopy</span> <span style="color:#ff79c6">{</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">  <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">interface</span> <span style="color:#50fa7b">IFileCopy</span> <span style="color:#ff79c6">{</span>
       <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">copyFile</span><span style="color:#ff79c6">(</span>File source<span style="color:#ff79c6">,</span> File dest<span style="color:#ff79c6">);</span>
   <span style="color:#ff79c6">}</span>
-</code></pre></td></tr></table>
-</div>
-</div><p>无论是 Stream 还是 Channel ，用完都需要调用 <code>close()</code>方法关闭</p>
+</code></pre></div><p>无论是 Stream 还是 Channel ，用完都需要调用 <code>close()</code>方法关闭</p>
 <p>为了防止重复代码，这里统一写一个关闭的方法：</p>
-<div class="highlight"><div style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
-<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
-<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">5
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">6
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">7
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">8
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">9
-</span></code></pre></td>
-<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
-<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">    <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">close</span><span style="color:#ff79c6">(</span>Closeable closeable<span style="color:#ff79c6">){</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">    <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">close</span><span style="color:#ff79c6">(</span>Closeable closeable<span style="color:#ff79c6">){</span>
         <span style="color:#ff79c6">if</span><span style="color:#ff79c6">(</span>closeable <span style="color:#ff79c6">!=</span> <span style="color:#ff79c6">null</span><span style="color:#ff79c6">){</span>
             <span style="color:#ff79c6">try</span> <span style="color:#ff79c6">{</span>
                 closeable<span style="color:#ff79c6">.</span><span style="color:#50fa7b">close</span><span style="color:#ff79c6">();</span>
@@ -817,9 +807,7 @@ Powered by <a href="https://github.com/gohugoio/hugo">hugo</a>
             <span style="color:#ff79c6">}</span>
         <span style="color:#ff79c6">}</span>
     <span style="color:#ff79c6">}</span>
-</code></pre></td></tr></table>
-</div>
-</div><h2 id="实现">实现</h2>
+</code></pre></div><h2 id="实现">实现</h2>
 <hr>
 <h3 id="不带缓冲区的流拷贝">不带缓冲区的流拷贝</h3>
 <ul>
@@ -831,35 +819,7 @@ Powered by <a href="https://github.com/gohugoio/hugo">hugo</a>
 <p>只要还有数据 （<code>read()</code> 返回 ≠ -1）就循环读取并写入目标文件的输出流</p>
 </li>
 </ul>
-<div class="highlight"><div style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
-<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
-<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">21
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">22
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">23
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">24
-</span></code></pre></td>
-<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
-<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">    <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#8be9fd;font-style:italic">class</span> <span style="color:#50fa7b">noBufferedStreamCopy</span> <span style="color:#8be9fd;font-style:italic">implements</span> IFileCopy<span style="color:#ff79c6">{</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">    <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#8be9fd;font-style:italic">class</span> <span style="color:#50fa7b">noBufferedStreamCopy</span> <span style="color:#8be9fd;font-style:italic">implements</span> IFileCopy<span style="color:#ff79c6">{</span>
 
         @Override
         <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">copyFile</span><span style="color:#ff79c6">(</span>File source<span style="color:#ff79c6">,</span> File dest<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
@@ -883,41 +843,12 @@ Powered by <a href="https://github.com/gohugoio/hugo">hugo</a>
             <span style="color:#ff79c6">}</span>
         <span style="color:#ff79c6">}</span>
     <span style="color:#ff79c6">}</span>
-</code></pre></td></tr></table>
-</div>
-</div><h3 id="带缓冲区的流拷贝">带缓冲区的流拷贝</h3>
+</code></pre></div><h3 id="带缓冲区的流拷贝">带缓冲区的流拷贝</h3>
 <ul>
 <li>使用装饰器模式，用带缓冲区的流对输入输出流进行包裹</li>
 <li>需要定义缓冲区，即每次写入的次数</li>
 </ul>
-<div class="highlight"><div style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
-<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
-<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">21
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">22
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">23
-</span></code></pre></td>
-<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
-<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">	<span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#8be9fd;font-style:italic">class</span>  <span style="color:#50fa7b">bufferedStreamCopy</span> <span style="color:#8be9fd;font-style:italic">implements</span> IFileCopy<span style="color:#ff79c6">{</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">	<span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#8be9fd;font-style:italic">class</span>  <span style="color:#50fa7b">bufferedStreamCopy</span> <span style="color:#8be9fd;font-style:italic">implements</span> IFileCopy<span style="color:#ff79c6">{</span>
         @Override
         <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">copyFile</span><span style="color:#ff79c6">(</span>File source<span style="color:#ff79c6">,</span> File dest<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
             InputStream is <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">null</span><span style="color:#ff79c6">;</span>
@@ -940,9 +871,7 @@ Powered by <a href="https://github.com/gohugoio/hugo">hugo</a>
             <span style="color:#ff79c6">}</span>
         <span style="color:#ff79c6">}</span>
     <span style="color:#ff79c6">}</span>
-</code></pre></td></tr></table>
-</div>
-</div><h3 id="使用-buffer-的-channel-拷贝">使用 Buffer 的 Channel 拷贝</h3>
+</code></pre></div><h3 id="使用-buffer-的-channel-拷贝">使用 Buffer 的 Channel 拷贝</h3>
 <h4 id="nio-模型">NIO 模型</h4>
 <p>同步非阻塞式通信模型，<code>java.nio</code> 包下提供了 Buffer、Channel 等非阻塞式通信模型的类</p>
 <p>核心思路是使用双向的 Channel 代替单向的 Stream，Channel 和 Stream 相比：</p>
@@ -972,42 +901,7 @@ Powered by <a href="https://github.com/gohugoio/hugo">hugo</a>
 </ul>
 <p><strong>下图详细介绍了他们的用法：</strong></p>
 <p><img src="https://logseq.oss-cn-chengdu.aliyuncs.com/noteImg/202201231936810.png" alt="">{:height 497, :width 564}</p>
-<div class="highlight"><div style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
-<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
-<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">21
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">22
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">23
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">24
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">25
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">26
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">27
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">28
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">29
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">30
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">31
-</span></code></pre></td>
-<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
-<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"> <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#8be9fd;font-style:italic">class</span> <span style="color:#50fa7b">nioBufferedStreamCopy</span> <span style="color:#8be9fd;font-style:italic">implements</span> IFileCopy<span style="color:#ff79c6">{</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"> <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#8be9fd;font-style:italic">class</span> <span style="color:#50fa7b">nioBufferedStreamCopy</span> <span style="color:#8be9fd;font-style:italic">implements</span> IFileCopy<span style="color:#ff79c6">{</span>
         @Override
         <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">copyFile</span><span style="color:#ff79c6">(</span>File source<span style="color:#ff79c6">,</span> File dest<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
             FileChannel sourceChannel <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">null</span><span style="color:#ff79c6">;</span>
@@ -1038,24 +932,14 @@ Powered by <a href="https://github.com/gohugoio/hugo">hugo</a>
             <span style="color:#ff79c6">}</span>
         <span style="color:#ff79c6">}</span>
     <span style="color:#ff79c6">}</span>
-</code></pre></td></tr></table>
-</div>
-</div><h3 id="使用-transfer-的-channel-拷贝">使用 Transfer 的 Channel 拷贝</h3>
+</code></pre></div><h3 id="使用-transfer-的-channel-拷贝">使用 Transfer 的 Channel 拷贝</h3>
 <p>Channel 除了通过 Buffer 进行读写操作，也可以不显式通过 Buffer，直接在 Channel 层面进行数据交换</p>
 <ul>
 <li>核心方法：</li>
 </ul>
-<div class="highlight"><div style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
-<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
-<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2
-</span></code></pre></td>
-<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
-<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#8be9fd">long</span> <span style="color:#50fa7b">transferTo</span><span style="color:#ff79c6">(</span><span style="color:#8be9fd">long</span> position<span style="color:#ff79c6">,</span> <span style="color:#8be9fd">long</span> count<span style="color:#ff79c6">,</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#8be9fd">long</span> <span style="color:#50fa7b">transferTo</span><span style="color:#ff79c6">(</span><span style="color:#8be9fd">long</span> position<span style="color:#ff79c6">,</span> <span style="color:#8be9fd">long</span> count<span style="color:#ff79c6">,</span>
                                     WritableByteChannel target<span style="color:#ff79c6">)</span>
-</code></pre></td></tr></table>
-</div>
-</div><ul>
+</code></pre></div><ul>
 <li>常用的 Channel：
 <ul>
 <li>FileChannel</li>
@@ -1064,35 +948,7 @@ Powered by <a href="https://github.com/gohugoio/hugo">hugo</a>
 </ul>
 </li>
 </ul>
-<div class="highlight"><div style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
-<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
-<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">21
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">22
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">23
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">24
-</span></code></pre></td>
-<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
-<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"> <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#8be9fd;font-style:italic">class</span> <span style="color:#50fa7b">nioTransferCopy</span> <span style="color:#8be9fd;font-style:italic">implements</span> IFileCopy<span style="color:#ff79c6">{</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"> <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#8be9fd;font-style:italic">class</span> <span style="color:#50fa7b">nioTransferCopy</span> <span style="color:#8be9fd;font-style:italic">implements</span> IFileCopy<span style="color:#ff79c6">{</span>
         @Override
         <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">copyFile</span><span style="color:#ff79c6">(</span>File source<span style="color:#ff79c6">,</span> File dest<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
             FileChannel sourceChannel <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">null</span><span style="color:#ff79c6">;</span>
@@ -1116,44 +972,9 @@ Powered by <a href="https://github.com/gohugoio/hugo">hugo</a>
             <span style="color:#ff79c6">}</span>
         <span style="color:#ff79c6">}</span>
     <span style="color:#ff79c6">}</span>
-</code></pre></td></tr></table>
-</div>
-</div><h2 id="测试">测试</h2>
+</code></pre></div><h2 id="测试">测试</h2>
 <p>简单起见，编写一个测试方法，直接在 main 方法中调用。拷贝 5 次统计平均时间：</p>
-<div class="highlight"><div style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
-<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
-<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">21
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">22
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">23
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">24
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">25
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">26
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">27
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">28
-</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">29
-</span></code></pre></td>
-<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
-<pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">main</span><span style="color:#ff79c6">(</span>String<span style="color:#ff79c6">[]</span> args<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">main</span><span style="color:#ff79c6">(</span>String<span style="color:#ff79c6">[]</span> args<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
         File smallFile <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">new</span> File<span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;/Users/admin/Downloads/test.mp4&#34;</span><span style="color:#ff79c6">);</span>
         File smallFileCopy <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">new</span> File<span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;/Users/admin/Downloads/testCopy/test.mp4&#34;</span><span style="color:#ff79c6">);</span>
         File bigFile <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">new</span> File<span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;/Users/admin/Downloads/golangDoc.zip&#34;</span><span style="color:#ff79c6">);</span>
@@ -1182,9 +1003,7 @@ Powered by <a href="https://github.com/gohugoio/hugo">hugo</a>
         <span style="color:#ff79c6">}</span>
         System<span style="color:#ff79c6">.</span><span style="color:#50fa7b">out</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">println</span><span style="color:#ff79c6">(</span>test<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getClass</span><span style="color:#ff79c6">().</span><span style="color:#50fa7b">getName</span><span style="color:#ff79c6">()+</span><span style="color:#f1fa8c">&#34;平均用时:&#34;</span><span style="color:#ff79c6">+</span>elapsed<span style="color:#ff79c6">/</span>TEST_ROUNDS<span style="color:#ff79c6">+</span><span style="color:#f1fa8c">&#34;ms&#34;</span><span style="color:#ff79c6">);</span>
     <span style="color:#ff79c6">}</span>
-</code></pre></td></tr></table>
-</div>
-</div><blockquote>
+</code></pre></div><blockquote>
 <p>测试结果：</p>
 <p><img src="https://logseq.oss-cn-chengdu.aliyuncs.com/noteImg/202201241327030.png" alt=""></p>
 </blockquote>
@@ -1228,8 +1047,8 @@ Powered by <a href="https://github.com/gohugoio/hugo">hugo</a>
                 
                 
                 
-                <a class="older-posts" href="https://blog.wvuuvw.xyz/about/aboutme/">
-			下一篇<br>About
+                <a class="older-posts" href="https://blog.wvuuvw.xyz/project/project/">
+			下一篇<br>
                 </a>
                 
             </nav>
@@ -1257,7 +1076,7 @@ Powered by <a href="https://github.com/gohugoio/hugo">hugo</a>
 
 &copy;
 	
-	2021 🌏 ZackYJ&#39;s Blog
+	2021 ZackYJ&#39;s Blog
 	
 </div>
             </div>

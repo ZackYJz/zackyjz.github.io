@@ -1,21 +1,12 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Tags on 🌏 ZackYJ&#39;s Blog</title>
+    <title>Tags on ZackYJ&#39;s Blog</title>
     <link>https://blog.wvuuvw.xyz/tags/</link>
-    <description>Recent content in Tags on 🌏 ZackYJ&#39;s Blog</description>
+    <description>Recent content in Tags on ZackYJ&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-CN</language>
     <lastBuildDate>Sun, 14 Nov 2021 11:25:05 -0400</lastBuildDate><atom:link href="https://blog.wvuuvw.xyz/tags/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>并查集</title>
-      <link>https://blog.wvuuvw.xyz/tags/%E5%B9%B6%E6%9F%A5%E9%9B%86/</link>
-      <pubDate>Sun, 14 Nov 2021 11:25:05 -0400</pubDate>
-      
-      <guid>https://blog.wvuuvw.xyz/tags/%E5%B9%B6%E6%9F%A5%E9%9B%86/</guid>
-      <description></description>
-    </item>
-    
     <item>
       <title>树</title>
       <link>https://blog.wvuuvw.xyz/tags/%E6%A0%91/</link>
@@ -53,15 +44,6 @@
     </item>
     
     <item>
-      <title>连接池</title>
-      <link>https://blog.wvuuvw.xyz/tags/%E8%BF%9E%E6%8E%A5%E6%B1%A0/</link>
-      <pubDate>Wed, 18 Nov 2020 11:25:05 -0400</pubDate>
-      
-      <guid>https://blog.wvuuvw.xyz/tags/%E8%BF%9E%E6%8E%A5%E6%B1%A0/</guid>
-      <description></description>
-    </item>
-    
-    <item>
       <title>JDBC</title>
       <link>https://blog.wvuuvw.xyz/tags/jdbc/</link>
       <pubDate>Sat, 14 Nov 2020 11:25:05 -0400</pubDate>
@@ -76,24 +58,6 @@
       <pubDate>Sat, 02 May 2020 13:31:23 +0800</pubDate>
       
       <guid>https://blog.wvuuvw.xyz/tags/io/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>NIO</title>
-      <link>https://blog.wvuuvw.xyz/tags/nio/</link>
-      <pubDate>Mon, 13 Apr 2020 13:31:23 +0800</pubDate>
-      
-      <guid>https://blog.wvuuvw.xyz/tags/nio/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>I/O</title>
-      <link>https://blog.wvuuvw.xyz/tags/i/o/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://blog.wvuuvw.xyz/tags/i/o/</guid>
       <description></description>
     </item>
     

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>数据库 on 🌏 ZackYJ&#39;s Blog</title>
+    <title>数据库 on ZackYJ&#39;s Blog</title>
     <link>https://blog.wvuuvw.xyz/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/</link>
-    <description>Recent content in 数据库 on 🌏 ZackYJ&#39;s Blog</description>
+    <description>Recent content in 数据库 on ZackYJ&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-CN</language>
     <lastBuildDate>Wed, 18 Nov 2020 11:25:05 -0400</lastBuildDate><atom:link href="https://blog.wvuuvw.xyz/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/index.xml" rel="self" type="application/rss+xml" />
@@ -14,7 +14,7 @@
       
       <guid>https://blog.wvuuvw.xyz/posts/%E5%B8%B8%E7%94%A8%E6%95%B0%E6%8D%AE%E5%BA%93%E8%BF%9E%E6%8E%A5%E6%B1%A0/</guid>
       <description>DBCP DBCP 是Apache成员之一，在企业开发中也比较常见，也是tomcat内置的连接池
-DBCP 工具类 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60  public class DBCPUtils { //1.</description>
+DBCP 工具类 public class DBCPUtils { //1.定义常量 保存数据库连接的相关信息  public static final String DRIVERNAME = &amp;#34;com.mysql.jdbc.Driver&amp;#34;; public static final String URL = &amp;#34;jdbc:mysql://localhost:3306/db5?characterEncoding=UTF-8&amp;#34;; public static final String USERNAME = &amp;#34;root&amp;#34;; public static final String PASSWORD = &amp;#34;123456&amp;#34;; //2.创建连接池对象 (有DBCP提供的实现类)  public static BasicDataSource dataSource = new BasicDataSource(); //3.使用静态代码块进行配置  static{ dataSource.setDriverClassName(DRIVERNAME); dataSource.setUrl(URL); dataSource.setUsername(USERNAME); dataSource.setPassword(PASSWORD); dataSource.setMaxActive(20); } //4.获取连接的方法  public static Connection getConnection() throws SQLException { //从连接池中获取连接  Connection connection = dataSource.</description>
     </item>
     
     <item>
@@ -27,7 +27,7 @@ DBCP 工具类 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25
  有了数据库连接池，可以允许应用重复使用一个现有的数据库连接 从而避免了频繁创建和释放连接，消耗系统资源  最常用的第三方连接池有DBCP、 C3p0、Druid 等，本文实现一个具有基本功能的连接池
 基本功能 JDBC 中 java.sql.DataSource 接口定义了数据库连接池的规范
  代表一个数据源，可以用于实现连接池 获取数据库连接对象的方法：Connection getConnection();  覆写这个接口中的方法，可实现基本的连接池功能：
- 定义一个类，实现DataSource接口 定义一个容器，保存多个Connection连接对象 定义静态代码块，通过JDBC工具类获取多个连接保存到容器中 ==重写getConnection方法，从容器获取连接并返回== 定义getSize方法，获取容器大小并返回  1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28  public class MyDataSource implements DataSource{ //1.定义集合容器，用于保存多个数据库连接对象  //Collections.synchronizedList可以将普通集合转成线程安全集合  private static List&amp;lt;Connection&amp;gt; pool = Collections.</description>
+ 定义一个类，实现DataSource接口 定义一个容器，保存多个Connection连接对象 定义静态代码块，通过JDBC工具类获取多个连接保存到容器中 ==重写getConnection方法，从容器获取连接并返回== 定义getSize方法，获取容器大小并返回  public class MyDataSource implements DataSource{ //1.定义集合容器，用于保存多个数据库连接对象  //Collections.synchronizedList可以将普通集合转成线程安全集合  private static List&amp;lt;Connection&amp;gt; pool = Collections.synchronizedList(new ArrayList&amp;lt;Connection&amp;gt;()); //2.定义静态代码块，生成10个数据库连接保存到集合中  static { for (int i = 0; i &amp;lt; 10; i++) { Connection con = JDBCUtils.getConnection(); pool.add(con); } } //返回连接池的大小  public int getSize() { return pool.</description>
     </item>
     
   </channel>

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Abouts on 🌏 ZackYJ&#39;s Blog</title>
+    <title>Abouts on ZackYJ&#39;s Blog</title>
     <link>https://blog.wvuuvw.xyz/about/</link>
-    <description>Recent content in Abouts on 🌏 ZackYJ&#39;s Blog</description>
+    <description>Recent content in Abouts on ZackYJ&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-CN</language><atom:link href="https://blog.wvuuvw.xyz/about/index.xml" rel="self" type="application/rss+xml" />
     <item>
@@ -12,12 +12,13 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://blog.wvuuvw.xyz/about/aboutme/</guid>
-      <description>  重庆邮电大学在读，2023 届，准开发一名
-  日常爱好
- 数码、装机、Hackintosh 效率工具、知识管理、 workflow 探索    没有什么感到自豪的成就，但不断在追寻自我价值和认同
-  效率工具爱好者，大纲和双链笔记、图谱知识管理的践行者
-  陷入过对工具的迷茫，体会过自学时的反复入门
-  曾认为自己无所不能，如今只愿能保持好奇和热爱
+      <description> 重庆邮电大学在读，2023 届毕业，准开发一名
+ 日常爱好   数码、装机、Hackintosh
+  知识管理、 个人 workflow 探索
+效率工具爱好者，践行大纲和双链笔记
+  写在最后   没有什么感到自豪的成就，但不断在追寻自我价值和认同
+  体会过自学时的反复入门，在信息泛滥下努力做好时间和目标管理
+  曾经也认为自己无所不能，现在只想做一个有价值的普通人
   </description>
     </item>
     

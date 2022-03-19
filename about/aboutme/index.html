@@ -32,18 +32,23 @@
 
 
 
-
-
-<link rel="stylesheet" href="https://blog.wvuuvw.xyz/scss/journal.min.960a228c130d3ef3546879f9711d842ae55e73ec6664eada9e19732a5345ff00.css" integrity="sha256-lgoijBMNPvNUaHn5cR2EKuVec&#43;xmZOranhlzKlNF/wA=" media="screen">
+<link rel="icon" href="https://logseq.oss-cn-chengdu.aliyuncs.com/noteImg/202203191023457.png">
 
 
 
-<link rel="stylesheet" href="https://blog.wvuuvw.xyz/scss/dark-mode.min.c1df360214ba4a6540bcf9ca46d9f94dfbd42ad244d037f3b2dc9678a336cd2b.css" integrity="sha256-wd82AhS6SmVAvPnKRtn5TfvUKtJE0DfzstyWeKM2zSs=" media="screen">
+<link rel="stylesheet" href="https://blog.wvuuvw.xyz/scss/journal.min.d4b47c1a226b965a453c18f673ff14c579db90efebfa00ceb20a10a37f3baf8d.css" integrity="sha256-1LR8GiJrllpFPBj2c/8UxXnbkO/r&#43;gDOsgoQo387r40=" media="screen">
+
+
+
+<link rel="stylesheet" href="https://blog.wvuuvw.xyz/scss/dark-mode.min.07540337c956209214b1f26a1db688e388b1527a1a6c0ad02e48926cc34676c4.css" integrity="sha256-B1QDN8lWIJIUsfJqHbaI44ixUnoabArQLkiSbMNGdsQ=" media="screen">
 
 
 <script src="/vendor/js/loadCSS.js"></script>
 <script>
-  loadCSS("https://fonts.googleapis.com/css?family=Fira+Mono|Material+Icons");
+  loadCSS("https://fonts.googleapis.com/css?family=Noto+Sans+SC");
+</script>
+<script>
+  loadCSS("https://fonts.googleapis.com/css?family=Source+Code+Pro|Fira+Mono|Material+Icons");
 </script>
 
 
@@ -51,7 +56,6 @@
 
 
 
-  <script src="/js/toc.js"></script>
 
 
 
@@ -73,7 +77,7 @@
     <a class="a-block nav-head false" href="https://blog.wvuuvw.xyz/">
     
         <div class="nav-title">
-            🌏 ZackYJ&#39;s Blog
+            ZackYJ&#39;s Blog
         </div>
         
         <div class="nav-subtitle">
@@ -118,6 +122,16 @@
             
             
             
+            
+            
+            <a class="a-block nav-link-item false" href="/project/project">
+                📇 项目
+            </a>
+            
+        
+            
+            
+            
                 
             
             
@@ -138,18 +152,13 @@ Powered by <a href="https://github.com/gohugoio/hugo">hugo</a>
 
 &copy;
 	
-	2021 🌏 ZackYJ&#39;s Blog
+	2021 ZackYJ&#39;s Blog
 	
 
     </div>
     
 </div><div id="extraContainer" class="extra-container">
     
-    
-    <div class="toc animated-visibility" :class="{ invisible: scrollY <= 140 }">
-
-
-</div>
     
     <div class="pagination">
         <a id="globalBackToTop" class="pagination-action animated-visibility" href="#top" :class="{ invisible: scrollY == 0 }">
@@ -207,6 +216,16 @@ Powered by <a href="https://github.com/gohugoio/hugo">hugo</a>
                 
                 
                 
+                
+                
+                <a class="a-block drawer-menu-item false" href="/project/project">
+                    📇 项目
+                </a>
+                
+            
+                
+                
+                
                     
                 
                 
@@ -219,6 +238,69 @@ Powered by <a href="https://github.com/gohugoio/hugo">hugo</a>
             
             <div class="toc">
 
+
+	<div class="toc-content">
+	
+		
+		
+		
+		<center>- 目录 -</center>
+		
+		
+		<ul>
+			
+				
+				
+					
+						
+						
+						
+						
+							
+								
+									<ul>
+								
+							
+								
+									<ul>
+								
+							
+								
+									<ul>
+								
+							
+						
+						
+							<li>
+								<a href="#%e6%97%a5%e5%b8%b8%e7%88%b1%e5%a5%bd" onclick="onNavClick(`#日常爱好-nav`)" id="日常爱好-nav">
+									日常爱好
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+						
+						
+							<li>
+								<a href="#%e5%86%99%e5%9c%a8%e6%9c%80%e5%90%8e" onclick="onNavClick(`#写在最后-nav`)" id="写在最后-nav">
+									写在最后
+								</a>
+							</li>
+						
+						
+					
+				
+			
+		</ul>
+	</div>
 
 </div>
             
@@ -237,7 +319,7 @@ Powered by <a href="https://github.com/gohugoio/hugo">hugo</a>
             </i>
         </button>
         <a id="navTitle" class="navbar-brand" href="https://blog.wvuuvw.xyz/">
-            🌏 ZackYJ&#39;s Blog
+            ZackYJ&#39;s Blog
         </a>
         
         <button type="button" class="nav-darkmode-toggle" id="darkModeToggleButton2">
@@ -251,7 +333,7 @@ Powered by <a href="https://github.com/gohugoio/hugo">hugo</a>
 <div class="single-column-header-container" id="pageHead"
      v-bind:style="{ transform: 'translateZ(0px) translateY('+.3*scrollY+'px)', opacity: 1-navOpacity }">
     <a href="https://blog.wvuuvw.xyz/">
-        <div class="single-column-header-title">🌏 ZackYJ&#39;s Blog</div>
+        <div class="single-column-header-title">ZackYJ&#39;s Blog</div>
         
         <div class="single-column-header-subtitle">Stay hungry , Stay foolish</div>
         
@@ -267,8 +349,15 @@ Powered by <a href="https://github.com/gohugoio/hugo">hugo</a>
             
             
             
+                
+            
 
-            <div class="post-head-wrapper-text-only"
+            <div class="post-head-wrapper"
+                
+                    
+                    
+                    style="background-image: url('https://images.unsplash.com/photo-1602345397613-0934a8812d23?ixlib=rb-1.2.1&amp;ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&amp;auto=format&amp;fit=crop&amp;w=768&amp;q=80')"
+                    
                 
             >
                 <div class="post-title">
@@ -281,15 +370,6 @@ Powered by <a href="https://github.com/gohugoio/hugo">hugo</a>
 
                         
                         
-                            <i class="material-icons" style="">schedule</i>
-                            
-
-                            
-                            
-
-                            
-                            40 s.
-                        
                     </div>
                 </div>
             </div>
@@ -298,28 +378,29 @@ Powered by <a href="https://github.com/gohugoio/hugo">hugo</a>
                 
                 <div class="post-body" v-pre>
                 
-                    <ul>
-<li>
-<p>重庆邮电大学在读，2023 届，准开发一名</p>
-</li>
-<li>
-<p>日常爱好</p>
+                    <blockquote>
+<p>重庆邮电大学在读，2023 届毕业，准开发一名</p>
+</blockquote>
+<h4 id="日常爱好">日常爱好</h4>
 <ul>
-<li>数码、装机、Hackintosh</li>
-<li>效率工具、知识管理、 workflow 探索</li>
-</ul>
+<li>
+<p>数码、装机、Hackintosh</p>
 </li>
+<li>
+<p>知识管理、 个人 workflow 探索</p>
+<p>效率工具爱好者，践行大纲和双链笔记</p>
+</li>
+</ul>
+<h4 id="写在最后">写在最后</h4>
+<ul>
 <li>
 <p>没有什么感到自豪的成就，但不断在追寻自我价值和认同</p>
 </li>
 <li>
-<p>效率工具爱好者，大纲和双链笔记、图谱知识管理的践行者</p>
+<p>体会过自学时的反复入门，在信息泛滥下努力做好时间和目标管理</p>
 </li>
 <li>
-<p>陷入过对工具的迷茫，体会过自学时的反复入门</p>
-</li>
-<li>
-<p>曾认为自己无所不能，如今只愿能保持好奇和热爱</p>
+<p>曾经也认为自己无所不能，现在只想做一个有价值的普通人</p>
 </li>
 </ul>
 
@@ -331,8 +412,8 @@ Powered by <a href="https://github.com/gohugoio/hugo">hugo</a>
             <nav class="post-pagination">
 
                 
-                <a class="newer-posts" href="https://blog.wvuuvw.xyz/posts/java%E6%9C%AC%E5%9C%B0%E6%96%87%E4%BB%B6%E6%8B%B7%E8%B4%9D/">
-			上一篇<br>Java 四种本地文件拷贝方式比较和测试
+                <a class="newer-posts" href="https://blog.wvuuvw.xyz/project/project/">
+			上一篇<br>
                 </a>
                 
                 
@@ -366,7 +447,7 @@ Powered by <a href="https://github.com/gohugoio/hugo">hugo</a>
 
 &copy;
 	
-	2021 🌏 ZackYJ&#39;s Blog
+	2021 ZackYJ&#39;s Blog
 	
 </div>
             </div>

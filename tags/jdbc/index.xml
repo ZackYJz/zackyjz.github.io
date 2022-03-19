@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>JDBC on 🌏 ZackYJ&#39;s Blog</title>
+    <title>JDBC on ZackYJ&#39;s Blog</title>
     <link>https://blog.wvuuvw.xyz/tags/jdbc/</link>
-    <description>Recent content in JDBC on 🌏 ZackYJ&#39;s Blog</description>
+    <description>Recent content in JDBC on ZackYJ&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-CN</language>
     <lastBuildDate>Sat, 14 Nov 2020 11:25:05 -0400</lastBuildDate><atom:link href="https://blog.wvuuvw.xyz/tags/jdbc/index.xml" rel="self" type="application/rss+xml" />
@@ -17,7 +17,7 @@
  有了数据库连接池，可以允许应用重复使用一个现有的数据库连接 从而避免了频繁创建和释放连接，消耗系统资源  最常用的第三方连接池有DBCP、 C3p0、Druid 等，本文实现一个具有基本功能的连接池
 基本功能 JDBC 中 java.sql.DataSource 接口定义了数据库连接池的规范
  代表一个数据源，可以用于实现连接池 获取数据库连接对象的方法：Connection getConnection();  覆写这个接口中的方法，可实现基本的连接池功能：
- 定义一个类，实现DataSource接口 定义一个容器，保存多个Connection连接对象 定义静态代码块，通过JDBC工具类获取多个连接保存到容器中 ==重写getConnection方法，从容器获取连接并返回== 定义getSize方法，获取容器大小并返回  1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28  public class MyDataSource implements DataSource{ //1.定义集合容器，用于保存多个数据库连接对象  //Collections.synchronizedList可以将普通集合转成线程安全集合  private static List&amp;lt;Connection&amp;gt; pool = Collections.</description>
+ 定义一个类，实现DataSource接口 定义一个容器，保存多个Connection连接对象 定义静态代码块，通过JDBC工具类获取多个连接保存到容器中 ==重写getConnection方法，从容器获取连接并返回== 定义getSize方法，获取容器大小并返回  public class MyDataSource implements DataSource{ //1.定义集合容器，用于保存多个数据库连接对象  //Collections.synchronizedList可以将普通集合转成线程安全集合  private static List&amp;lt;Connection&amp;gt; pool = Collections.synchronizedList(new ArrayList&amp;lt;Connection&amp;gt;()); //2.定义静态代码块，生成10个数据库连接保存到集合中  static { for (int i = 0; i &amp;lt; 10; i++) { Connection con = JDBCUtils.getConnection(); pool.add(con); } } //返回连接池的大小  public int getSize() { return pool.</description>
     </item>
     
   </channel>
