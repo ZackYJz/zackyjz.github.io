@@ -353,6 +353,86 @@
     
     
         <item>
+        <title>Redis/Bitmap类型使用及原理</title>
+        <link>https://blog.wvuuvw.xyz/posts/bitmap-%E7%B1%BB%E5%9E%8B/</link>
+        <pubDate>Mon, 01 Feb 2021 13:31:23 +0800</pubDate>
+        
+        <guid>https://blog.wvuuvw.xyz/posts/bitmap-%E7%B1%BB%E5%9E%8B/</guid>
+        <description>ZackYJ&#39;s Blog https://blog.wvuuvw.xyz/posts/bitmap-%E7%B1%BB%E5%9E%8B/ -&lt;blockquote&gt;
+&lt;p&gt;BitMap 也叫位图&lt;/p&gt;
+&lt;p&gt;是一种使用一个字节的 8 位 bit 的 01 状态来统计二值状态的数据类型&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;二值统计：集合元素的取值就只有0和1两种，通常用于状态的统计&lt;/p&gt;
+&lt;p&gt;例如：登录情况、打卡情况、日活统计等&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;原理&#34;&gt;原理&lt;/h2&gt;
+&lt;p&gt;本质是由  0 和 1 两种状态表现组成的二进制位的bit数组，但底层使用 Redis/String 类型实现&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;存储时，实际存储的是一个 8bit bitmap 代表的 ASCII 码所对应的字符&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;使用 get 指令可以获得这个 二进制位对应的 ASCII 码符号&lt;/p&gt;
+&lt;img src=&#34;https://logseq.oss-cn-chengdu.aliyuncs.com/noteImg/202203221430078.png&#34; style=&#34;zoom:30%;&#34; /&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;基本指令&#34;&gt;基本指令&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;setbit key offset value&lt;/code&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;offset 位偏移，每八位一个byte 作为 bitmap,自动扩容&lt;/li&gt;
+&lt;li&gt;value 值只能是 0 或 1
+&lt;img src=&#34;https://logseq.oss-cn-chengdu.aliyuncs.com/noteImg/202203221412735.png&#34; style=&#34;zoom:25%;&#34; /&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;getbit key offset&lt;/code&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;strlen&lt;/code&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;统计共占有的字节数(byte)&lt;/li&gt;
+&lt;li&gt;长度不是字符串长度，而是byte 数&lt;/li&gt;
+&lt;li&gt;超过 8 位后，就按 8 位扩容&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;bitcount key [start] [end]&lt;/code&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;统计这个键里面的位 1 的个数&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;bitop [operation] destkey key&lt;/code&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;对多个 key 的二进制数据进行位运算&lt;/li&gt;
+&lt;li&gt;[operation] 可取的二进制操作符 ：AND、OR、NOT、XOR&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;场景案例&#34;&gt;场景案例&lt;/h2&gt;
+&lt;h4 id=&#34;记录用户月签到数据&#34;&gt;记录用户月签到数据&lt;/h4&gt;
+&lt;ul&gt;
+&lt;li&gt;记录九月第一天签到 &lt;code&gt;setbit checkin:uid63:202109 0 1&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;查看九月第一天签到情况 &lt;code&gt;getbit checkin:uid63:202109 0&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id=&#34;统计日活月活&#34;&gt;统计日活月活&lt;/h4&gt;
+&lt;ul&gt;
+&lt;li&gt;对每个用户 id 做一个全局的 id-位置映射&lt;/li&gt;
+&lt;li&gt;位置为 1 的用户当天访问过: &lt;code&gt;setbit 20210101 1 1&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;当天日活：&lt;code&gt;BITCOUNT 20210101&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;连续登录的用户位：&lt;code&gt;BITOP and destkey 202101015 202101016&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+- https://blog.wvuuvw.xyz/posts/bitmap-%E7%B1%BB%E5%9E%8B/ - </description>
+        </item>
+    
+    
+    
+        <item>
         <title>SSM整合：分层配置和整合</title>
         <link>https://blog.wvuuvw.xyz/posts/ssm-%E6%A1%86%E6%9E%B6%E6%95%B4%E5%90%88/</link>
         <pubDate>Tue, 05 Jan 2021 15:23:23 +0800</pubDate>

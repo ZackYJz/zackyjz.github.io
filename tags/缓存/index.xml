@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>缓存 on ZackYJ&#39;s Blog</title>
+    <link>https://blog.wvuuvw.xyz/tags/%E7%BC%93%E5%AD%98/</link>
+    <description>Recent content in 缓存 on ZackYJ&#39;s Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-CN</language><atom:link href="https://blog.wvuuvw.xyz/tags/%E7%BC%93%E5%AD%98/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>SSM整合：分层配置和整合</title>
+      <link>https://blog.wvuuvw.xyz/posts/redis%E7%BC%93%E5%AD%98%E6%A1%88%E4%BE%8B/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://blog.wvuuvw.xyz/posts/redis%E7%BC%93%E5%AD%98%E6%A1%88%E4%BE%8B/</guid>
+      <description>查询  查询先查 Reids
+  先从 Redis 里查询，如果有数据直接返回，没有再去查询 Mysql 从 MySQL 查询到数据后，需要将数据写回 Redis 以保障下一次缓存命中 User user = null; String key = CACHE_KEY_USER+id; //先从redis里面查询  user = (User) redisTemplate.opsForValue().get(key); if(user == null) { // redis里面无，继续查询mysql  user = userMapper.selectByPrimaryKey(id); if(user == null) { //都无数据,返回空数据  return user; }else{ //数据写回 redis  redisTemplate.opsForValue().set(key,user); } } return user;     实际生产环境中，通常 redis 的 key 都会设置过期时间，如果正好遇到过期时间到期，某个热点 key 突然失效，会导致缓存击穿问题
+ 击穿：缓存先击中(一开始 Redis 中有数据），但热点 key 突然失效</description>
+    </item>
+    
+  </channel>
+</rss>

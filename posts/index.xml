@@ -25,6 +25,24 @@ public void union(int v1,int v2){ int p1 = find(v1); int p2 = find(v2); if(p1 ==
     </item>
     
     <item>
+      <title>Redis/Bitmap类型使用及原理</title>
+      <link>https://blog.wvuuvw.xyz/posts/bitmap-%E7%B1%BB%E5%9E%8B/</link>
+      <pubDate>Mon, 01 Feb 2021 13:31:23 +0800</pubDate>
+      
+      <guid>https://blog.wvuuvw.xyz/posts/bitmap-%E7%B1%BB%E5%9E%8B/</guid>
+      <description>BitMap 也叫位图
+是一种使用一个字节的 8 位 bit 的 01 状态来统计二值状态的数据类型
+   二值统计：集合元素的取值就只有0和1两种，通常用于状态的统计
+例如：登录情况、打卡情况、日活统计等
+  原理 本质是由 0 和 1 两种状态表现组成的二进制位的bit数组，但底层使用 Redis/String 类型实现
+  存储时，实际存储的是一个 8bit bitmap 代表的 ASCII 码所对应的字符
+  使用 get 指令可以获得这个 二进制位对应的 ASCII 码符号
+  基本指令   setbit key offset value
+ offset 位偏移，每八位一个byte 作为 bitmap,自动扩容 value 值只能是 0 或 1     getbit key offset
+  strlen</description>
+    </item>
+    
+    <item>
       <title>SSM整合：分层配置和整合</title>
       <link>https://blog.wvuuvw.xyz/posts/ssm-%E6%A1%86%E6%9E%B6%E6%95%B4%E5%90%88/</link>
       <pubDate>Tue, 05 Jan 2021 15:23:23 +0800</pubDate>
@@ -100,6 +118,17 @@ static void close(Closeable closeable){ if(closeable != null){ try { closeable.c
   从源文件的输入流一个字节一个字节读取
 只要还有数据 （read() 返回 ≠ -1）就循环读取并写入目标文件的输出流
   static class noBufferedStreamCopy implements IFileCopy{ @Override public void copyFile(File source, File dest) { InputStream is = null; OutputStream os = null; try { //创建文件输入流  is = new FileInputStream(source); //创建文件输出流  os = new FileOutputStream(dest); int result; //一个字节一个字节读，读到就输出到文件输出流  while ((result = is.</description>
+    </item>
+    
+    <item>
+      <title>SSM整合：分层配置和整合</title>
+      <link>https://blog.wvuuvw.xyz/posts/redis%E7%BC%93%E5%AD%98%E6%A1%88%E4%BE%8B/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://blog.wvuuvw.xyz/posts/redis%E7%BC%93%E5%AD%98%E6%A1%88%E4%BE%8B/</guid>
+      <description>查询  查询先查 Reids
+  先从 Redis 里查询，如果有数据直接返回，没有再去查询 Mysql 从 MySQL 查询到数据后，需要将数据写回 Redis 以保障下一次缓存命中 User user = null; String key = CACHE_KEY_USER+id; //先从redis里面查询  user = (User) redisTemplate.opsForValue().get(key); if(user == null) { // redis里面无，继续查询mysql  user = userMapper.selectByPrimaryKey(id); if(user == null) { //都无数据,返回空数据  return user; }else{ //数据写回 redis  redisTemplate.opsForValue().set(key,user); } } return user;     实际生产环境中，通常 redis 的 key 都会设置过期时间，如果正好遇到过期时间到期，某个热点 key 突然失效，会导致缓存击穿问题
+ 击穿：缓存先击中(一开始 Redis 中有数据），但热点 key 突然失效</description>
     </item>
     
   </channel>

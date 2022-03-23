@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html><head>
-<title></title>
+<title>Redis/Bitmap类型使用及原理</title>
 
 
 
@@ -10,7 +10,7 @@
 <meta name="google-site-verification" content="">
 <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
 <meta content="telephone=no" name="format-detection">
-<meta name="description" content="">
+<meta name="description" content="介绍 Bitmap 类型基本命令和使用场景">
 <meta name="renderer" content="webkit">
 <meta name="theme-color" content="#ffffff">
 
@@ -92,9 +92,11 @@
             
             
             
+                
             
             
-            <a class="a-block nav-link-item false" href="/posts">
+            
+            <a class="a-block nav-link-item active" href="/posts">
                 📑 文章
             </a>
             
@@ -122,11 +124,9 @@
             
             
             
-                
             
             
-            
-            <a class="a-block nav-link-item active" href="/project/project">
+            <a class="a-block nav-link-item false" href="/project/project">
                 📇 项目
             </a>
             
@@ -186,9 +186,11 @@ Powered by <a href="https://github.com/gohugoio/hugo">hugo</a>
                 
                 
                 
+                    
                 
                 
-                <a class="a-block drawer-menu-item false" href="/posts">
+                
+                <a class="a-block drawer-menu-item active" href="/posts">
                     📑 文章
                 </a>
                 
@@ -216,11 +218,9 @@ Powered by <a href="https://github.com/gohugoio/hugo">hugo</a>
                 
                 
                 
-                    
                 
                 
-                
-                <a class="a-block drawer-menu-item active" href="/project/project">
+                <a class="a-block drawer-menu-item false" href="/project/project">
                     📇 项目
                 </a>
                 
@@ -256,10 +256,16 @@ Powered by <a href="https://github.com/gohugoio/hugo">hugo</a>
 						
 						
 						
+							
+								
+									<ul>
+								
+							
+						
 						
 							<li>
-								<a href="#yoas" onclick="onNavClick(`#yoas-nav`)" id="yoas-nav">
-									YOAS
+								<a href="#%e5%8e%9f%e7%90%86" onclick="onNavClick(`#原理-nav`)" id="原理-nav">
+									原理
 								</a>
 							</li>
 						
@@ -276,8 +282,72 @@ Powered by <a href="https://github.com/gohugoio/hugo">hugo</a>
 						
 						
 							<li>
-								<a href="#winemall" onclick="onNavClick(`#winemall-nav`)" id="winemall-nav">
-									WineMall
+								<a href="#%e5%9f%ba%e6%9c%ac%e6%8c%87%e4%bb%a4" onclick="onNavClick(`#基本指令-nav`)" id="基本指令-nav">
+									基本指令
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+						
+						
+							<li>
+								<a href="#%e5%9c%ba%e6%99%af%e6%a1%88%e4%be%8b" onclick="onNavClick(`#场景案例-nav`)" id="场景案例-nav">
+									场景案例
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+						
+							
+								
+									<ul>
+								
+							
+								
+									<ul>
+								
+							
+						
+						
+							<li>
+								<a href="#%e8%ae%b0%e5%bd%95%e7%94%a8%e6%88%b7%e6%9c%88%e7%ad%be%e5%88%b0%e6%95%b0%e6%8d%ae" onclick="onNavClick(`#记录用户月签到数据-nav`)" id="记录用户月签到数据-nav">
+									记录用户月签到数据
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+						
+						
+							<li>
+								<a href="#%e7%bb%9f%e8%ae%a1%e6%97%a5%e6%b4%bb%e6%9c%88%e6%b4%bb" onclick="onNavClick(`#统计日活月活-nav`)" id="统计日活月活-nav">
+									统计日活月活
 								</a>
 							</li>
 						
@@ -335,16 +405,35 @@ Powered by <a href="https://github.com/gohugoio/hugo">hugo</a>
             
             
             
+                
+            
 
-            <div class="post-head-wrapper-text-only"
+            <div class="post-head-wrapper"
+                
+                    
+                    
+                    style="background-image: url('https://images.unsplash.com/photo-1511406294398-718e9b6f85bc?ixlib=rb-1.2.1&amp;ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&amp;auto=format&amp;fit=crop&amp;w=2070&amp;q=80')"
+                    
                 
             >
                 <div class="post-title">
+                    Redis/Bitmap类型使用及原理
                     
+                    <div class="post-subtitle">
+                        介绍 Bitmap 类型基本命令和使用场景
+                    </div>
                     
                     <div class="post-meta">
                         
+                        <time itemprop="datePublished">
+                            2021-02-01 13:31
+                        </time>
+                        
 
+                        
+                            <i class="material-icons" style="">folder</i>
+                                <a href="/categories/redis">Redis</a>
+                                &nbsp;
                         
 
                         
@@ -357,20 +446,79 @@ Powered by <a href="https://github.com/gohugoio/hugo">hugo</a>
                 
                 <div class="post-body" v-pre>
                 
-                    <h1 id="yoas">YOAS</h1>
-<div style="position: relative; width: 100%; height: 0; padding-top: 56.2500%;
-  padding-bottom: 48px; box-shadow: 0 2px 8px 0 rgba(63,69,81,0.16); margin-top: 1.6em; margin-bottom: 0.9em; overflow: hidden;
-  border-radius: 8px; will-change: transform;">
-  <embed id="pdfPlayer" style="position: absolute; width: 100%; height: 100%; top: 0; left: 0; border: none; padding: 0;margin: 0;" src="https://logseq.oss-cn-chengdu.aliyuncs.com/noteImg/yoas1.pdf" type="application/pdf" width="100%" height="200%" > 
-</div>
-<h1 id="winemall">WineMall</h1>
-<div style="position: relative; width: 100%; height: 0; padding-top: 56.2500%;
- padding-bottom: 48px; box-shadow: 0 2px 8px 0 rgba(63,69,81,0.16); margin-top: 1.6em; margin-bottom: 0.9em; overflow: hidden;
- border-radius: 8px; will-change: transform;">
-  <iframe loading="lazy" style="position: absolute; width: 100%; height: 100%; top: 0; left: 0; border: none; padding: 0;margin: 0;"
-    src="https:&#x2F;&#x2F;www.canva.cn&#x2F;design&#x2F;DAEmnDLQkiQ&#x2F;view?embed" allowfullscreen="allowfullscreen" allow="fullscreen">
-  </iframe>
-</div>
+                    <blockquote>
+<p>BitMap 也叫位图</p>
+<p>是一种使用一个字节的 8 位 bit 的 01 状态来统计二值状态的数据类型</p>
+</blockquote>
+<ul>
+<li>
+<p>二值统计：集合元素的取值就只有0和1两种，通常用于状态的统计</p>
+<p>例如：登录情况、打卡情况、日活统计等</p>
+</li>
+</ul>
+<h2 id="原理">原理</h2>
+<p>本质是由  0 和 1 两种状态表现组成的二进制位的bit数组，但底层使用 Redis/String 类型实现</p>
+<ul>
+<li>
+<p>存储时，实际存储的是一个 8bit bitmap 代表的 ASCII 码所对应的字符</p>
+</li>
+<li>
+<p>使用 get 指令可以获得这个 二进制位对应的 ASCII 码符号</p>
+<img src="https://logseq.oss-cn-chengdu.aliyuncs.com/noteImg/202203221430078.png" style="zoom:30%;" />
+</li>
+</ul>
+<h2 id="基本指令">基本指令</h2>
+<ul>
+<li>
+<p><code>setbit key offset value</code></p>
+<ul>
+<li>offset 位偏移，每八位一个byte 作为 bitmap,自动扩容</li>
+<li>value 值只能是 0 或 1
+<img src="https://logseq.oss-cn-chengdu.aliyuncs.com/noteImg/202203221412735.png" style="zoom:25%;" /></li>
+</ul>
+</li>
+<li>
+<p><code>getbit key offset</code></p>
+</li>
+<li>
+<p><code>strlen</code></p>
+<ul>
+<li>统计共占有的字节数(byte)</li>
+<li>长度不是字符串长度，而是byte 数</li>
+<li>超过 8 位后，就按 8 位扩容</li>
+</ul>
+</li>
+<li>
+<p><code>bitcount key [start] [end]</code></p>
+<ul>
+<li>统计这个键里面的位 1 的个数</li>
+</ul>
+</li>
+<li>
+<p><code>bitop [operation] destkey key</code></p>
+<ul>
+<li>对多个 key 的二进制数据进行位运算</li>
+<li>[operation] 可取的二进制操作符 ：AND、OR、NOT、XOR</li>
+</ul>
+</li>
+</ul>
+<h2 id="场景案例">场景案例</h2>
+<h4 id="记录用户月签到数据">记录用户月签到数据</h4>
+<ul>
+<li>记录九月第一天签到 <code>setbit checkin:uid63:202109 0 1</code></li>
+<li>查看九月第一天签到情况 <code>getbit checkin:uid63:202109 0</code></li>
+</ul>
+<h4 id="统计日活月活">统计日活月活</h4>
+<ul>
+<li>对每个用户 id 做一个全局的 id-位置映射</li>
+<li>位置为 1 的用户当天访问过: <code>setbit 20210101 1 1</code></li>
+<li>当天日活：<code>BITCOUNT 20210101</code></li>
+<li>连续登录的用户位：<code>BITOP and destkey 202101015 202101016</code></li>
+</ul>
+
+                    
+                    <HR width="100%" id="EOF">
+		    <p style="color:#777;">最后修改于 2021-02-01</p>
                     
                 </div>
             </div>
@@ -379,14 +527,14 @@ Powered by <a href="https://github.com/gohugoio/hugo">hugo</a>
             <nav class="post-pagination">
 
                 
-                <a class="newer-posts" href="https://blog.wvuuvw.xyz/posts/java%E6%9C%AC%E5%9C%B0%E6%96%87%E4%BB%B6%E6%8B%B7%E8%B4%9D/">
-			上一篇<br>Java 四种本地文件拷贝方式比较和测试
+                <a class="newer-posts" href="https://blog.wvuuvw.xyz/posts/%E5%B9%B6%E6%9F%A5%E9%9B%86%E5%AE%9E%E7%8E%B0/">
+			上一篇<br>数据结构：并查集介绍和实现
                 </a>
                 
                 
                 
-                <a class="older-posts" href="https://blog.wvuuvw.xyz/about/aboutme/">
-			下一篇<br>About Me
+                <a class="older-posts" href="https://blog.wvuuvw.xyz/posts/ssm-%E6%A1%86%E6%9E%B6%E6%95%B4%E5%90%88/">
+			下一篇<br>SSM整合：分层配置和整合
                 </a>
                 
             </nav>
