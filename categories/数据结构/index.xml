@@ -14,9 +14,9 @@
       
       <guid>https://blog.wvuuvw.xyz/posts/%E5%B9%B6%E6%9F%A5%E9%9B%86%E5%AE%9E%E7%8E%B0/</guid>
       <description>并查集也叫不相交集合，是一种树状结构，适合解决集合连接等相关问题
- 介绍  并查集解决的问题：
+ 介绍 并查集解决的问题：
  有若干个样本a、b、c、&amp;hellip;类型假设是V 在并查集中一开始认为每个样本都在单独的集合里   并查集的三个核心操作（常数级复杂度）：
- Find(V)/findRepresent(V) 查找元素所在的集合根节点（或代表节点） boolean isSameSet（Vx，Vy） 查询样本x和样本y是否属于一个集合 void union(Vx，Vy) 把x和y各自所在集合的所有样本合并成一个集合  实现  数组实现 如果并查集中值存储整型元素，可以使用数组来实现：
+ Find(V)/findRepresent(V) 查找元素所在的集合根节点（或代表节点） boolean isSameSet（Vx，Vy） 查询样本x和样本y是否属于一个集合 void union(Vx，Vy) 把x和y各自所在集合的所有样本合并成一个集合  实现 数组实现 如果并查集中值存储整型元素，可以使用数组来实现：
  数组下标为 i 的元素为 i 的父节点
  Quick Find   Union -合并：将v1所在集合的所有元素都嫁接到v2的父节点上
   即：将下标v1的元素的值（父节点）改为下标v2元素的值（父节点）
