@@ -6,7 +6,18 @@
     <description>Recent content in spring on ZackYJ&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-CN</language>
-    <lastBuildDate>Tue, 05 Jan 2021 15:23:23 +0800</lastBuildDate><atom:link href="https://blog.wvuuvw.xyz/tags/spring/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 21 Feb 2021 11:31:23 +0800</lastBuildDate><atom:link href="https://blog.wvuuvw.xyz/tags/spring/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>封装BeanUtils的属性拷贝工具类</title>
+      <link>https://blog.wvuuvw.xyz/posts/%E5%B0%81%E8%A3%85beanutils%E7%9A%84%E7%B1%BB%E5%B1%9E%E6%80%A7%E6%8B%B7%E8%B4%9D/</link>
+      <pubDate>Sun, 21 Feb 2021 11:31:23 +0800</pubDate>
+      
+      <guid>https://blog.wvuuvw.xyz/posts/%E5%B0%81%E8%A3%85beanutils%E7%9A%84%E7%B1%BB%E5%B1%9E%E6%80%A7%E6%8B%B7%E8%B4%9D/</guid>
+      <description>BeanUtils 的 copyProperties 方法常在领域模型 pojo 和 VO BO 的转换中
+为了便于使用和简化重复代码，封装一个工具类实现：
+ 复制单个对象时，自动新建对象返回 对象集合的复制  public class CopyUtil{	/** * 对象复制 */ public static &amp;lt;T&amp;gt; T copy(Object source, Class&amp;lt;T&amp;gt; clazz) { if (source == null) { return null; } T obj = null; try { obj = clazz.newInstance(); } catch (Exception e) { e.printStackTrace(); return null; } BeanUtils.copyProperties(source, obj); return obj; } /** * 对象集合复制 */ public static &amp;lt;T&amp;gt; List&amp;lt;T&amp;gt; copyList(List source, Class&amp;lt;T&amp;gt; clazz) { List&amp;lt;T&amp;gt; target = new ArrayList&amp;lt;&amp;gt;(); if (!</description>
+    </item>
+    
     <item>
       <title>SSM整合：分层配置和整合</title>
       <link>https://blog.wvuuvw.xyz/posts/ssm-%E6%A1%86%E6%9E%B6%E6%95%B4%E5%90%88/</link>

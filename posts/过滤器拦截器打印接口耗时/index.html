@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html><head>
+<title>SpringBoot 打印接口耗时的两种方式</title>
+
+
+
+
+<meta charset="utf-8">
+<meta name="X-UA-Compatible" content="IE=edge">
+<meta name="google-site-verification" content="">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
+<meta content="telephone=no" name="format-detection">
+<meta name="description" content="接口耗时是应用监控中重要的指标，可以看出应用处理能力；本文介绍拦截器和过滤器两种方式打印接口耗时统计">
+<meta name="renderer" content="webkit">
+<meta name="theme-color" content="#ffffff">
+
+
+
+
+
+
+
+
+
+
+
+<link type="text/css" rel="stylesheet" href="/vendor/css/bootstrap.min.css">
+
+
+  
+
+
+
+
+<link rel="icon" href="https://logseq.oss-cn-chengdu.aliyuncs.com/noteImg/202203191023457.png">
+
+
+
+<link rel="stylesheet" href="https://blog.wvuuvw.xyz/scss/journal.min.75229c530b3f6aa895d7c569612d6ca3e5bef57767db1972945785a7a418f179.css" integrity="sha256-dSKcUws/aqiV18VpYS1so&#43;W&#43;9Xdn2xlylFeFp6QY8Xk=" media="screen">
+
+
+
+<link rel="stylesheet" href="https://blog.wvuuvw.xyz/scss/dark-mode.min.c4db381abcd93bb0867e0779702d9c25d111348a10647020dbc43f1f0cb14cbb.css" integrity="sha256-xNs4GrzZO7CGfgd5cC2cJdERNIoQZHAg28Q/HwyxTLs=" media="screen">
+
+
+<script src="/vendor/js/loadCSS.js"></script>
+<script>
+  loadCSS("https://fonts.googleapis.com/css?family=Noto+Sans+SC");
+</script>
+<script>
+  loadCSS("https://fonts.googleapis.com/css?family=Source+Code+Pro|Fira+Mono|Material+Icons");
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+<body>
+    	<div id="app"><div id="sideContainer" class="side-container">
+    
+    <a class="a-block nav-head false" href="https://blog.wvuuvw.xyz/">
+    
+        <div class="nav-title">
+            ZackYJ&#39;s Blog
+        </div>
+        
+        <div class="nav-subtitle">
+            Stay hungry , Stay foolish
+        </div>
+        
+    </a>
+
+    <div class="nav-link-list">
+        
+        
+            
+            
+            
+                
+            
+            
+            
+            <a class="a-block nav-link-item active" href="/posts">
+                📑 文章
+            </a>
+            
+        
+            
+            
+            
+            
+            
+            <a class="a-block nav-link-item false" href="/categories">
+                🗄 分类
+            </a>
+            
+        
+            
+            
+            
+            
+            
+            <a class="a-block nav-link-item false" href="/tags">
+                🏷 标签 
+            </a>
+            
+        
+            
+            
+            
+            
+            
+            <a class="a-block nav-link-item false" href="/project/project">
+                📇 项目
+            </a>
+            
+        
+            
+            
+            
+            
+            
+            <a class="a-block nav-link-item false" href="/about/aboutme">
+                👨‍💻 关于
+            </a>
+            
+        
+    </div>
+
+    
+
+    <div class="nav-footer">
+        
+Powered by <a href="https://github.com/gohugoio/hugo">hugo</a>
+<br>
+
+&copy;
+	
+	2021 ZackYJ&#39;s Blog
+	
+
+    </div>
+    
+</div><div id="extraContainer" class="extra-container">
+    
+    
+    <div class="pagination">
+        <a id="globalBackToTop" class="pagination-action animated-visibility" href="#top" :class="{ invisible: scrollY == 0 }">
+            <i class="material-icons pagination-action-icon">
+                keyboard_arrow_up
+            </i>
+        </a>
+        
+        <a type="button" class="pagination-action" id="darkModeToggleButton">
+            <span class="material-icons pagination-action-icon" id="darkModeToggleIcon">
+                dark_mode
+            </span>
+        </a>
+        
+        
+    </div>
+</div>
+<div class="single-column-drawer-container" id="drawer"
+     v-bind:class="{ 'single-column-drawer-container-active': isDrawerOpen }">
+    <div class="drawer-content">
+        <div class="drawer-menu">
+            
+            
+            
+                
+                
+                
+                    
+                
+                
+                
+                <a class="a-block drawer-menu-item active" href="/posts">
+                    📑 文章
+                </a>
+                
+            
+                
+                
+                
+                
+                
+                <a class="a-block drawer-menu-item false" href="/categories">
+                    🗄 分类
+                </a>
+                
+            
+                
+                
+                
+                
+                
+                <a class="a-block drawer-menu-item false" href="/tags">
+                    🏷 标签 
+                </a>
+                
+            
+                
+                
+                
+                
+                
+                <a class="a-block drawer-menu-item false" href="/project/project">
+                    📇 项目
+                </a>
+                
+            
+                
+                
+                
+                
+                
+                <a class="a-block drawer-menu-item false" href="/about/aboutme">
+                    👨‍💻 关于
+                </a>
+                
+            
+            
+            <div class="toc">
+
+
+	<div class="toc-content">
+	
+		
+		
+		
+		<center>- 目录 -</center>
+		
+		
+		<ul>
+			
+				
+				
+					
+						
+						
+						
+						
+							
+								
+									<ul>
+								
+							
+						
+						
+							<li>
+								<a href="#%e6%8b%a6%e6%88%aa%e5%99%a8%e6%96%b9%e5%bc%8f" onclick="onNavClick(`#拦截器方式-nav`)" id="拦截器方式-nav">
+									拦截器方式
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+						
+							
+								
+									<ul>
+								
+							
+						
+						
+							<li>
+								<a href="#%e8%bf%87%e6%bb%a4%e5%99%a8%e6%96%b9%e5%bc%8f" onclick="onNavClick(`#过滤器方式-nav`)" id="过滤器方式-nav">
+									过滤器方式
+								</a>
+							</li>
+						
+						
+					
+				
+			
+		</ul>
+	</div>
+
+</div>
+            
+        </div>
+    </div>
+</div>
+<transition name="fade">
+    <div id="drawer-mask" v-bind:class="{ 'single-column-drawer-mask': mounted }" v-if="isDrawerOpen" v-on:click="toggleDrawer"></div>
+</transition>
+<nav id="navBar" class="navbar sticky-top navbar-light single-column-nav-container">
+    <div id="navBackground" class="nav-background"></div>
+    <div class="container container-narrow nav-content">
+        <button id="nav_dropdown_btn" class="nav-dropdown-toggle" type="button" v-on:click="toggleDrawer">
+            <i class="material-icons">
+                menu
+            </i>
+        </button>
+        <a id="navTitle" class="navbar-brand" href="https://blog.wvuuvw.xyz/">
+            ZackYJ&#39;s Blog
+        </a>
+        
+        <button type="button" class="nav-darkmode-toggle" id="darkModeToggleButton2">
+            <i class="material-icons" id="darkModeToggleIcon2">
+                dark_mode
+            </i>
+        </button>
+        
+    </div>
+</nav>
+<div class="single-column-header-container" id="pageHead"
+     v-bind:style="{ transform: 'translateZ(0px) translateY('+.3*scrollY+'px)', opacity: 1-navOpacity }">
+    <a href="https://blog.wvuuvw.xyz/">
+        <div class="single-column-header-title">ZackYJ&#39;s Blog</div>
+        
+        <div class="single-column-header-subtitle">Stay hungry , Stay foolish</div>
+        
+
+    </a>
+</div>
+
+            <div id="content">
+                <div id="streamContainer" class="stream-container">
+
+    <div class="post-list-container post-list-container-shadow">
+        <div class="post">
+            
+            
+            
+                
+            
+
+            <div class="post-head-wrapper"
+                
+                    
+                    
+                    style="background-image: url('https://blog.wvuuvw.xyz/%E5%B0%81%E9%9D%A2')"
+                    
+                
+            >
+                <div class="post-title">
+                    SpringBoot 打印接口耗时的两种方式
+                    
+                    <div class="post-subtitle">
+                        接口耗时是应用监控中重要的指标，可以看出应用处理能力；本文介绍拦截器和过滤器两种方式打印接口耗时统计
+                    </div>
+                    
+                    <div class="post-meta">
+                        
+                        <time itemprop="datePublished">
+                            2021-02-26 21:56
+                        </time>
+                        
+
+                        
+                            <i class="material-icons" style="">folder</i>
+                                <a href="/categories/java">Java</a>
+                                &nbsp;
+                        
+
+                        
+                            <i class="material-icons" style="">label</i>
+                            
+                                <a href="/tags/springboot">SpringBoot</a>
+                                &nbsp;
+                            
+                        
+                        
+                    </div>
+                </div>
+            </div>
+            
+            <div class="post-body-wrapper">
+                
+                <div class="post-body" v-pre>
+                
+                    <h2 id="拦截器方式">拦截器方式</h2>
+<p>Interceptor 拦截器，用于对 Controller 进行前置、后置处理</p>
+<ul>
+<li>
+<p>底层基于 AOP实现，与环绕通知类似</p>
+</li>
+<li>
+<p>和过滤器 Filter 作用类似，但只用于 SpringMVC 中的控制器</p>
+</li>
+</ul>
+<p>要使用拦截器，只需要实现<code> HandlerInterceptor</code> 接口，并重写其中的处理方法：</p>
+<ul>
+<li>
+<p>前置处理方法是 <code>preHandle</code>，返回一个返回一个布尔值</p>
+<p>是请求阻断的开关，当返回false时请求将不再继续往下传递</p>
+</li>
+<li>
+<p><code>postHandle</code> 是后置处理方法，在目标方法执行之后，资源已被 SpringMVC 处理，视图对象还未返回</p>
+</li>
+</ul>
+<p>统计接口耗时主要在这两个方法中进行统计</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">    <span style="color:#8be9fd;font-style:italic">private</span> <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#8be9fd;font-style:italic">final</span> Logger LOG <span style="color:#ff79c6">=</span> LoggerFactory<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getLogger</span><span style="color:#ff79c6">(</span>LogInterceptor<span style="color:#ff79c6">.</span><span style="color:#50fa7b">class</span><span style="color:#ff79c6">);</span>
+
+    @Override
+    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd">boolean</span> <span style="color:#50fa7b">preHandle</span><span style="color:#ff79c6">(</span>HttpServletRequest request<span style="color:#ff79c6">,</span> HttpServletResponse response<span style="color:#ff79c6">,</span> Object handler<span style="color:#ff79c6">)</span> <span style="color:#8be9fd;font-style:italic">throws</span> Exception <span style="color:#ff79c6">{</span>
+ 				<span style="color:#6272a4">//request参数中可以获得请求相关的信息
+</span><span style="color:#6272a4"></span>        LOG<span style="color:#ff79c6">.</span><span style="color:#50fa7b">info</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;------------- LogInterceptor 开始 -------------&#34;</span><span style="color:#ff79c6">);</span>
+        LOG<span style="color:#ff79c6">.</span><span style="color:#50fa7b">info</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;请求地址: {} {}&#34;</span><span style="color:#ff79c6">,</span> request<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getRequestURL</span><span style="color:#ff79c6">().</span><span style="color:#50fa7b">toString</span><span style="color:#ff79c6">(),</span> request<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getMethod</span><span style="color:#ff79c6">());</span>
+        LOG<span style="color:#ff79c6">.</span><span style="color:#50fa7b">info</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;远程地址: {}&#34;</span><span style="color:#ff79c6">,</span> request<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getRemoteAddr</span><span style="color:#ff79c6">());</span>
+
+        <span style="color:#8be9fd">long</span> startTime <span style="color:#ff79c6">=</span> System<span style="color:#ff79c6">.</span><span style="color:#50fa7b">currentTimeMillis</span><span style="color:#ff79c6">();</span>
+        request<span style="color:#ff79c6">.</span><span style="color:#50fa7b">setAttribute</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;requestStartTime&#34;</span><span style="color:#ff79c6">,</span> startTime<span style="color:#ff79c6">);</span>
+        <span style="color:#ff79c6">return</span> <span style="color:#ff79c6">true</span><span style="color:#ff79c6">;</span>
+    <span style="color:#ff79c6">}</span>
+
+    @Override
+    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">postHandle</span><span style="color:#ff79c6">(</span>HttpServletRequest request<span style="color:#ff79c6">,</span> HttpServletResponse response<span style="color:#ff79c6">,</span> Object handler<span style="color:#ff79c6">,</span> ModelAndView modelAndView<span style="color:#ff79c6">)</span> <span style="color:#8be9fd;font-style:italic">throws</span> Exception <span style="color:#ff79c6">{</span>
+        <span style="color:#8be9fd">long</span> startTime <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">(</span>Long<span style="color:#ff79c6">)</span> request<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getAttribute</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;requestStartTime&#34;</span><span style="color:#ff79c6">);</span>
+        LOG<span style="color:#ff79c6">.</span><span style="color:#50fa7b">info</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;------------- LogInterceptor 结束 耗时：{} ms -------------&#34;</span><span style="color:#ff79c6">,</span> System<span style="color:#ff79c6">.</span><span style="color:#50fa7b">currentTimeMillis</span><span style="color:#ff79c6">()</span> <span style="color:#ff79c6">-</span> startTime<span style="color:#ff79c6">);</span>
+    <span style="color:#ff79c6">}</span>
+</code></pre></div><h3 id="过滤器方式">过滤器方式</h3>
+<p>过滤器是 Servlet 容器层面，任何 Java Web 工程都能使用</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">@Component
+<span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">class</span> <span style="color:#50fa7b">LogFilter</span> <span style="color:#8be9fd;font-style:italic">implements</span> Filter <span style="color:#ff79c6">{</span>
+	<span style="color:#8be9fd;font-style:italic">private</span> <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#8be9fd;font-style:italic">final</span> Logger LOG <span style="color:#ff79c6">=</span> LoggerFactory<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getLogger</span><span style="color:#ff79c6">(</span>LogFilter<span style="color:#ff79c6">.</span><span style="color:#50fa7b">class</span><span style="color:#ff79c6">);</span>
+	@Override
+	<span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">init</span><span style="color:#ff79c6">(</span>FilterConfig filterConfig<span style="color:#ff79c6">)</span> <span style="color:#8be9fd;font-style:italic">throws</span> ServletException <span style="color:#ff79c6">{</span>
+    <span style="color:#6272a4">//初始化操作，获取参数等
+</span><span style="color:#6272a4"></span>	<span style="color:#ff79c6">}</span>
+
+	@Override
+	<span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">doFilter</span><span style="color:#ff79c6">(</span>ServletRequest servletRequest<span style="color:#ff79c6">,</span> ServletResponse servletResponse<span style="color:#ff79c6">,</span> FilterChain filterChain<span style="color:#ff79c6">)</span> <span style="color:#8be9fd;font-style:italic">throws</span> IOException<span style="color:#ff79c6">,</span> ServletException <span style="color:#ff79c6">{</span>
+		<span style="color:#6272a4">// 打印请求信息
+</span><span style="color:#6272a4"></span>		HttpServletRequest request <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">(</span>HttpServletRequest<span style="color:#ff79c6">)</span> servletRequest<span style="color:#ff79c6">;</span>
+		LOG<span style="color:#ff79c6">.</span><span style="color:#50fa7b">info</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;------------- LogFilter 开始 -------------&#34;</span><span style="color:#ff79c6">);</span>
+		LOG<span style="color:#ff79c6">.</span><span style="color:#50fa7b">info</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;请求地址: {} {}&#34;</span><span style="color:#ff79c6">,</span> request<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getRequestURL</span><span style="color:#ff79c6">().</span><span style="color:#50fa7b">toString</span><span style="color:#ff79c6">(),</span> request<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getMethod</span><span style="color:#ff79c6">());</span>
+		LOG<span style="color:#ff79c6">.</span><span style="color:#50fa7b">info</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;远程地址: {}&#34;</span><span style="color:#ff79c6">,</span> request<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getRemoteAddr</span><span style="color:#ff79c6">());</span>
+
+		<span style="color:#8be9fd">long</span> startTime <span style="color:#ff79c6">=</span> System<span style="color:#ff79c6">.</span><span style="color:#50fa7b">currentTimeMillis</span><span style="color:#ff79c6">();</span>
+		filterChain<span style="color:#ff79c6">.</span><span style="color:#50fa7b">doFilter</span><span style="color:#ff79c6">(</span>servletRequest<span style="color:#ff79c6">,</span> servletResponse<span style="color:#ff79c6">);</span>
+		LOG<span style="color:#ff79c6">.</span><span style="color:#50fa7b">info</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;------------- LogFilter 结束 耗时：{} ms -------------&#34;</span><span style="color:#ff79c6">,</span> System<span style="color:#ff79c6">.</span><span style="color:#50fa7b">currentTimeMillis</span><span style="color:#ff79c6">()</span> <span style="color:#ff79c6">-</span> startTime<span style="color:#ff79c6">);</span>
+	<span style="color:#ff79c6">}</span>
+<span style="color:#ff79c6">}</span>
+</code></pre></div>
+                    
+                    <HR width="100%" id="EOF">
+		    <p style="color:#777;">最后修改于 2021-02-26</p>
+                    
+                </div>
+            </div>
+            
+            
+            <nav class="post-pagination">
+
+                
+                <a class="newer-posts" href="https://blog.wvuuvw.xyz/posts/aop%E6%89%93%E5%8D%B0%E6%8E%A5%E5%8F%A3%E6%97%A5%E5%BF%97/">
+			上一篇<br>利用 Spring AOP 打印接口日志
+                </a>
+                
+                
+                
+                <a class="older-posts" href="https://blog.wvuuvw.xyz/posts/%E5%B0%81%E8%A3%85beanutils%E7%9A%84%E7%B1%BB%E5%B1%9E%E6%80%A7%E6%8B%B7%E8%B4%9D/">
+			下一篇<br>封装BeanUtils的属性拷贝工具类
+                </a>
+                
+            </nav>
+            <div class="post-comment-wrapper">
+                
+
+
+
+
+
+
+
+
+
+
+            </div>
+        </div>
+    </div>
+
+
+                    </div>
+            </div><div id="single-column-footer">
+Powered by <a href="https://github.com/gohugoio/hugo">hugo</a>
+<br>
+
+&copy;
+	
+	2021 ZackYJ&#39;s Blog
+	
+</div>
+            </div>
+    
+    <script src="/js/journal.js"></script>
+    </body>
+</html>

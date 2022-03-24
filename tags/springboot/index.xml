@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>SpringBoot on ZackYJ&#39;s Blog</title>
+    <link>https://blog.wvuuvw.xyz/tags/springboot/</link>
+    <description>Recent content in SpringBoot on ZackYJ&#39;s Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-CN</language>
+    <lastBuildDate>Wed, 03 Mar 2021 12:43:23 +0800</lastBuildDate><atom:link href="https://blog.wvuuvw.xyz/tags/springboot/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>利用 Spring AOP 打印接口日志</title>
+      <link>https://blog.wvuuvw.xyz/posts/aop%E6%89%93%E5%8D%B0%E6%8E%A5%E5%8F%A3%E6%97%A5%E5%BF%97/</link>
+      <pubDate>Wed, 03 Mar 2021 12:43:23 +0800</pubDate>
+      
+      <guid>https://blog.wvuuvw.xyz/posts/aop%E6%89%93%E5%8D%B0%E6%8E%A5%E5%8F%A3%E6%97%A5%E5%BF%97/</guid>
+      <description>AOP 使用 SpringBoot 项目中，只需要引入SpringBoot 集成的 AOP 依赖
+&amp;lt;dependency&amp;gt; &amp;lt;groupId&amp;gt;org.springframework.boot&amp;lt;/groupId&amp;gt; &amp;lt;artifactId&amp;gt;spring-boot-starter-aop&amp;lt;/artifactId&amp;gt; &amp;lt;/dependency&amp;gt; 包含了用于解析切点表达式，实现切面类和方法匹配的 AspectJ 中的 Weaver 组件
+如果同时配置了拦截器和过滤器，执行顺序是：过滤器 -&amp;gt;拦截器 -&amp;gt; AOP
+想要使用 AOP，步骤如下：
+ 明确 Target (被 AOP 增强的对象和方法)，这里指的就是 Controller 层方法 编写 AOP 类，把公共的增强方法（日志打印）制作成通知方法，并传入切点 JoinPoint 作为参数 定义切点 ，并在通知方法的注解属性中指明切点，声明切点和通知的对应关系 (切面)  打印接口日志 接口日志由前置方法打印
+  定义切点：
+@Pointcut(&amp;#34;execution(public * xyz.uuuvw.yoaswxapi.controller..*Controller.*(..))&amp;#34;) public void controllerPointcut() { }   编写前置通知方法
+@Before(&amp;#34;controllerPointcut()&amp;#34;) public void doBefore(JoinPoint joinPoint) throws Throwable { // 增加日志流水号  //MDC.put(&amp;#34;LOG_ID&amp;#34;, String.valueOf(snowFlake.nextId()));  // 开始打印请求日志  ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.</description>
+    </item>
+    
+    <item>
+      <title>SpringBoot 打印接口耗时的两种方式</title>
+      <link>https://blog.wvuuvw.xyz/posts/%E8%BF%87%E6%BB%A4%E5%99%A8%E6%8B%A6%E6%88%AA%E5%99%A8%E6%89%93%E5%8D%B0%E6%8E%A5%E5%8F%A3%E8%80%97%E6%97%B6/</link>
+      <pubDate>Fri, 26 Feb 2021 21:56:23 +0800</pubDate>
+      
+      <guid>https://blog.wvuuvw.xyz/posts/%E8%BF%87%E6%BB%A4%E5%99%A8%E6%8B%A6%E6%88%AA%E5%99%A8%E6%89%93%E5%8D%B0%E6%8E%A5%E5%8F%A3%E8%80%97%E6%97%B6/</guid>
+      <description>拦截器方式 Interceptor 拦截器，用于对 Controller 进行前置、后置处理
+  底层基于 AOP实现，与环绕通知类似
+  和过滤器 Filter 作用类似，但只用于 SpringMVC 中的控制器
+  要使用拦截器，只需要实现 HandlerInterceptor 接口，并重写其中的处理方法：
+  前置处理方法是 preHandle，返回一个返回一个布尔值
+是请求阻断的开关，当返回false时请求将不再继续往下传递
+  postHandle 是后置处理方法，在目标方法执行之后，资源已被 SpringMVC 处理，视图对象还未返回
+  统计接口耗时主要在这两个方法中进行统计
+private static final Logger LOG = LoggerFactory.getLogger(LogInterceptor.class); @Override public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception { //request参数中可以获得请求相关的信息  LOG.info(&amp;#34;------------- LogInterceptor 开始 -------------&amp;#34;); LOG.info(&amp;#34;请求地址: {} {}&amp;#34;, request.getRequestURL().toString(), request.getMethod()); LOG.info(&amp;#34;远程地址: {}&amp;#34;, request.getRemoteAddr()); long startTime = System.</description>
+    </item>
+    
+  </channel>
+</rss>

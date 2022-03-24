@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html><head>
-<title></title>
+<title>封装BeanUtils的属性拷贝工具类</title>
 
 
 
@@ -10,7 +10,7 @@
 <meta name="google-site-verification" content="">
 <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
 <meta content="telephone=no" name="format-detection">
-<meta name="description" content="">
+<meta name="description" content="Spring 自带的 BeanUtils 工具类封装">
 <meta name="renderer" content="webkit">
 <meta name="theme-color" content="#ffffff">
 
@@ -92,9 +92,11 @@
             
             
             
+                
             
             
-            <a class="a-block nav-link-item false" href="/posts">
+            
+            <a class="a-block nav-link-item active" href="/posts">
                 📑 文章
             </a>
             
@@ -122,11 +124,9 @@
             
             
             
-                
             
             
-            
-            <a class="a-block nav-link-item active" href="/project/project">
+            <a class="a-block nav-link-item false" href="/project/project">
                 📇 项目
             </a>
             
@@ -186,9 +186,11 @@ Powered by <a href="https://github.com/gohugoio/hugo">hugo</a>
                 
                 
                 
+                    
                 
                 
-                <a class="a-block drawer-menu-item false" href="/posts">
+                
+                <a class="a-block drawer-menu-item active" href="/posts">
                     📑 文章
                 </a>
                 
@@ -216,11 +218,9 @@ Powered by <a href="https://github.com/gohugoio/hugo">hugo</a>
                 
                 
                 
-                    
                 
                 
-                
-                <a class="a-block drawer-menu-item active" href="/project/project">
+                <a class="a-block drawer-menu-item false" href="/project/project">
                     📇 项目
                 </a>
                 
@@ -238,55 +238,6 @@ Powered by <a href="https://github.com/gohugoio/hugo">hugo</a>
             
             <div class="toc">
 
-
-	<div class="toc-content">
-	
-		
-		
-		
-		<center>- 目录 -</center>
-		
-		
-		<ul>
-			
-				
-				
-					
-						
-						
-						
-						
-						
-							<li>
-								<a href="#yoas" onclick="onNavClick(`#yoas-nav`)" id="yoas-nav">
-									YOAS
-								</a>
-							</li>
-						
-						
-					
-				
-			
-				
-				
-					
-						
-						
-						
-						
-						
-							<li>
-								<a href="#winemall" onclick="onNavClick(`#winemall-nav`)" id="winemall-nav">
-									WineMall
-								</a>
-							</li>
-						
-						
-					
-				
-			
-		</ul>
-	</div>
 
 </div>
             
@@ -335,18 +286,43 @@ Powered by <a href="https://github.com/gohugoio/hugo">hugo</a>
             
             
             
+                
+            
 
-            <div class="post-head-wrapper-text-only"
+            <div class="post-head-wrapper"
+                
+                    
+                    
+                    style="background-image: url('https://blog.wvuuvw.xyz/%E5%B0%81%E9%9D%A2')"
+                    
                 
             >
                 <div class="post-title">
+                    封装BeanUtils的属性拷贝工具类
                     
+                    <div class="post-subtitle">
+                        Spring 自带的 BeanUtils 工具类封装
+                    </div>
                     
                     <div class="post-meta">
                         
-
+                        <time itemprop="datePublished">
+                            2021-02-21 11:31
+                        </time>
                         
 
+                        
+                            <i class="material-icons" style="">folder</i>
+                                <a href="/categories/java">Java</a>
+                                &nbsp;
+                        
+
+                        
+                            <i class="material-icons" style="">label</i>
+                            
+                                <a href="/tags/spring">Spring</a>
+                                &nbsp;
+                            
                         
                         
                     </div>
@@ -357,20 +333,49 @@ Powered by <a href="https://github.com/gohugoio/hugo">hugo</a>
                 
                 <div class="post-body" v-pre>
                 
-                    <h1 id="yoas">YOAS</h1>
-<div style="position: relative; width: 100%; height: 0; padding-top: 56.2500%;
-  padding-bottom: 48px; box-shadow: 0 2px 8px 0 rgba(63,69,81,0.16); margin-top: 1.6em; margin-bottom: 0.9em; overflow: hidden;
-  border-radius: 8px; will-change: transform;">
-  <embed id="pdfPlayer" style="position: absolute; width: 100%; height: 100%; top: 0; left: 0; border: none; padding: 0;margin: 0;" src="https://logseq.oss-cn-chengdu.aliyuncs.com/noteImg/yoas1.pdf" type="application/pdf" width="100%" height="200%" > 
-</div>
-<h1 id="winemall">WineMall</h1>
-<div style="position: relative; width: 100%; height: 0; padding-top: 56.2500%;
- padding-bottom: 48px; box-shadow: 0 2px 8px 0 rgba(63,69,81,0.16); margin-top: 1.6em; margin-bottom: 0.9em; overflow: hidden;
- border-radius: 8px; will-change: transform;">
-  <iframe loading="lazy" style="position: absolute; width: 100%; height: 100%; top: 0; left: 0; border: none; padding: 0;margin: 0;"
-    src="https:&#x2F;&#x2F;www.canva.cn&#x2F;design&#x2F;DAEmnDLQkiQ&#x2F;view?embed" allowfullscreen="allowfullscreen" allow="fullscreen">
-  </iframe>
-</div>
+                    <p>BeanUtils 的 copyProperties 方法常在领域模型 pojo 和 VO BO 的转换中</p>
+<p>为了便于使用和简化重复代码，封装一个工具类实现：</p>
+<ul>
+<li>复制单个对象时，自动新建对象返回</li>
+<li>对象集合的复制</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">class</span> <span style="color:#50fa7b">CopyUtil</span><span style="color:#ff79c6">{</span>	
+		<span style="color:#6272a4">/**
+</span><span style="color:#6272a4">     * 对象复制
+</span><span style="color:#6272a4">     */</span>
+    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#ff79c6">&lt;</span>T<span style="color:#ff79c6">&gt;</span> T <span style="color:#50fa7b">copy</span><span style="color:#ff79c6">(</span>Object source<span style="color:#ff79c6">,</span> Class<span style="color:#ff79c6">&lt;</span>T<span style="color:#ff79c6">&gt;</span> clazz<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+        <span style="color:#ff79c6">if</span> <span style="color:#ff79c6">(</span>source <span style="color:#ff79c6">==</span> <span style="color:#ff79c6">null</span><span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+            <span style="color:#ff79c6">return</span> <span style="color:#ff79c6">null</span><span style="color:#ff79c6">;</span>
+        <span style="color:#ff79c6">}</span>
+        T obj <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">null</span><span style="color:#ff79c6">;</span>
+        <span style="color:#ff79c6">try</span> <span style="color:#ff79c6">{</span>
+            obj <span style="color:#ff79c6">=</span> clazz<span style="color:#ff79c6">.</span><span style="color:#50fa7b">newInstance</span><span style="color:#ff79c6">();</span>
+        <span style="color:#ff79c6">}</span> <span style="color:#ff79c6">catch</span> <span style="color:#ff79c6">(</span>Exception e<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+            e<span style="color:#ff79c6">.</span><span style="color:#50fa7b">printStackTrace</span><span style="color:#ff79c6">();</span>
+            <span style="color:#ff79c6">return</span> <span style="color:#ff79c6">null</span><span style="color:#ff79c6">;</span>
+        <span style="color:#ff79c6">}</span>
+        BeanUtils<span style="color:#ff79c6">.</span><span style="color:#50fa7b">copyProperties</span><span style="color:#ff79c6">(</span>source<span style="color:#ff79c6">,</span> obj<span style="color:#ff79c6">);</span>
+        <span style="color:#ff79c6">return</span> obj<span style="color:#ff79c6">;</span>
+    <span style="color:#ff79c6">}</span>
+
+    <span style="color:#6272a4">/**
+</span><span style="color:#6272a4">     * 对象集合复制
+</span><span style="color:#6272a4">     */</span>
+    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#ff79c6">&lt;</span>T<span style="color:#ff79c6">&gt;</span> List<span style="color:#ff79c6">&lt;</span>T<span style="color:#ff79c6">&gt;</span> <span style="color:#50fa7b">copyList</span><span style="color:#ff79c6">(</span>List source<span style="color:#ff79c6">,</span> Class<span style="color:#ff79c6">&lt;</span>T<span style="color:#ff79c6">&gt;</span> clazz<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+        List<span style="color:#ff79c6">&lt;</span>T<span style="color:#ff79c6">&gt;</span> target <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">new</span> ArrayList<span style="color:#ff79c6">&lt;&gt;();</span>
+        <span style="color:#ff79c6">if</span> <span style="color:#ff79c6">(!</span>CollectionUtils<span style="color:#ff79c6">.</span><span style="color:#50fa7b">isEmpty</span><span style="color:#ff79c6">(</span>source<span style="color:#ff79c6">)){</span>
+            <span style="color:#ff79c6">for</span> <span style="color:#ff79c6">(</span>Object c<span style="color:#ff79c6">:</span> source<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+                T obj <span style="color:#ff79c6">=</span> copy<span style="color:#ff79c6">(</span>c<span style="color:#ff79c6">,</span> clazz<span style="color:#ff79c6">);</span>
+                target<span style="color:#ff79c6">.</span><span style="color:#50fa7b">add</span><span style="color:#ff79c6">(</span>obj<span style="color:#ff79c6">);</span>
+            <span style="color:#ff79c6">}</span>
+        <span style="color:#ff79c6">}</span>
+        <span style="color:#ff79c6">return</span> target<span style="color:#ff79c6">;</span>
+    <span style="color:#ff79c6">}</span>
+<span style="color:#ff79c6">}</span>
+</code></pre></div>
+                    
+                    <HR width="100%" id="EOF">
+		    <p style="color:#777;">最后修改于 2021-02-21</p>
                     
                 </div>
             </div>
@@ -379,14 +384,14 @@ Powered by <a href="https://github.com/gohugoio/hugo">hugo</a>
             <nav class="post-pagination">
 
                 
-                <a class="newer-posts" href="https://blog.wvuuvw.xyz/posts/java%E6%9C%AC%E5%9C%B0%E6%96%87%E4%BB%B6%E6%8B%B7%E8%B4%9D/">
-			上一篇<br>Java 四种本地文件拷贝方式比较和测试
+                <a class="newer-posts" href="https://blog.wvuuvw.xyz/posts/%E8%BF%87%E6%BB%A4%E5%99%A8%E6%8B%A6%E6%88%AA%E5%99%A8%E6%89%93%E5%8D%B0%E6%8E%A5%E5%8F%A3%E8%80%97%E6%97%B6/">
+			上一篇<br>SpringBoot 打印接口耗时的两种方式
                 </a>
                 
                 
                 
-                <a class="older-posts" href="https://blog.wvuuvw.xyz/yoas/untitled/">
-			下一篇<br>
+                <a class="older-posts" href="https://blog.wvuuvw.xyz/posts/bitmap-%E7%B1%BB%E5%9E%8B/">
+			下一篇<br>Redis/Bitmap类型使用及原理
                 </a>
                 
             </nav>

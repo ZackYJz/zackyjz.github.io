@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html><head>
+<title>利用 Spring AOP 打印接口日志</title>
+
+
+
+
+<meta charset="utf-8">
+<meta name="X-UA-Compatible" content="IE=edge">
+<meta name="google-site-verification" content="">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
+<meta content="telephone=no" name="format-detection">
+<meta name="description" content="前文介绍了过滤器和拦截器打印接口日志的方式">
+<meta name="renderer" content="webkit">
+<meta name="theme-color" content="#ffffff">
+
+
+
+
+
+
+
+
+
+
+
+<link type="text/css" rel="stylesheet" href="/vendor/css/bootstrap.min.css">
+
+
+  
+
+
+
+
+<link rel="icon" href="https://logseq.oss-cn-chengdu.aliyuncs.com/noteImg/202203191023457.png">
+
+
+
+<link rel="stylesheet" href="https://blog.wvuuvw.xyz/scss/journal.min.75229c530b3f6aa895d7c569612d6ca3e5bef57767db1972945785a7a418f179.css" integrity="sha256-dSKcUws/aqiV18VpYS1so&#43;W&#43;9Xdn2xlylFeFp6QY8Xk=" media="screen">
+
+
+
+<link rel="stylesheet" href="https://blog.wvuuvw.xyz/scss/dark-mode.min.c4db381abcd93bb0867e0779702d9c25d111348a10647020dbc43f1f0cb14cbb.css" integrity="sha256-xNs4GrzZO7CGfgd5cC2cJdERNIoQZHAg28Q/HwyxTLs=" media="screen">
+
+
+<script src="/vendor/js/loadCSS.js"></script>
+<script>
+  loadCSS("https://fonts.googleapis.com/css?family=Noto+Sans+SC");
+</script>
+<script>
+  loadCSS("https://fonts.googleapis.com/css?family=Source+Code+Pro|Fira+Mono|Material+Icons");
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+<body>
+    	<div id="app"><div id="sideContainer" class="side-container">
+    
+    <a class="a-block nav-head false" href="https://blog.wvuuvw.xyz/">
+    
+        <div class="nav-title">
+            ZackYJ&#39;s Blog
+        </div>
+        
+        <div class="nav-subtitle">
+            Stay hungry , Stay foolish
+        </div>
+        
+    </a>
+
+    <div class="nav-link-list">
+        
+        
+            
+            
+            
+                
+            
+            
+            
+            <a class="a-block nav-link-item active" href="/posts">
+                📑 文章
+            </a>
+            
+        
+            
+            
+            
+            
+            
+            <a class="a-block nav-link-item false" href="/categories">
+                🗄 分类
+            </a>
+            
+        
+            
+            
+            
+            
+            
+            <a class="a-block nav-link-item false" href="/tags">
+                🏷 标签 
+            </a>
+            
+        
+            
+            
+            
+            
+            
+            <a class="a-block nav-link-item false" href="/project/project">
+                📇 项目
+            </a>
+            
+        
+            
+            
+            
+            
+            
+            <a class="a-block nav-link-item false" href="/about/aboutme">
+                👨‍💻 关于
+            </a>
+            
+        
+    </div>
+
+    
+
+    <div class="nav-footer">
+        
+Powered by <a href="https://github.com/gohugoio/hugo">hugo</a>
+<br>
+
+&copy;
+	
+	2021 ZackYJ&#39;s Blog
+	
+
+    </div>
+    
+</div><div id="extraContainer" class="extra-container">
+    
+    
+    <div class="pagination">
+        <a id="globalBackToTop" class="pagination-action animated-visibility" href="#top" :class="{ invisible: scrollY == 0 }">
+            <i class="material-icons pagination-action-icon">
+                keyboard_arrow_up
+            </i>
+        </a>
+        
+        <a type="button" class="pagination-action" id="darkModeToggleButton">
+            <span class="material-icons pagination-action-icon" id="darkModeToggleIcon">
+                dark_mode
+            </span>
+        </a>
+        
+        
+    </div>
+</div>
+<div class="single-column-drawer-container" id="drawer"
+     v-bind:class="{ 'single-column-drawer-container-active': isDrawerOpen }">
+    <div class="drawer-content">
+        <div class="drawer-menu">
+            
+            
+            
+                
+                
+                
+                    
+                
+                
+                
+                <a class="a-block drawer-menu-item active" href="/posts">
+                    📑 文章
+                </a>
+                
+            
+                
+                
+                
+                
+                
+                <a class="a-block drawer-menu-item false" href="/categories">
+                    🗄 分类
+                </a>
+                
+            
+                
+                
+                
+                
+                
+                <a class="a-block drawer-menu-item false" href="/tags">
+                    🏷 标签 
+                </a>
+                
+            
+                
+                
+                
+                
+                
+                <a class="a-block drawer-menu-item false" href="/project/project">
+                    📇 项目
+                </a>
+                
+            
+                
+                
+                
+                
+                
+                <a class="a-block drawer-menu-item false" href="/about/aboutme">
+                    👨‍💻 关于
+                </a>
+                
+            
+            
+            <div class="toc">
+
+
+	<div class="toc-content">
+	
+		
+		
+		
+		<center>- 目录 -</center>
+		
+		
+		<ul>
+			
+				
+				
+					
+						
+						
+						
+						
+							
+								
+									<ul>
+								
+							
+								
+									<ul>
+								
+							
+						
+						
+							<li>
+								<a href="#aop-%e4%bd%bf%e7%94%a8" onclick="onNavClick(`#aop-使用-nav`)" id="aop-使用-nav">
+									AOP 使用
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+						
+						
+							<li>
+								<a href="#%e6%89%93%e5%8d%b0%e6%8e%a5%e5%8f%a3%e6%97%a5%e5%bf%97" onclick="onNavClick(`#打印接口日志-nav`)" id="打印接口日志-nav">
+									打印接口日志
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+							
+								</ul>
+							
+						
+						
+						
+							<li>
+								<a href="#%e6%89%93%e5%8d%b0%e6%8e%a5%e5%8f%a3%e8%80%97%e6%97%b6" onclick="onNavClick(`#打印接口耗时-nav`)" id="打印接口耗时-nav">
+									打印接口耗时
+								</a>
+							</li>
+						
+						
+					
+				
+			
+		</ul>
+	</div>
+
+</div>
+            
+        </div>
+    </div>
+</div>
+<transition name="fade">
+    <div id="drawer-mask" v-bind:class="{ 'single-column-drawer-mask': mounted }" v-if="isDrawerOpen" v-on:click="toggleDrawer"></div>
+</transition>
+<nav id="navBar" class="navbar sticky-top navbar-light single-column-nav-container">
+    <div id="navBackground" class="nav-background"></div>
+    <div class="container container-narrow nav-content">
+        <button id="nav_dropdown_btn" class="nav-dropdown-toggle" type="button" v-on:click="toggleDrawer">
+            <i class="material-icons">
+                menu
+            </i>
+        </button>
+        <a id="navTitle" class="navbar-brand" href="https://blog.wvuuvw.xyz/">
+            ZackYJ&#39;s Blog
+        </a>
+        
+        <button type="button" class="nav-darkmode-toggle" id="darkModeToggleButton2">
+            <i class="material-icons" id="darkModeToggleIcon2">
+                dark_mode
+            </i>
+        </button>
+        
+    </div>
+</nav>
+<div class="single-column-header-container" id="pageHead"
+     v-bind:style="{ transform: 'translateZ(0px) translateY('+.3*scrollY+'px)', opacity: 1-navOpacity }">
+    <a href="https://blog.wvuuvw.xyz/">
+        <div class="single-column-header-title">ZackYJ&#39;s Blog</div>
+        
+        <div class="single-column-header-subtitle">Stay hungry , Stay foolish</div>
+        
+
+    </a>
+</div>
+
+            <div id="content">
+                <div id="streamContainer" class="stream-container">
+
+    <div class="post-list-container post-list-container-shadow">
+        <div class="post">
+            
+            
+            
+                
+            
+
+            <div class="post-head-wrapper"
+                
+                    
+                    
+                    style="background-image: url('https://blog.wvuuvw.xyz/%E5%B0%81%E9%9D%A2')"
+                    
+                
+            >
+                <div class="post-title">
+                    利用 Spring AOP 打印接口日志
+                    
+                    <div class="post-subtitle">
+                        前文介绍了过滤器和拦截器打印接口日志的方式
+                    </div>
+                    
+                    <div class="post-meta">
+                        
+                        <time itemprop="datePublished">
+                            2021-03-03 12:43
+                        </time>
+                        
+
+                        
+                            <i class="material-icons" style="">folder</i>
+                                <a href="/categories/java">Java</a>
+                                &nbsp;
+                        
+
+                        
+                            <i class="material-icons" style="">label</i>
+                            
+                                <a href="/tags/springboot">SpringBoot</a>
+                                &nbsp;
+                            
+                        
+                        
+                    </div>
+                </div>
+            </div>
+            
+            <div class="post-body-wrapper">
+                
+                <div class="post-body" v-pre>
+                
+                    <h3 id="aop-使用">AOP 使用</h3>
+<p>SpringBoot 项目中，只需要引入SpringBoot 集成的 AOP 依赖</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml"><span style="color:#ff79c6">&lt;dependency&gt;</span>
+  <span style="color:#ff79c6">&lt;groupId&gt;</span>org.springframework.boot<span style="color:#ff79c6">&lt;/groupId&gt;</span>
+  <span style="color:#ff79c6">&lt;artifactId&gt;</span>spring-boot-starter-aop<span style="color:#ff79c6">&lt;/artifactId&gt;</span>
+<span style="color:#ff79c6">&lt;/dependency&gt;</span>
+</code></pre></div><p>包含了用于解析切点表达式，实现切面类和方法匹配的 AspectJ 中的 Weaver 组件</p>
+<p>如果同时配置了拦截器和过滤器，执行顺序是：过滤器 -&gt;拦截器 -&gt; AOP</p>
+<p>想要使用 AOP，步骤如下：</p>
+<ol>
+<li>明确 Target (被 AOP 增强的对象和方法)，这里指的就是 Controller 层方法</li>
+<li>编写 AOP 类，把公共的增强方法（日志打印）制作成通知方法，并传入切点 JoinPoint 作为参数</li>
+<li>定义切点 ，并在通知方法的注解属性中指明切点，声明切点和通知的对应关系 (切面)</li>
+</ol>
+<h3 id="打印接口日志">打印接口日志</h3>
+<p>接口日志由前置方法打印</p>
+<ul>
+<li>
+<p>定义切点：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"> @Pointcut<span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;execution(public * xyz.uuuvw.yoaswxapi.controller..*Controller.*(..))&#34;</span><span style="color:#ff79c6">)</span>
+    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">controllerPointcut</span><span style="color:#ff79c6">()</span> <span style="color:#ff79c6">{</span>
+    <span style="color:#ff79c6">}</span>
+</code></pre></div></li>
+<li>
+<p>编写前置通知方法</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">@Before<span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;controllerPointcut()&#34;</span><span style="color:#ff79c6">)</span>
+<span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">doBefore</span><span style="color:#ff79c6">(</span>JoinPoint joinPoint<span style="color:#ff79c6">)</span> <span style="color:#8be9fd;font-style:italic">throws</span> Throwable <span style="color:#ff79c6">{</span>
+
+  <span style="color:#6272a4">// 增加日志流水号
+</span><span style="color:#6272a4"></span>  <span style="color:#6272a4">//MDC.put(&#34;LOG_ID&#34;, String.valueOf(snowFlake.nextId()));
+</span><span style="color:#6272a4"></span>
+  <span style="color:#6272a4">// 开始打印请求日志
+</span><span style="color:#6272a4"></span>  ServletRequestAttributes attributes <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">(</span>ServletRequestAttributes<span style="color:#ff79c6">)</span> RequestContextHolder<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getRequestAttributes</span><span style="color:#ff79c6">();</span>
+  HttpServletRequest request <span style="color:#ff79c6">=</span> attributes<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getRequest</span><span style="color:#ff79c6">();</span>
+  Signature signature <span style="color:#ff79c6">=</span> joinPoint<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getSignature</span><span style="color:#ff79c6">();</span>
+  String name <span style="color:#ff79c6">=</span> signature<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getName</span><span style="color:#ff79c6">();</span>
+
+  <span style="color:#6272a4">// 打印请求信息
+</span><span style="color:#6272a4"></span>  log<span style="color:#ff79c6">.</span><span style="color:#50fa7b">info</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;------------- 开始 -------------&#34;</span><span style="color:#ff79c6">);</span>
+  log<span style="color:#ff79c6">.</span><span style="color:#50fa7b">info</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;请求地址: {} {}&#34;</span><span style="color:#ff79c6">,</span> request<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getRequestURL</span><span style="color:#ff79c6">().</span><span style="color:#50fa7b">toString</span><span style="color:#ff79c6">(),</span> request<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getMethod</span><span style="color:#ff79c6">());</span>
+  log<span style="color:#ff79c6">.</span><span style="color:#50fa7b">info</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;类名方法: {}.{}&#34;</span><span style="color:#ff79c6">,</span> signature<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getDeclaringTypeName</span><span style="color:#ff79c6">(),</span> name<span style="color:#ff79c6">);</span>
+  log<span style="color:#ff79c6">.</span><span style="color:#50fa7b">info</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;远程地址: {}&#34;</span><span style="color:#ff79c6">,</span> request<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getRemoteAddr</span><span style="color:#ff79c6">());</span>
+<span style="color:#ff79c6">}</span>
+</code></pre></div><ul>
+<li>
+<p>这里在使用 nginx 作为反向代理时，无法获取到真实的远程 IP 地址，需要从 HttpServletRequest 的请求头中获得</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">    <span style="color:#6272a4">/**
+</span><span style="color:#6272a4">     * 使用nginx做反向代理时，获取到真实的远程IP
+</span><span style="color:#6272a4">     *
+</span><span style="color:#6272a4">     * @param request
+</span><span style="color:#6272a4">     * @return
+</span><span style="color:#6272a4">     */</span>
+    <span style="color:#8be9fd;font-style:italic">public</span> String <span style="color:#50fa7b">getRemoteIp</span><span style="color:#ff79c6">(</span>HttpServletRequest request<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+        String ip <span style="color:#ff79c6">=</span> request<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getHeader</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;x-forwarded-for&#34;</span><span style="color:#ff79c6">);</span>
+        <span style="color:#ff79c6">if</span> <span style="color:#ff79c6">(</span>ip <span style="color:#ff79c6">==</span> <span style="color:#ff79c6">null</span> <span style="color:#ff79c6">||</span> ip<span style="color:#ff79c6">.</span><span style="color:#50fa7b">length</span><span style="color:#ff79c6">()</span> <span style="color:#ff79c6">==</span> 0 <span style="color:#ff79c6">||</span> <span style="color:#f1fa8c">&#34;unknown&#34;</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">equalsIgnoreCase</span><span style="color:#ff79c6">(</span>ip<span style="color:#ff79c6">))</span> <span style="color:#ff79c6">{</span>
+            ip <span style="color:#ff79c6">=</span> request<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getHeader</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;Proxy-Client-IP&#34;</span><span style="color:#ff79c6">);</span>
+        <span style="color:#ff79c6">}</span>
+        <span style="color:#ff79c6">if</span> <span style="color:#ff79c6">(</span>ip <span style="color:#ff79c6">==</span> <span style="color:#ff79c6">null</span> <span style="color:#ff79c6">||</span> ip<span style="color:#ff79c6">.</span><span style="color:#50fa7b">length</span><span style="color:#ff79c6">()</span> <span style="color:#ff79c6">==</span> 0 <span style="color:#ff79c6">||</span> <span style="color:#f1fa8c">&#34;unknown&#34;</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">equalsIgnoreCase</span><span style="color:#ff79c6">(</span>ip<span style="color:#ff79c6">))</span> <span style="color:#ff79c6">{</span>
+            ip <span style="color:#ff79c6">=</span> request<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getHeader</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;WL-Proxy-Client-IP&#34;</span><span style="color:#ff79c6">);</span>
+        <span style="color:#ff79c6">}</span>
+        <span style="color:#ff79c6">if</span> <span style="color:#ff79c6">(</span>ip <span style="color:#ff79c6">==</span> <span style="color:#ff79c6">null</span> <span style="color:#ff79c6">||</span> ip<span style="color:#ff79c6">.</span><span style="color:#50fa7b">length</span><span style="color:#ff79c6">()</span> <span style="color:#ff79c6">==</span> 0 <span style="color:#ff79c6">||</span> <span style="color:#f1fa8c">&#34;unknown&#34;</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">equalsIgnoreCase</span><span style="color:#ff79c6">(</span>ip<span style="color:#ff79c6">))</span> <span style="color:#ff79c6">{</span>
+            ip <span style="color:#ff79c6">=</span> request<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getRemoteAddr</span><span style="color:#ff79c6">();</span>
+        <span style="color:#ff79c6">}</span>
+        <span style="color:#ff79c6">return</span> ip<span style="color:#ff79c6">;</span>
+    <span style="color:#ff79c6">}</span>
+</code></pre></div></li>
+</ul>
+</li>
+<li>
+<p>打印请求参数，并排除敏感字段</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"> <span style="color:#6272a4">// 打印请求参数
+</span><span style="color:#6272a4"></span>Object<span style="color:#ff79c6">[]</span> args <span style="color:#ff79c6">=</span> joinPoint<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getArgs</span><span style="color:#ff79c6">();</span>
+<span style="color:#6272a4">//log.info(&#34;请求参数: {}&#34;, JSONObject.toJSONString(args));
+</span><span style="color:#6272a4"></span>
+Object<span style="color:#ff79c6">[]</span> arguments <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">new</span> Object<span style="color:#ff79c6">[</span>args<span style="color:#ff79c6">.</span><span style="color:#50fa7b">length</span><span style="color:#ff79c6">];</span>
+<span style="color:#ff79c6">for</span> <span style="color:#ff79c6">(</span><span style="color:#8be9fd">int</span> i <span style="color:#ff79c6">=</span> 0<span style="color:#ff79c6">;</span> i <span style="color:#ff79c6">&lt;</span> args<span style="color:#ff79c6">.</span><span style="color:#50fa7b">length</span><span style="color:#ff79c6">;</span> i<span style="color:#ff79c6">++)</span> <span style="color:#ff79c6">{</span>
+  <span style="color:#ff79c6">if</span> <span style="color:#ff79c6">(</span>args<span style="color:#ff79c6">[</span>i<span style="color:#ff79c6">]</span> <span style="color:#ff79c6">instanceof</span> ServletRequest
+      <span style="color:#ff79c6">||</span> args<span style="color:#ff79c6">[</span>i<span style="color:#ff79c6">]</span> <span style="color:#ff79c6">instanceof</span> ServletResponse
+      <span style="color:#ff79c6">||</span> args<span style="color:#ff79c6">[</span>i<span style="color:#ff79c6">]</span> <span style="color:#ff79c6">instanceof</span> MultipartFile<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+    <span style="color:#ff79c6">continue</span><span style="color:#ff79c6">;</span>
+  <span style="color:#ff79c6">}</span>
+  arguments<span style="color:#ff79c6">[</span>i<span style="color:#ff79c6">]</span> <span style="color:#ff79c6">=</span> args<span style="color:#ff79c6">[</span>i<span style="color:#ff79c6">];</span>
+<span style="color:#ff79c6">}</span>
+<span style="color:#6272a4">// 排除字段，敏感字段或太长的字段不显示
+</span><span style="color:#6272a4"></span>String<span style="color:#ff79c6">[]</span> excludeProperties <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">{</span><span style="color:#f1fa8c">&#34;password&#34;</span><span style="color:#ff79c6">,</span> <span style="color:#f1fa8c">&#34;file&#34;</span><span style="color:#ff79c6">,</span> <span style="color:#f1fa8c">&#34;resource&#34;</span><span style="color:#ff79c6">,</span> <span style="color:#f1fa8c">&#34;photo&#34;</span><span style="color:#ff79c6">};</span>
+PropertyPreFilters filters <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">new</span> PropertyPreFilters<span style="color:#ff79c6">();</span>
+PropertyPreFilters<span style="color:#ff79c6">.</span><span style="color:#50fa7b">MySimplePropertyPreFilter</span> excludeFilter <span style="color:#ff79c6">=</span> filters<span style="color:#ff79c6">.</span><span style="color:#50fa7b">addFilter</span><span style="color:#ff79c6">();</span>
+excludeFilter<span style="color:#ff79c6">.</span><span style="color:#50fa7b">addExcludes</span><span style="color:#ff79c6">(</span>excludeProperties<span style="color:#ff79c6">);</span>
+log<span style="color:#ff79c6">.</span><span style="color:#50fa7b">info</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;请求参数: {}&#34;</span><span style="color:#ff79c6">,</span> JSONObject<span style="color:#ff79c6">.</span><span style="color:#50fa7b">toJSONString</span><span style="color:#ff79c6">(</span>arguments<span style="color:#ff79c6">,</span> excludeFilter<span style="color:#ff79c6">));</span>
+</code></pre></div></li>
+</ul>
+<h2 id="打印接口耗时">打印接口耗时</h2>
+<p>接口耗时使用 环绕通知实现，并在返回的结果中排除敏感字段</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">    @Around<span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;controllerPointcut()&#34;</span><span style="color:#ff79c6">)</span>
+    <span style="color:#8be9fd;font-style:italic">public</span> Object <span style="color:#50fa7b">doAround</span><span style="color:#ff79c6">(</span>ProceedingJoinPoint proceedingJoinPoint<span style="color:#ff79c6">)</span> <span style="color:#8be9fd;font-style:italic">throws</span> Throwable <span style="color:#ff79c6">{</span>
+        <span style="color:#8be9fd">long</span> startTime <span style="color:#ff79c6">=</span> System<span style="color:#ff79c6">.</span><span style="color:#50fa7b">currentTimeMillis</span><span style="color:#ff79c6">();</span>
+        Object result <span style="color:#ff79c6">=</span> proceedingJoinPoint<span style="color:#ff79c6">.</span><span style="color:#50fa7b">proceed</span><span style="color:#ff79c6">();</span>
+        <span style="color:#6272a4">// 排除字段，敏感字段或太长的字段不显示
+</span><span style="color:#6272a4"></span>        String<span style="color:#ff79c6">[]</span> excludeProperties <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">{</span><span style="color:#f1fa8c">&#34;password&#34;</span><span style="color:#ff79c6">,</span> <span style="color:#f1fa8c">&#34;file&#34;</span><span style="color:#ff79c6">};</span>
+        PropertyPreFilters filters <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">new</span> PropertyPreFilters<span style="color:#ff79c6">();</span>
+        PropertyPreFilters<span style="color:#ff79c6">.</span><span style="color:#50fa7b">MySimplePropertyPreFilter</span> excludefilter <span style="color:#ff79c6">=</span> filters<span style="color:#ff79c6">.</span><span style="color:#50fa7b">addFilter</span><span style="color:#ff79c6">();</span>
+        excludefilter<span style="color:#ff79c6">.</span><span style="color:#50fa7b">addExcludes</span><span style="color:#ff79c6">(</span>excludeProperties<span style="color:#ff79c6">);</span>
+        log<span style="color:#ff79c6">.</span><span style="color:#50fa7b">info</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;返回结果: {}&#34;</span><span style="color:#ff79c6">,</span> JSONObject<span style="color:#ff79c6">.</span><span style="color:#50fa7b">toJSONString</span><span style="color:#ff79c6">(</span>result<span style="color:#ff79c6">,</span> excludefilter<span style="color:#ff79c6">));</span>
+        log<span style="color:#ff79c6">.</span><span style="color:#50fa7b">info</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;-------- 结束 耗时：{} ms ---------&#34;</span><span style="color:#ff79c6">,</span> System<span style="color:#ff79c6">.</span><span style="color:#50fa7b">currentTimeMillis</span><span style="color:#ff79c6">()</span> <span style="color:#ff79c6">-</span> startTime<span style="color:#ff79c6">);</span>
+        <span style="color:#ff79c6">return</span> result<span style="color:#ff79c6">;</span>
+    <span style="color:#ff79c6">}</span>
+</code></pre></div>
+                    
+                    <HR width="100%" id="EOF">
+		    <p style="color:#777;">最后修改于 2021-03-03</p>
+                    
+                </div>
+            </div>
+            
+            
+            <nav class="post-pagination">
+
+                
+                <a class="newer-posts" href="https://blog.wvuuvw.xyz/posts/%E5%B9%B6%E6%9F%A5%E9%9B%86%E5%AE%9E%E7%8E%B0/">
+			上一篇<br>数据结构：并查集介绍和实现
+                </a>
+                
+                
+                
+                <a class="older-posts" href="https://blog.wvuuvw.xyz/posts/%E8%BF%87%E6%BB%A4%E5%99%A8%E6%8B%A6%E6%88%AA%E5%99%A8%E6%89%93%E5%8D%B0%E6%8E%A5%E5%8F%A3%E8%80%97%E6%97%B6/">
+			下一篇<br>SpringBoot 打印接口耗时的两种方式
+                </a>
+                
+            </nav>
+            <div class="post-comment-wrapper">
+                
+
+
+
+
+
+
+
+
+
+
+            </div>
+        </div>
+    </div>
+
+
+                    </div>
+            </div><div id="single-column-footer">
+Powered by <a href="https://github.com/gohugoio/hugo">hugo</a>
+<br>
+
+&copy;
+	
+	2021 ZackYJ&#39;s Blog
+	
+</div>
+            </div>
+    
+    <script src="/js/journal.js"></script>
+    </body>
+</html>

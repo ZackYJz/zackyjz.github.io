@@ -11,6 +11,814 @@
     
     
     
+        <item>
+        <title>自定义数据库连接池的实现</title>
+        <link>https://blog.wvuuvw.xyz/posts/jdbc%E8%BF%9E%E6%8E%A5%E6%B1%A0%E5%AE%9E%E7%8E%B0/</link>
+        <pubDate>Sat, 14 Nov 2020 11:25:05 -0400</pubDate>
+        
+        <guid>https://blog.wvuuvw.xyz/posts/jdbc%E8%BF%9E%E6%8E%A5%E6%B1%A0%E5%AE%9E%E7%8E%B0/</guid>
+        <description>ZackYJ&#39;s Blog https://blog.wvuuvw.xyz/posts/jdbc%E8%BF%9E%E6%8E%A5%E6%B1%A0%E5%AE%9E%E7%8E%B0/ -&lt;h3 id=&#34;背景&#34;&gt;背景&lt;/h3&gt;
+&lt;p&gt;数据库连接池用于分配、管理和释放（归还）数据库连接对象 Connection&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;有了数据库连接池，可以允许应用重复使用一个现有的数据库连接&lt;/li&gt;
+&lt;li&gt;从而避免了频繁创建和释放连接，消耗系统资源&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;最常用的第三方连接池有DBCP、 C3p0、Druid 等，本文实现一个具有基本功能的连接池&lt;/p&gt;
+&lt;h3 id=&#34;基本功能&#34;&gt;基本功能&lt;/h3&gt;
+&lt;p&gt;JDBC 中 &lt;code&gt;java.sql.DataSource&lt;/code&gt; 接口定义了数据库连接池的规范&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;代表一个数据源，可以用于实现连接池&lt;/li&gt;
+&lt;li&gt;获取数据库连接对象的方法：&lt;code&gt;Connection getConnection();&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;覆写这个接口中的方法，可实现基本的连接池功能：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;定义一个类，实现DataSource接口&lt;/li&gt;
+&lt;li&gt;定义一个容器，保存多个Connection连接对象&lt;/li&gt;
+&lt;li&gt;定义静态代码块，通过JDBC工具类获取多个连接保存到容器中&lt;/li&gt;
+&lt;li&gt;==重写getConnection方法，从容器获取连接并返回==&lt;/li&gt;
+&lt;li&gt;定义getSize方法，获取容器大小并返回&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;public&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;class&lt;/span&gt; &lt;span style=&#34;color:#50fa7b&#34;&gt;MyDataSource&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;implements&lt;/span&gt; DataSource&lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+    &lt;span style=&#34;color:#6272a4&#34;&gt;//1.定义集合容器，用于保存多个数据库连接对象
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#6272a4&#34;&gt;//Collections.synchronizedList可以将普通集合转成线程安全集合
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;private&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;static&lt;/span&gt; List&lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;lt;&lt;/span&gt;Connection&lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;gt;&lt;/span&gt; pool &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; Collections&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;synchronizedList&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;new&lt;/span&gt; ArrayList&lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;lt;&lt;/span&gt;Connection&lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;gt;());&lt;/span&gt;
+    &lt;span style=&#34;color:#6272a4&#34;&gt;//2.定义静态代码块，生成10个数据库连接保存到集合中
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;static&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;for&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#8be9fd&#34;&gt;int&lt;/span&gt; i &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; 0&lt;span style=&#34;color:#ff79c6&#34;&gt;;&lt;/span&gt; i &lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;lt;&lt;/span&gt; 10&lt;span style=&#34;color:#ff79c6&#34;&gt;;&lt;/span&gt; i&lt;span style=&#34;color:#ff79c6&#34;&gt;++)&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+            Connection con &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; JDBCUtils&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;getConnection&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+            pool&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;add&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;con&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+    &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+    &lt;span style=&#34;color:#6272a4&#34;&gt;//返回连接池的大小
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;public&lt;/span&gt; &lt;span style=&#34;color:#8be9fd&#34;&gt;int&lt;/span&gt; &lt;span style=&#34;color:#50fa7b&#34;&gt;getSize&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;()&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;return&lt;/span&gt; pool&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;size&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+    &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+
+    &lt;span style=&#34;color:#6272a4&#34;&gt;//从池中返回一个数据库连接
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;    @Override
+    &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;public&lt;/span&gt; Connection &lt;span style=&#34;color:#50fa7b&#34;&gt;getConnection&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;()&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;if&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;pool&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;size&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;()&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;gt;&lt;/span&gt; 0&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+            &lt;span style=&#34;color:#6272a4&#34;&gt;//从池中获取数据库连接
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;            &lt;span style=&#34;color:#ff79c6&#34;&gt;return&lt;/span&gt; pool&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;remove&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;0&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;else&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+            &lt;span style=&#34;color:#ff79c6&#34;&gt;throw&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;new&lt;/span&gt; RuntimeException&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#f1fa8c&#34;&gt;&amp;#34;连接数量已用尽&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+    &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+ &lt;span style=&#34;color:#ff79c6&#34;&gt;.....&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;其他需要重写的方法&lt;/span&gt;
+&lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;归还连接功能&#34;&gt;归还连接功能&lt;/h3&gt;
+&lt;h4 id=&#34;继承&#34;&gt;&lt;del&gt;继承&lt;/del&gt;&lt;/h4&gt;
+&lt;p&gt;通过打印 Connection.getClass() 可以发现 DriverManager 获取的连接对象实现类是 JDBC4Connection，是不是可以自定义一个类来继承JDBC4Connection这个类，重写close() 方法呢？&lt;/p&gt;
+&lt;p&gt;经过测试是行不通的，DriverManager 还是会去获取JDBC4Connection对象，猜测应该是使用了自定义的类加载的缘故，而这个驱动内部的类我们是无法修改的&lt;/p&gt;
+&lt;h4 id=&#34;装饰者模式&#34;&gt;装饰者模式&lt;/h4&gt;
+&lt;blockquote&gt;
+&lt;p&gt;定义一个类，实现Connection接口，这样就具备了和JDBC4Connection相同行为， 重写close()方法，完成连接归还，其余功能调用原有实现方法&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h5 id=&#34;实现步骤&#34;&gt;实现步骤&lt;/h5&gt;
+&lt;ol&gt;
+&lt;li&gt;定义一个类实现Connection接口&lt;/li&gt;
+&lt;li&gt;定义Connection连接对象和连接池容量对象的成员变量&lt;/li&gt;
+&lt;li&gt;用有参构造方法给成员变量赋值&lt;/li&gt;
+&lt;li&gt;重写close()方法，将连接对象添加到池子中&lt;/li&gt;
+&lt;li&gt;其他方法调用Mysql 驱动包的原方法即可&lt;/li&gt;
+&lt;li&gt;在自定义连接池中，将获取的连接对象通过自定义连接对象进行包装&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;public&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;class&lt;/span&gt; &lt;span style=&#34;color:#50fa7b&#34;&gt;MyConnection&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;implements&lt;/span&gt; Connection &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+
+    &lt;span style=&#34;color:#6272a4&#34;&gt;//定义Connection连接对象和连接池容器对象的变量
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;private&lt;/span&gt; Connection con&lt;span style=&#34;color:#ff79c6&#34;&gt;;&lt;/span&gt;
+    &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;private&lt;/span&gt; List&lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;lt;&lt;/span&gt;Connection&lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;gt;&lt;/span&gt; pool&lt;span style=&#34;color:#ff79c6&#34;&gt;;&lt;/span&gt;
+
+    &lt;span style=&#34;color:#6272a4&#34;&gt;//提供有参构造方法，接收连接对象和连接池对象，对变量赋值
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;public&lt;/span&gt; &lt;span style=&#34;color:#50fa7b&#34;&gt;MyConnection2&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;Connection con&lt;span style=&#34;color:#ff79c6&#34;&gt;,&lt;/span&gt;List&lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;lt;&lt;/span&gt;Connection&lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;gt;&lt;/span&gt; pool&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;this&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;con&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; con&lt;span style=&#34;color:#ff79c6&#34;&gt;;&lt;/span&gt;
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;this&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;pool&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; pool&lt;span style=&#34;color:#ff79c6&#34;&gt;;&lt;/span&gt;
+    &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+
+    &lt;span style=&#34;color:#6272a4&#34;&gt;//重写close()方法，完成连接的归还
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;    @Override
+    &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;public&lt;/span&gt; &lt;span style=&#34;color:#8be9fd&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#50fa7b&#34;&gt;close&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;()&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;throws&lt;/span&gt; SQLException &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+        pool&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;add&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;con&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+    &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+    其他方法&lt;span style=&#34;color:#ff79c6&#34;&gt;....&lt;/span&gt;
+    &lt;span style=&#34;color:#ff79c6&#34;&gt;return&lt;/span&gt; con&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;xxx&lt;/span&gt;
+&lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h5 id=&#34;修改获取连接方法&#34;&gt;修改获取连接方法&lt;/h5&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;    &lt;span style=&#34;color:#6272a4&#34;&gt;//从池中返回一个数据库连接
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;    @Override
+    &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;public&lt;/span&gt; Connection &lt;span style=&#34;color:#50fa7b&#34;&gt;getConnection&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;()&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;if&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;pool&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;size&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;()&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;gt;&lt;/span&gt; 0&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+            &lt;span style=&#34;color:#6272a4&#34;&gt;//从池中获取数据库连接
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;            Connection con &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; pool&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;remove&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;0&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+            &lt;span style=&#34;color:#6272a4&#34;&gt;//通过自定义连接对象进行包装
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;            MyConnection mycon &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;new&lt;/span&gt; MyConnection&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;con&lt;span style=&#34;color:#ff79c6&#34;&gt;,&lt;/span&gt;pool&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+            &lt;span style=&#34;color:#6272a4&#34;&gt;//返回包装后的连接对象
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;            &lt;span style=&#34;color:#ff79c6&#34;&gt;return&lt;/span&gt; mycon&lt;span style=&#34;color:#ff79c6&#34;&gt;;&lt;/span&gt;
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;else&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+            &lt;span style=&#34;color:#ff79c6&#34;&gt;throw&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;new&lt;/span&gt; RuntimeException&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#f1fa8c&#34;&gt;&amp;#34;连接数量已用尽&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+    &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;blockquote&gt;
+&lt;p&gt;问题是：我只想重写close方法，却有其他大量的方法需要在类中重写&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h4 id=&#34;适配器模式&#34;&gt;适配器模式&lt;/h4&gt;
+&lt;blockquote&gt;
+&lt;p&gt;定义一个适配器类（中间类）实现Connection接口，将其他所有方法进行实现 自定义类只需要继承这个适配器类，重写要改进的那个方法就行&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h5 id=&#34;实现步骤-1&#34;&gt;实现步骤&lt;/h5&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;定义适配器类，实现 Connection 接口&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;定义 Connection 连接对象的成员变量&lt;/li&gt;
+&lt;li&gt;有参构造给成员变量赋值&lt;/li&gt;
+&lt;li&gt;除了 close 之外的方法，都调用 conn 原本的方法完成&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;定义连接类，继承适配器&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;定义 Connection 连接对象和连接池容器(List)
+通过有参构造赋值&lt;/li&gt;
+&lt;li&gt;重写 close() 方法，完成连接归还
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;	  &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;public&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;class&lt;/span&gt; &lt;span style=&#34;color:#50fa7b&#34;&gt;MyConnection2&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;extends&lt;/span&gt; MyAdapter &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+	      &lt;span style=&#34;color:#6272a4&#34;&gt;//2.定义Connection连接对象和连接池容器对象的变量
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;	      &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;private&lt;/span&gt; Connection con&lt;span style=&#34;color:#ff79c6&#34;&gt;;&lt;/span&gt;
+	      &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;private&lt;/span&gt; List&lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;lt;&lt;/span&gt;Connection&lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;gt;&lt;/span&gt; pool&lt;span style=&#34;color:#ff79c6&#34;&gt;;&lt;/span&gt;
+	      &lt;span style=&#34;color:#6272a4&#34;&gt;//3.提供有参构造方法，接收连接对象和连接池对象，对变量赋值
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;	      &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;public&lt;/span&gt; &lt;span style=&#34;color:#50fa7b&#34;&gt;MyConnection2&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;Connection con&lt;span style=&#34;color:#ff79c6&#34;&gt;,&lt;/span&gt;List&lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;lt;&lt;/span&gt;Connection&lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;gt;&lt;/span&gt; pool&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+	          &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;super&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;con&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;    &lt;span style=&#34;color:#6272a4&#34;&gt;// 将接收的数据库连接对象给适配器父类传递
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;	          &lt;span style=&#34;color:#ff79c6&#34;&gt;this&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;con&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; con&lt;span style=&#34;color:#ff79c6&#34;&gt;;&lt;/span&gt;
+	          &lt;span style=&#34;color:#ff79c6&#34;&gt;this&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;pool&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; pool&lt;span style=&#34;color:#ff79c6&#34;&gt;;&lt;/span&gt;
+	      &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+	      &lt;span style=&#34;color:#6272a4&#34;&gt;//4.在close()方法中，完成连接的归还
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;	      @Override
+	      &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;public&lt;/span&gt; &lt;span style=&#34;color:#8be9fd&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#50fa7b&#34;&gt;close&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;()&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;throws&lt;/span&gt; SQLException &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+	          pool&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;add&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;con&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+	      &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+	  &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;在自定义连接池中，对连接对象用自定义连接类包装
+``` java
+//从池中返回一个数据库连接
+@Override
+public Connection getConnection() {
+if(pool.size() &amp;gt; 0) {
+//从池中获取数据库连接
+Connection con = pool.remove(0);&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;	          //通过自定义连接对象进行包装
+	          //MyConnection mycon = new MyConnection(con,pool);
+	          MyConnection2 mycon = new MyConnection2(con,pool);
+
+	          //返回包装后的连接对象
+	          return mycon;
+	      }else {
+	          throw new RuntimeException(&amp;quot;连接数量已用尽&amp;quot;);
+	      }
+	  }
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;但依然还要自己写个适配器类，还是有点繁琐&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;动态代理模式&#34;&gt;动态代理模式&lt;/h3&gt;
+&lt;p&gt;使用JDK动态代理的方式，重写 invoke 方法，在方法中对原有方法进行增强&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;//动态代理方式
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;@Override
+&lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;public&lt;/span&gt; Connection &lt;span style=&#34;color:#50fa7b&#34;&gt;getConnection&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;()&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+    &lt;span style=&#34;color:#ff79c6&#34;&gt;if&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;pool&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;size&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;()&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;gt;&lt;/span&gt; 0&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+        &lt;span style=&#34;color:#6272a4&#34;&gt;//从池中获取数据库连接
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;        Connection con &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; pool&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;remove&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;0&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+
+        Connection proxyCon &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;Connection&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt;Proxy&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;newProxyInstance&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;con&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;getClass&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;().&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;getClassLoader&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(),&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;new&lt;/span&gt; Class&lt;span style=&#34;color:#ff79c6&#34;&gt;[]{&lt;/span&gt;Connection&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;class&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;},&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;new&lt;/span&gt; InvocationHandler&lt;span style=&#34;color:#ff79c6&#34;&gt;()&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+            &lt;span style=&#34;color:#6272a4&#34;&gt;/*
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;                执行Connection实现类所有方法都会经过invoke
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;                如果是close方法，则将连接还回池中
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;                如果不是，直接执行实现类的原有方法
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;             */&lt;/span&gt;
+            @Override
+            &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;public&lt;/span&gt; Object &lt;span style=&#34;color:#50fa7b&#34;&gt;invoke&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;Object proxy&lt;span style=&#34;color:#ff79c6&#34;&gt;,&lt;/span&gt; Method method&lt;span style=&#34;color:#ff79c6&#34;&gt;,&lt;/span&gt; Object&lt;span style=&#34;color:#ff79c6&#34;&gt;[]&lt;/span&gt; args&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;throws&lt;/span&gt; Throwable &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+                &lt;span style=&#34;color:#ff79c6&#34;&gt;if&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;method&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;getName&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;().&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;equals&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#f1fa8c&#34;&gt;&amp;#34;close&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;))&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+                    pool&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;add&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;con&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+                    &lt;span style=&#34;color:#ff79c6&#34;&gt;return&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;null&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;;&lt;/span&gt;
+                &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;else&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+                    &lt;span style=&#34;color:#ff79c6&#34;&gt;return&lt;/span&gt; method&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;invoke&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;con&lt;span style=&#34;color:#ff79c6&#34;&gt;,&lt;/span&gt;args&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+                &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+            &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;});&lt;/span&gt;
+
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;return&lt;/span&gt; proxyCon&lt;span style=&#34;color:#ff79c6&#34;&gt;;&lt;/span&gt;
+    &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;else&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;throw&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;new&lt;/span&gt; RuntimeException&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#f1fa8c&#34;&gt;&amp;#34;连接数量已用尽&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+    &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+&lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;- https://blog.wvuuvw.xyz/posts/jdbc%E8%BF%9E%E6%8E%A5%E6%B1%A0%E5%AE%9E%E7%8E%B0/ - </description>
+        </item>
+    
+    
+    
+        <item>
+        <title>简易多人聊天室[2]-NIO模型实现</title>
+        <link>https://blog.wvuuvw.xyz/posts/%E7%AE%80%E6%98%93%E5%A4%9A%E4%BA%BA%E8%81%8A%E5%A4%A9%E5%AE%A4-nio%E5%AE%9E%E7%8E%B0/</link>
+        <pubDate>Sat, 02 May 2020 13:31:23 +0800</pubDate>
+        
+        <guid>https://blog.wvuuvw.xyz/posts/%E7%AE%80%E6%98%93%E5%A4%9A%E4%BA%BA%E8%81%8A%E5%A4%A9%E5%AE%A4-nio%E5%AE%9E%E7%8E%B0/</guid>
+        <description>ZackYJ&#39;s Blog https://blog.wvuuvw.xyz/posts/%E7%AE%80%E6%98%93%E5%A4%9A%E4%BA%BA%E8%81%8A%E5%A4%A9%E5%AE%A4-nio%E5%AE%9E%E7%8E%B0/ -&lt;h2 id=&#34;总体流程&#34;&gt;总体流程&lt;/h2&gt;
+&lt;hr&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;ServerSocketChannel&lt;/code&gt; 注册 ACCEPT 事件监听到 Selector 中，用于监听 accept 事件&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;当有一个客户端发出连接请求，服务器接收了客户端连接请求时，即触发了 &lt;code&gt;ServerSocketChannel&lt;/code&gt; 的 accept 事件&lt;/li&gt;
+&lt;li&gt;与 BIO 模型中 &lt;code&gt;ServerSocket.accept()&lt;/code&gt; 执行的事件相同，即接收了该客户端的连接请求&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;ServerSocketChannel&lt;/code&gt; 触发 accept 事件后，服务器端&lt;u&gt;处理&lt;/u&gt;新建立连接的客户端&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;得到客户端对应的 SocketChannel&lt;/li&gt;
+&lt;li&gt;将新连接的客户端的 SocketChannel 注册 READ 事件在 Selector 中&lt;/li&gt;
+&lt;/ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;即让 Selector 监控客户端的 SocketChannel 是否触发 READ (可读) 事件&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;触发时机：当该客户端像服务器发送了数据，其 SocketChannel 上有了可供服务器读取的数据时，触发 READ 事件&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;对可读事件触发后的处理操作和 BIO 类似：读取 SocketChannel 的数据并转发给当前连接到服务器的其他客户端&lt;/p&gt;
+&lt;p&gt;但在 NIO 中，处理客户端连接的操作都是&lt;strong&gt;在同一个线程中进行&lt;/strong&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;注意&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;虽然 NIO 模型中各个读写操作支持非阻塞式的调用，但 Selector 监听各个 Channel  的 select() 方法是阻塞调用的&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;也就是说，Selector 上监听的所有 Channel 都没有触发其注册监听的事件，此时 Selector 会阻塞，直到有所要监听事件发生&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;服务端&#34;&gt;服务端&lt;/h2&gt;
+&lt;hr&gt;
+&lt;h3 id=&#34;准备工作&#34;&gt;准备工作&lt;/h3&gt;
+&lt;h4 id=&#34;成员--构造方法&#34;&gt;成员 &amp;amp; 构造方法&lt;/h4&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;    &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;private&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;static&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;final&lt;/span&gt; String QUIT &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#f1fa8c&#34;&gt;&amp;#34;bye&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;;&lt;/span&gt;
+    &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;private&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;static&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;final&lt;/span&gt; &lt;span style=&#34;color:#8be9fd&#34;&gt;int&lt;/span&gt; DEFAULT_PORT &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; 9988&lt;span style=&#34;color:#ff79c6&#34;&gt;;&lt;/span&gt;
+    &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;private&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;static&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;final&lt;/span&gt; &lt;span style=&#34;color:#8be9fd&#34;&gt;int&lt;/span&gt; BUFFER_SIZE &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; 1024&lt;span style=&#34;color:#ff79c6&#34;&gt;;&lt;/span&gt;
+
+    &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;private&lt;/span&gt; ServerSocketChannel serverChannel&lt;span style=&#34;color:#ff79c6&#34;&gt;;&lt;/span&gt;
+    &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;private&lt;/span&gt; Selector selector&lt;span style=&#34;color:#ff79c6&#34;&gt;;&lt;/span&gt;
+    &lt;span style=&#34;color:#6272a4&#34;&gt;//ServerSocketChannel 从 SocketChannel 中读取数据
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;private&lt;/span&gt; ByteBuffer readBuffer &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; ByteBuffer&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;allocate&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;BUFFER_SIZE&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+    &lt;span style=&#34;color:#6272a4&#34;&gt;//用于向其他的 SocketChannel 中写数据,负责实现转发消息时写入其他客户端
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;private&lt;/span&gt; ByteBuffer writeBuffer &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; ByteBuffer&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;allocate&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;BUFFER_SIZE&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+    &lt;span style=&#34;color:#6272a4&#34;&gt;//声明标准化字符集
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;private&lt;/span&gt; Charset charset &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; Charset&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;forName&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#f1fa8c&#34;&gt;&amp;#34;UTF-8&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+    &lt;span style=&#34;color:#6272a4&#34;&gt;//自定监听的端口
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;private&lt;/span&gt; &lt;span style=&#34;color:#8be9fd&#34;&gt;int&lt;/span&gt; port&lt;span style=&#34;color:#ff79c6&#34;&gt;;&lt;/span&gt;
+
+    &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;public&lt;/span&gt; &lt;span style=&#34;color:#50fa7b&#34;&gt;Server&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(){&lt;/span&gt;
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;this&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;DEFAULT_PORT&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+    &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+
+    &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;public&lt;/span&gt; &lt;span style=&#34;color:#50fa7b&#34;&gt;Server&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#8be9fd&#34;&gt;int&lt;/span&gt; port&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;this&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;port&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; port&lt;span style=&#34;color:#ff79c6&#34;&gt;;&lt;/span&gt;
+    &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h4 id=&#34;help-func&#34;&gt;Help func&lt;/h4&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;统一的关闭操作&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;private&lt;/span&gt; &lt;span style=&#34;color:#8be9fd&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#50fa7b&#34;&gt;close&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;Closeable closeable&lt;span style=&#34;color:#ff79c6&#34;&gt;){&lt;/span&gt;
+    &lt;span style=&#34;color:#ff79c6&#34;&gt;if&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;closeable &lt;span style=&#34;color:#ff79c6&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;null&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;){&lt;/span&gt;
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;try&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+          closeable&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;close&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;catch&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;IOException e&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+          e&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;printStackTrace&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+    &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+&lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;主流程start&#34;&gt;主流程：&lt;code&gt;start()&lt;/code&gt;&lt;/h3&gt;
+&lt;hr&gt;
+&lt;p&gt;现在开始实现核心的方法 start&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;调用静态方法 &lt;code&gt;ServerSocketChannel.open() &lt;/code&gt;创建一个 ServerSocketChannel&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;serverChannel &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; ServerSocketChannel&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;open&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;()&lt;/span&gt;
+serverChannel&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;configureBlocking&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;false&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;默认情况下创建的 ServerSocketChannel 为阻塞式调用，这里我们需要设置调用模式为非阻塞式&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;将 ServerSocketChannel 关联的 ServerSocket 绑定到监听端口&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;serverChannel&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;socket&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;().&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;bind&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;new&lt;/span&gt; InetSocketAddress&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;port&lt;span style=&#34;color:#ff79c6&#34;&gt;));&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;创建 selector 对象，并将 ServerSocketChannel 的 ACCEPT事件注册到 selector 对象中&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;selector &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; Selector&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;open&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+serverChannel&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;register&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;selector&lt;span style=&#34;color:#ff79c6&#34;&gt;,&lt;/span&gt;SelectionKey&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;OP_ACCEPT&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;开始监听连接请求&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;while&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;true&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;){&lt;/span&gt;
+  selector&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;select&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+  Set&lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;lt;&lt;/span&gt;SelectionKey&lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;gt;&lt;/span&gt; keys &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; selector&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;selectedKeys&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+&lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;当没有channel 触发事件时 select() 会阻塞，直到有 channel 的事件触发。服务端需要不断监听，需要在循环中调用&lt;/li&gt;
+&lt;li&gt;selectedKeys 返回本次监听到的所有触发了事件的 channel 对应的 selectedKey Set 集合&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;处理触发事件&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;for&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;SelectionKey key &lt;span style=&#34;color:#ff79c6&#34;&gt;:&lt;/span&gt; keys&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+  handles&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;key&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+&lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+keys&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;clear&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;对于集合中每一个触发事件，调用 handles() 进行处理，将在后文实现。&lt;/li&gt;
+&lt;li&gt;处理完后，需要手动将 selectedKeys 集合清空，保证下一轮不处理过期的重复事件&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&#34;事件处理handles&#34;&gt;事件处理：&lt;code&gt;handles()&lt;/code&gt;&lt;/h3&gt;
+&lt;hr&gt;
+&lt;h4 id=&#34;accept-事件&#34;&gt;ACCEPT 事件&lt;/h4&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;发生在服务器通道 &lt;code&gt;serverSocketChannel&lt;/code&gt; 上&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;触发时机： 和客户端建立了连接&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;处理流程：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;调用传入的 selectedKey 的 &lt;code&gt;channel()&lt;/code&gt; 获得触发这个事件的 ServerSocketChannel&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;调用 &lt;code&gt;accept()&lt;/code&gt; 方法，返回对应的客户端通道 SocketChannel&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;客户端的 channel 也要切换到非阻塞调用模式&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;接着客户端的 channel 也需要注册到 selector 上，事件为 READ&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;if&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;key&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;isAcceptable&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;()){&lt;/span&gt;
+    &lt;span style=&#34;color:#6272a4&#34;&gt;//得到触发了这个事件的通道
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;    ServerSocketChannel serverChannel &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;ServerSocketChannel&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt; key&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;channel&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+    SocketChannel clientChannel &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; serverChannel&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;accept&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+    clientChannel&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;configureBlocking&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;false&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+    clientChannel&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;register&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;selector&lt;span style=&#34;color:#ff79c6&#34;&gt;,&lt;/span&gt;SelectionKey&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;OP_READ&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+    System&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;out&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;println&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;getClientName&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;clientChannel&lt;span style=&#34;color:#ff79c6&#34;&gt;)+&lt;/span&gt;&lt;span style=&#34;color:#f1fa8c&#34;&gt;&amp;#34;已连接&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+&lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h4 id=&#34;read-事件&#34;&gt;READ 事件&lt;/h4&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;利用 Buffer 从客户端 channel 中读出发来的消息，进行打印等处理&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;关于 Buffer 的操作在之前本地文件拷贝的文章中有介绍：传送门&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;将消息转发到其他客户端&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;检查是否退出等业务操作&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;else&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;if&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;key&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;isReadable&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;()){&lt;/span&gt;
+    SocketChannel clientChannel &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;SocketChannel&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt; key&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;channel&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+    String fwdMsg &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; receive&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;clientChannel&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+    &lt;span style=&#34;color:#ff79c6&#34;&gt;if&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;fwdMsg&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;isEmpty&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;()){&lt;/span&gt;
+        &lt;span style=&#34;color:#6272a4&#34;&gt;//消息为空，出现异常，不再监听该 channel 的事件
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;        key&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;cancel&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+        &lt;span style=&#34;color:#6272a4&#34;&gt;//更新 selector 状态，立即返回 select() 方法（多线程下）
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;        selector&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;wakeup&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+    &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;else&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+        System&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;out&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;println&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;getClientName&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;clientChannel&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#f1fa8c&#34;&gt;&amp;#34;:&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;+&lt;/span&gt; fwdMsg&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+        forwardMessage&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;clientChannel&lt;span style=&#34;color:#ff79c6&#34;&gt;,&lt;/span&gt; fwdMsg&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+        &lt;span style=&#34;color:#6272a4&#34;&gt;// 检查用户是否退出
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;        &lt;span style=&#34;color:#ff79c6&#34;&gt;if&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;checkQuit&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;fwdMsg&lt;span style=&#34;color:#ff79c6&#34;&gt;))&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+            key&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;cancel&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+            selector&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;wakeup&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+            System&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;out&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;println&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;getClientName&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;clientChannel&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#f1fa8c&#34;&gt;&amp;#34;已断开&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+    &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+&lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h5 id=&#34;buffer-接收数据&#34;&gt;Buffer 接收数据&lt;/h5&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;    &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;private&lt;/span&gt; String &lt;span style=&#34;color:#50fa7b&#34;&gt;receive&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;SocketChannel client&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;throws&lt;/span&gt; IOException &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+        &lt;span style=&#34;color:#6272a4&#34;&gt;//清空缓冲区防止污染
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;        readBuffer&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;clear&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+        &lt;span style=&#34;color:#6272a4&#34;&gt;//只要 channel 还有字节读，就一直读
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;        &lt;span style=&#34;color:#ff79c6&#34;&gt;while&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;client&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;read&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;readBuffer&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;gt;&lt;/span&gt; 0&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+        readBuffer&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;flip&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;return&lt;/span&gt; String&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;valueOf&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;charset&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;decode&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;readBuffer&lt;span style=&#34;color:#ff79c6&#34;&gt;));&lt;/span&gt;
+    &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h4 id=&#34;消息转发&#34;&gt;消息转发&lt;/h4&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;    &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;private&lt;/span&gt; &lt;span style=&#34;color:#8be9fd&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#50fa7b&#34;&gt;forwardMessage&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;SocketChannel client&lt;span style=&#34;color:#ff79c6&#34;&gt;,&lt;/span&gt; String fwdMsg&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;throws&lt;/span&gt; IOException &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+        &lt;span style=&#34;color:#6272a4&#34;&gt;//遍历所有监听的 selectionKey
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;        &lt;span style=&#34;color:#ff79c6&#34;&gt;for&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;SelectionKey key&lt;span style=&#34;color:#ff79c6&#34;&gt;:&lt;/span&gt; selector&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;keys&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;())&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+            Channel connectedClient &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; key&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;channel&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+          	&lt;span style=&#34;color:#6272a4&#34;&gt;//跳过服务器的 channel
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;            &lt;span style=&#34;color:#ff79c6&#34;&gt;if&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;connectedClient &lt;span style=&#34;color:#ff79c6&#34;&gt;instanceof&lt;/span&gt; ServerSocketChannel&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+                &lt;span style=&#34;color:#ff79c6&#34;&gt;continue&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;;&lt;/span&gt;
+            &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+						&lt;span style=&#34;color:#6272a4&#34;&gt;//跳过发送者客户端的channel
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;            &lt;span style=&#34;color:#ff79c6&#34;&gt;if&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;key&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;isValid&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;()&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;!&lt;/span&gt;client&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;equals&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;connectedClient&lt;span style=&#34;color:#ff79c6&#34;&gt;))&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+                writeBuffer&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;clear&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+                writeBuffer&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;put&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;charset&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;encode&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;getClientName&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;client&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#f1fa8c&#34;&gt;&amp;#34;:&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;+&lt;/span&gt; fwdMsg&lt;span style=&#34;color:#ff79c6&#34;&gt;));&lt;/span&gt;
+                writeBuffer&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;flip&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+                &lt;span style=&#34;color:#ff79c6&#34;&gt;while&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;writeBuffer&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;hasRemaining&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;())&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+                    &lt;span style=&#34;color:#ff79c6&#34;&gt;((&lt;/span&gt;SocketChannel&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt;connectedClient&lt;span style=&#34;color:#ff79c6&#34;&gt;).&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;write&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;writeBuffer&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+                &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+            &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+    &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;客户端&#34;&gt;客户端&lt;/h2&gt;
+&lt;hr&gt;
+&lt;h3 id=&#34;主流程start-1&#34;&gt;主流程：&lt;code&gt;start()&lt;/code&gt;&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;获取 SocketChannel，配置为非阻塞模式&lt;/li&gt;
+&lt;li&gt;创建 selector，注册 clientChannel 的 CONNECT 事件&lt;/li&gt;
+&lt;li&gt;正式向服务器发送连接请求 clientChannel&lt;/li&gt;
+&lt;li&gt;不停 select() 监听触发的事件，遍历这些事件进行处理&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;client &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; SocketChannel&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;open&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+client&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;configureBlocking&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;false&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+
+selector &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; Selector&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;open&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+client&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;register&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;selector&lt;span style=&#34;color:#ff79c6&#34;&gt;,&lt;/span&gt; SelectionKey&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;OP_CONNECT&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+client&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;connect&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;new&lt;/span&gt; InetSocketAddress&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;host&lt;span style=&#34;color:#ff79c6&#34;&gt;,&lt;/span&gt; port&lt;span style=&#34;color:#ff79c6&#34;&gt;));&lt;/span&gt;
+
+&lt;span style=&#34;color:#ff79c6&#34;&gt;while&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;true&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+    selector&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;select&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+    Set&lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;lt;&lt;/span&gt;SelectionKey&lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;gt;&lt;/span&gt; selectionKeys &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; selector&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;selectedKeys&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+    &lt;span style=&#34;color:#ff79c6&#34;&gt;for&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;SelectionKey key &lt;span style=&#34;color:#ff79c6&#34;&gt;:&lt;/span&gt; selectionKeys&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+      	handles&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;key&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+    &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+    selectionKeys&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;clear&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+&lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;事件处理handles-1&#34;&gt;事件处理：&lt;code&gt;handles()&lt;/code&gt;&lt;/h3&gt;
+&lt;h5 id=&#34;connect&#34;&gt;CONNECT&lt;/h5&gt;
+&lt;p&gt;连接就绪时触发该事件&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;获取触发该事件的 clientChannel&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;需要额外的线程来处理键盘的阻塞输入&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;注册该 clientChannel 的 READ 事件到 selector 中&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;if&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;key&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;isConnectable&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;())&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+    SocketChannel client &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;SocketChannel&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt; key&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;channel&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+    &lt;span style=&#34;color:#6272a4&#34;&gt;//建立连接的过程是否就绪
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#ff79c6&#34;&gt;if&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;client&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;isConnectionPending&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;())&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+        client&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;finishConnect&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+        &lt;span style=&#34;color:#6272a4&#34;&gt;// 处理用户的输入
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;        &lt;span style=&#34;color:#ff79c6&#34;&gt;new&lt;/span&gt; Thread&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;new&lt;/span&gt; UserInputHandler&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;this&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;)).&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;start&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+    &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+    client&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;register&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;selector&lt;span style=&#34;color:#ff79c6&#34;&gt;,&lt;/span&gt; SelectionKey&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;OP_READ&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+&lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;处理键盘输入的线程：&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;class&lt;/span&gt; &lt;span style=&#34;color:#50fa7b&#34;&gt;UserInputHandler&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;implements&lt;/span&gt; Runnable&lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+        &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;private&lt;/span&gt; Client chatClient&lt;span style=&#34;color:#ff79c6&#34;&gt;;&lt;/span&gt;
+        &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;public&lt;/span&gt; &lt;span style=&#34;color:#50fa7b&#34;&gt;UserInputHandler&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;Client chatClient&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+            &lt;span style=&#34;color:#ff79c6&#34;&gt;this&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;chatClient&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; chatClient&lt;span style=&#34;color:#ff79c6&#34;&gt;;&lt;/span&gt;
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+        @Override
+        &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;public&lt;/span&gt; &lt;span style=&#34;color:#8be9fd&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#50fa7b&#34;&gt;run&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;()&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+            &lt;span style=&#34;color:#ff79c6&#34;&gt;try&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+                &lt;span style=&#34;color:#6272a4&#34;&gt;// 等待用户输入消息
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;                BufferedReader consoleReader &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt;
+                        &lt;span style=&#34;color:#ff79c6&#34;&gt;new&lt;/span&gt; BufferedReader&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;new&lt;/span&gt; InputStreamReader&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;System&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;in&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;));&lt;/span&gt;
+                &lt;span style=&#34;color:#ff79c6&#34;&gt;while&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;true&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+                    String input &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; consoleReader&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;readLine&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+                    &lt;span style=&#34;color:#6272a4&#34;&gt;// 向服务器发送消息
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;                    chatClient&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;send&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;input&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+                    &lt;span style=&#34;color:#6272a4&#34;&gt;// 检查用户是否准备退出
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;                    &lt;span style=&#34;color:#ff79c6&#34;&gt;if&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;chatClient&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;checkQuit&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;input&lt;span style=&#34;color:#ff79c6&#34;&gt;))&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+                        &lt;span style=&#34;color:#ff79c6&#34;&gt;break&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;;&lt;/span&gt;
+                    &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+                &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+            &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;catch&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;IOException e&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+                e&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;printStackTrace&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+            &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+    &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;strong&gt;利用 Buffer 发送消息到服务器：&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;public&lt;/span&gt; &lt;span style=&#34;color:#8be9fd&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#50fa7b&#34;&gt;send&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;String msg&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;throws&lt;/span&gt; IOException &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+    &lt;span style=&#34;color:#ff79c6&#34;&gt;if&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;msg&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;isEmpty&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;())&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+      &lt;span style=&#34;color:#ff79c6&#34;&gt;return&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;;&lt;/span&gt;
+    &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+
+    writeBuffer&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;clear&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+    writeBuffer&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;put&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;charset&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;encode&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;msg&lt;span style=&#34;color:#ff79c6&#34;&gt;));&lt;/span&gt;
+    writeBuffer&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;flip&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+    &lt;span style=&#34;color:#ff79c6&#34;&gt;while&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;writeBuffer&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;hasRemaining&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;())&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+      client&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;write&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;writeBuffer&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+    &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+
+    &lt;span style=&#34;color:#6272a4&#34;&gt;// 检查用户是否准备退出
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#ff79c6&#34;&gt;if&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;checkQuit&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;msg&lt;span style=&#34;color:#ff79c6&#34;&gt;))&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+      close&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;selector&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+    &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+&lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h5 id=&#34;read&#34;&gt;READ&lt;/h5&gt;
+&lt;p&gt;服务器转发消息来时触发该事件&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;else&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;if&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;key&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;isReadable&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;())&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+     SocketChannel client &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;SocketChannel&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt; key&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;channel&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+     String msg &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; receive&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;client&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+     &lt;span style=&#34;color:#ff79c6&#34;&gt;if&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;msg&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;isEmpty&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;())&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+       &lt;span style=&#34;color:#6272a4&#34;&gt;// 服务器异常
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;       close&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;selector&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+     &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;else&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+       System&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;out&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;println&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;msg&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+     &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+ &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;利用 Buffer 接收服务器的消息：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;private&lt;/span&gt; String &lt;span style=&#34;color:#50fa7b&#34;&gt;receive&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;SocketChannel client&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;throws&lt;/span&gt; IOException &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+    readBuffer&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;clear&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+    &lt;span style=&#34;color:#ff79c6&#34;&gt;while&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;client&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;read&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;readBuffer&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;gt;&lt;/span&gt; 0&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+    readBuffer&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;flip&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+    &lt;span style=&#34;color:#ff79c6&#34;&gt;return&lt;/span&gt; String&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;valueOf&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;charset&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;decode&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;readBuffer&lt;span style=&#34;color:#ff79c6&#34;&gt;));&lt;/span&gt;
+&lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;测试&#34;&gt;测试&lt;/h2&gt;
+&lt;hr&gt;
+&lt;p&gt;运行客户端时需要在运行配置中运行多个实例运行：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://logseq.oss-cn-chengdu.aliyuncs.com/noteImg/202201242042716.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://logseq.oss-cn-chengdu.aliyuncs.com/noteImg/202201242043942.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://logseq.oss-cn-chengdu.aliyuncs.com/noteImg/202201242058243.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+- https://blog.wvuuvw.xyz/posts/%E7%AE%80%E6%98%93%E5%A4%9A%E4%BA%BA%E8%81%8A%E5%A4%A9%E5%AE%A4-nio%E5%AE%9E%E7%8E%B0/ - </description>
+        </item>
+    
+    
+    
+        <item>
+        <title>Java 四种本地文件拷贝方式比较和测试</title>
+        <link>https://blog.wvuuvw.xyz/posts/java%E6%9C%AC%E5%9C%B0%E6%96%87%E4%BB%B6%E6%8B%B7%E8%B4%9D/</link>
+        <pubDate>Mon, 13 Apr 2020 13:31:23 +0800</pubDate>
+        
+        <guid>https://blog.wvuuvw.xyz/posts/java%E6%9C%AC%E5%9C%B0%E6%96%87%E4%BB%B6%E6%8B%B7%E8%B4%9D/</guid>
+        <description>ZackYJ&#39;s Blog https://blog.wvuuvw.xyz/posts/java%E6%9C%AC%E5%9C%B0%E6%96%87%E4%BB%B6%E6%8B%B7%E8%B4%9D/ -&lt;h2 id=&#34;准备工作&#34;&gt;准备工作&lt;/h2&gt;
+&lt;hr&gt;
+&lt;p&gt;为了便于测试，定义一个文件拷贝的接口让测试类去继承它：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;  &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;public&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;interface&lt;/span&gt; &lt;span style=&#34;color:#50fa7b&#34;&gt;IFileCopy&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+      &lt;span style=&#34;color:#8be9fd&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#50fa7b&#34;&gt;copyFile&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;File source&lt;span style=&#34;color:#ff79c6&#34;&gt;,&lt;/span&gt; File dest&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+  &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;无论是 Stream 还是 Channel ，用完都需要调用 &lt;code&gt;close()&lt;/code&gt;方法关闭&lt;/p&gt;
+&lt;p&gt;为了防止重复代码，这里统一写一个关闭的方法：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;    &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;static&lt;/span&gt; &lt;span style=&#34;color:#8be9fd&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#50fa7b&#34;&gt;close&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;Closeable closeable&lt;span style=&#34;color:#ff79c6&#34;&gt;){&lt;/span&gt;
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;if&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;closeable &lt;span style=&#34;color:#ff79c6&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;null&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;){&lt;/span&gt;
+            &lt;span style=&#34;color:#ff79c6&#34;&gt;try&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+                closeable&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;close&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+            &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;catch&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;IOException e&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+                e&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;printStackTrace&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+            &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+    &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;实现&#34;&gt;实现&lt;/h2&gt;
+&lt;hr&gt;
+&lt;h3 id=&#34;不带缓冲区的流拷贝&#34;&gt;不带缓冲区的流拷贝&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;最朴素的文件拷贝方式，不使用带任何缓冲区的流装饰&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;从源文件的输入流一个字节一个字节读取&lt;/p&gt;
+&lt;p&gt;只要还有数据 （&lt;code&gt;read()&lt;/code&gt; 返回 ≠ -1）就循环读取并写入目标文件的输出流&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;    &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;static&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;class&lt;/span&gt; &lt;span style=&#34;color:#50fa7b&#34;&gt;noBufferedStreamCopy&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;implements&lt;/span&gt; IFileCopy&lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+
+        @Override
+        &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;public&lt;/span&gt; &lt;span style=&#34;color:#8be9fd&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#50fa7b&#34;&gt;copyFile&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;File source&lt;span style=&#34;color:#ff79c6&#34;&gt;,&lt;/span&gt; File dest&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+            InputStream is &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;null&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;;&lt;/span&gt;
+            OutputStream os &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;null&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;;&lt;/span&gt;
+            &lt;span style=&#34;color:#ff79c6&#34;&gt;try&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+                &lt;span style=&#34;color:#6272a4&#34;&gt;//创建文件输入流
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;                is &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;new&lt;/span&gt; FileInputStream&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;source&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+                &lt;span style=&#34;color:#6272a4&#34;&gt;//创建文件输出流
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;                os &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;new&lt;/span&gt; FileOutputStream&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;dest&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+                &lt;span style=&#34;color:#8be9fd&#34;&gt;int&lt;/span&gt; result&lt;span style=&#34;color:#ff79c6&#34;&gt;;&lt;/span&gt;
+                &lt;span style=&#34;color:#6272a4&#34;&gt;//一个字节一个字节读，读到就输出到文件输出流
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;                &lt;span style=&#34;color:#ff79c6&#34;&gt;while&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;((&lt;/span&gt;result &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; is&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;read&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;())&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;-&lt;/span&gt;1&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+                    os&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;write&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;result&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+                &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+            &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;catch&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;IOException e&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+                e&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;printStackTrace&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+            &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;finally&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+                close&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;is&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+                close&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;os&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+            &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+    &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;带缓冲区的流拷贝&#34;&gt;带缓冲区的流拷贝&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;使用装饰器模式，用带缓冲区的流对输入输出流进行包裹&lt;/li&gt;
+&lt;li&gt;需要定义缓冲区，即每次写入的次数&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;	&lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;static&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;class&lt;/span&gt;  &lt;span style=&#34;color:#50fa7b&#34;&gt;bufferedStreamCopy&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;implements&lt;/span&gt; IFileCopy&lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+        @Override
+        &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;public&lt;/span&gt; &lt;span style=&#34;color:#8be9fd&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#50fa7b&#34;&gt;copyFile&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;File source&lt;span style=&#34;color:#ff79c6&#34;&gt;,&lt;/span&gt; File dest&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+            InputStream is &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;null&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;;&lt;/span&gt;
+            OutputStream os &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;null&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;;&lt;/span&gt;
+            &lt;span style=&#34;color:#ff79c6&#34;&gt;try&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+                is &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;new&lt;/span&gt; BufferedInputStream&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;new&lt;/span&gt; FileInputStream&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;source&lt;span style=&#34;color:#ff79c6&#34;&gt;));&lt;/span&gt;
+                os &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;new&lt;/span&gt; BufferedOutputStream&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;new&lt;/span&gt; FileOutputStream&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;dest&lt;span style=&#34;color:#ff79c6&#34;&gt;));&lt;/span&gt;
+                &lt;span style=&#34;color:#8be9fd&#34;&gt;byte&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;[]&lt;/span&gt; buffer &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;new&lt;/span&gt; &lt;span style=&#34;color:#8be9fd&#34;&gt;byte&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;[&lt;/span&gt;1024&lt;span style=&#34;color:#ff79c6&#34;&gt;];&lt;/span&gt;
+                &lt;span style=&#34;color:#8be9fd&#34;&gt;int&lt;/span&gt; len&lt;span style=&#34;color:#ff79c6&#34;&gt;;&lt;/span&gt;
+                &lt;span style=&#34;color:#ff79c6&#34;&gt;while&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;((&lt;/span&gt;len &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; is&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;read&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;buffer&lt;span style=&#34;color:#ff79c6&#34;&gt;))&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;-&lt;/span&gt;1&lt;span style=&#34;color:#ff79c6&#34;&gt;){&lt;/span&gt;
+                    os&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;write&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;buffer&lt;span style=&#34;color:#ff79c6&#34;&gt;,&lt;/span&gt; 0&lt;span style=&#34;color:#ff79c6&#34;&gt;,&lt;/span&gt; len&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+                &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+            &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;catch&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;FileNotFoundException e&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+                e&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;printStackTrace&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+            &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;catch&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;IOException e&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+                e&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;printStackTrace&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+            &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;finally&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+                close&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;is&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+                close&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;os&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+            &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+    &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;使用-buffer-的-channel-拷贝&#34;&gt;使用 Buffer 的 Channel 拷贝&lt;/h3&gt;
+&lt;h4 id=&#34;nio-模型&#34;&gt;NIO 模型&lt;/h4&gt;
+&lt;p&gt;同步非阻塞式通信模型，&lt;code&gt;java.nio&lt;/code&gt; 包下提供了 Buffer、Channel 等非阻塞式通信模型的类&lt;/p&gt;
+&lt;p&gt;核心思路是使用双向的 Channel 代替单向的 Stream，Channel 和 Stream 相比：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;流是有方向的，一个流只能读或写；而 Channel 通道是双向的，既能读又能写&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;流的读写方法都是阻塞的&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Channel 通道的读写有阻塞和非阻塞两种模式&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;由于支持非阻塞调用，允许个线程里处理多个 Channel 的 I/O&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id=&#34;buffer&#34;&gt;Buffer&lt;/h4&gt;
+&lt;p&gt;Channel 的读写操作可以通过 Buffer 来实现，Buffer 代表内存中一段可以读写的缓冲区域&lt;/p&gt;
+&lt;p&gt;Buffer 的基本操作：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;flip()&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;clear()&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;compact()&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;下图详细介绍了他们的用法：&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://logseq.oss-cn-chengdu.aliyuncs.com/noteImg/202201231936810.png&#34; alt=&#34;&#34;&gt;{:height 497, :width 564}&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;static&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;class&lt;/span&gt; &lt;span style=&#34;color:#50fa7b&#34;&gt;nioBufferedStreamCopy&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;implements&lt;/span&gt; IFileCopy&lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+        @Override
+        &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;public&lt;/span&gt; &lt;span style=&#34;color:#8be9fd&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#50fa7b&#34;&gt;copyFile&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;File source&lt;span style=&#34;color:#ff79c6&#34;&gt;,&lt;/span&gt; File dest&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+            FileChannel sourceChannel &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;null&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;;&lt;/span&gt;
+            FileChannel destChannel &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;null&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;;&lt;/span&gt;
+
+            &lt;span style=&#34;color:#ff79c6&#34;&gt;try&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+                sourceChannel &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;new&lt;/span&gt; FileInputStream&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;source&lt;span style=&#34;color:#ff79c6&#34;&gt;).&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;getChannel&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+                destChannel &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;new&lt;/span&gt; FileOutputStream&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;dest&lt;span style=&#34;color:#ff79c6&#34;&gt;).&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;getChannel&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+
+                ByteBuffer buffer &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; ByteBuffer&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;allocate&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;1024&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+                &lt;span style=&#34;color:#ff79c6&#34;&gt;while&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;sourceChannel&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;read&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;buffer&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;!=-&lt;/span&gt; 1&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt;
+                &lt;span style=&#34;color:#6272a4&#34;&gt;//从源文件的 channel 读取数据写入 byteBuffer
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;                &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+                    buffer&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;flip&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+                    &lt;span style=&#34;color:#6272a4&#34;&gt;//从 byteBuffer 中读取数据写入 目标文件的 channel
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;                    &lt;span style=&#34;color:#ff79c6&#34;&gt;while&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;buffer&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;hasRemaining&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;()){&lt;/span&gt;
+                        destChannel&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;write&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;buffer&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+                    &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+                    buffer&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;clear&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+                &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+            &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;catch&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;FileNotFoundException e&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+                e&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;printStackTrace&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+            &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;catch&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;IOException e&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+                e&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;printStackTrace&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+            &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;finally&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+                close&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;sourceChannel&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+                close&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;destChannel&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+            &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+    &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;使用-transfer-的-channel-拷贝&#34;&gt;使用 Transfer 的 Channel 拷贝&lt;/h3&gt;
+&lt;p&gt;Channel 除了通过 Buffer 进行读写操作，也可以不显式通过 Buffer，直接在 Channel 层面进行数据交换&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;核心方法：&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span style=&#34;color:#8be9fd&#34;&gt;long&lt;/span&gt; &lt;span style=&#34;color:#50fa7b&#34;&gt;transferTo&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#8be9fd&#34;&gt;long&lt;/span&gt; position&lt;span style=&#34;color:#ff79c6&#34;&gt;,&lt;/span&gt; &lt;span style=&#34;color:#8be9fd&#34;&gt;long&lt;/span&gt; count&lt;span style=&#34;color:#ff79c6&#34;&gt;,&lt;/span&gt;
+                                    WritableByteChannel target&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;ul&gt;
+&lt;li&gt;常用的 Channel：
+&lt;ul&gt;
+&lt;li&gt;FileChannel&lt;/li&gt;
+&lt;li&gt;ServerSocketChannel&lt;/li&gt;
+&lt;li&gt;SocketChannel&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;static&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;class&lt;/span&gt; &lt;span style=&#34;color:#50fa7b&#34;&gt;nioTransferCopy&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;implements&lt;/span&gt; IFileCopy&lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+        @Override
+        &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;public&lt;/span&gt; &lt;span style=&#34;color:#8be9fd&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#50fa7b&#34;&gt;copyFile&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;File source&lt;span style=&#34;color:#ff79c6&#34;&gt;,&lt;/span&gt; File dest&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+            FileChannel sourceChannel &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;null&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;;&lt;/span&gt;
+            FileChannel destChannel &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;null&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;;&lt;/span&gt;
+
+            &lt;span style=&#34;color:#ff79c6&#34;&gt;try&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+                sourceChannel &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;new&lt;/span&gt; FileInputStream&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;source&lt;span style=&#34;color:#ff79c6&#34;&gt;).&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;getChannel&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+                destChannel &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;new&lt;/span&gt; FileOutputStream&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;dest&lt;span style=&#34;color:#ff79c6&#34;&gt;).&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;getChannel&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+                &lt;span style=&#34;color:#8be9fd&#34;&gt;long&lt;/span&gt; copyed &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; 0&lt;span style=&#34;color:#ff79c6&#34;&gt;;&lt;/span&gt;
+              	&lt;span style=&#34;color:#6272a4&#34;&gt;//transferTo 方法不保证一次性全部传输完
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;                &lt;span style=&#34;color:#ff79c6&#34;&gt;while&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;copyed &lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;lt;&lt;/span&gt; sourceChannel&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;size&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;()){&lt;/span&gt;
+                    copyed  &lt;span style=&#34;color:#ff79c6&#34;&gt;+=&lt;/span&gt; sourceChannel&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;transferTo&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;0&lt;span style=&#34;color:#ff79c6&#34;&gt;,&lt;/span&gt; sourceChannel&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;size&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(),&lt;/span&gt; destChannel&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+                &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+            &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;catch&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;FileNotFoundException e&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+                e&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;printStackTrace&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+            &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;catch&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;IOException e&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+                e&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;printStackTrace&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+            &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;finally&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+                close&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;sourceChannel&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+                close&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;destChannel&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+            &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+    &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;测试&#34;&gt;测试&lt;/h2&gt;
+&lt;p&gt;简单起见，编写一个测试方法，直接在 main 方法中调用。拷贝 5 次统计平均时间：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;    &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;public&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;static&lt;/span&gt; &lt;span style=&#34;color:#8be9fd&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#50fa7b&#34;&gt;main&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;String&lt;span style=&#34;color:#ff79c6&#34;&gt;[]&lt;/span&gt; args&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+        File smallFile &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;new&lt;/span&gt; File&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#f1fa8c&#34;&gt;&amp;#34;/Users/admin/Downloads/test.mp4&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+        File smallFileCopy &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;new&lt;/span&gt; File&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#f1fa8c&#34;&gt;&amp;#34;/Users/admin/Downloads/testCopy/test.mp4&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+        File bigFile &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;new&lt;/span&gt; File&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#f1fa8c&#34;&gt;&amp;#34;/Users/admin/Downloads/golangDoc.zip&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+        File bigFileCopy &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;new&lt;/span&gt; File&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#f1fa8c&#34;&gt;&amp;#34;/Users/admin/Downloads/testCopy/golangDoc.zip&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+
+        System&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;out&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;println&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#f1fa8c&#34;&gt;&amp;#34;=====Small file (&amp;lt;1M) Copy test=======&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+        benchmark&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;new&lt;/span&gt; noBufferedStreamCopy&lt;span style=&#34;color:#ff79c6&#34;&gt;(),&lt;/span&gt; smallFile&lt;span style=&#34;color:#ff79c6&#34;&gt;,&lt;/span&gt; smallFileCopy&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+        benchmark&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;new&lt;/span&gt; bufferedStreamCopy&lt;span style=&#34;color:#ff79c6&#34;&gt;(),&lt;/span&gt; smallFile&lt;span style=&#34;color:#ff79c6&#34;&gt;,&lt;/span&gt; smallFileCopy&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+        benchmark&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;new&lt;/span&gt; nioBufferedStreamCopy&lt;span style=&#34;color:#ff79c6&#34;&gt;(),&lt;/span&gt; smallFile&lt;span style=&#34;color:#ff79c6&#34;&gt;,&lt;/span&gt; smallFileCopy&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+        benchmark&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;new&lt;/span&gt; nioTransferCopy&lt;span style=&#34;color:#ff79c6&#34;&gt;(),&lt;/span&gt; smallFile&lt;span style=&#34;color:#ff79c6&#34;&gt;,&lt;/span&gt; smallFileCopy&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+
+        System&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;out&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;println&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#f1fa8c&#34;&gt;&amp;#34;=====Big file (&amp;gt;10M) Copy test=======&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+        benchmark&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;new&lt;/span&gt; noBufferedStreamCopy&lt;span style=&#34;color:#ff79c6&#34;&gt;(),&lt;/span&gt; bigFile&lt;span style=&#34;color:#ff79c6&#34;&gt;,&lt;/span&gt; bigFileCopy&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+        benchmark&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;new&lt;/span&gt; bufferedStreamCopy&lt;span style=&#34;color:#ff79c6&#34;&gt;(),&lt;/span&gt; bigFile&lt;span style=&#34;color:#ff79c6&#34;&gt;,&lt;/span&gt; bigFileCopy&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+        benchmark&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;new&lt;/span&gt; nioBufferedStreamCopy&lt;span style=&#34;color:#ff79c6&#34;&gt;(),&lt;/span&gt; bigFile&lt;span style=&#34;color:#ff79c6&#34;&gt;,&lt;/span&gt; bigFileCopy&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+        benchmark&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;new&lt;/span&gt; nioTransferCopy&lt;span style=&#34;color:#ff79c6&#34;&gt;(),&lt;/span&gt; bigFile&lt;span style=&#34;color:#ff79c6&#34;&gt;,&lt;/span&gt; bigFileCopy&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+    &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+
+    &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;static&lt;/span&gt; &lt;span style=&#34;color:#8be9fd&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#50fa7b&#34;&gt;benchmark&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;IFileCopy test&lt;span style=&#34;color:#ff79c6&#34;&gt;,&lt;/span&gt;File source&lt;span style=&#34;color:#ff79c6&#34;&gt;,&lt;/span&gt;File target&lt;span style=&#34;color:#ff79c6&#34;&gt;){&lt;/span&gt;
+        &lt;span style=&#34;color:#8be9fd&#34;&gt;long&lt;/span&gt; elapsed &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; 0L&lt;span style=&#34;color:#ff79c6&#34;&gt;;&lt;/span&gt;
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;for&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#8be9fd&#34;&gt;int&lt;/span&gt; i &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; 0&lt;span style=&#34;color:#ff79c6&#34;&gt;;&lt;/span&gt; i &lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;lt;&lt;/span&gt; TEST_ROUNDS&lt;span style=&#34;color:#ff79c6&#34;&gt;;&lt;/span&gt; i&lt;span style=&#34;color:#ff79c6&#34;&gt;++)&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+            &lt;span style=&#34;color:#8be9fd&#34;&gt;long&lt;/span&gt; startTime &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; System&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;currentTimeMillis&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+            test&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;copyFile&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;source&lt;span style=&#34;color:#ff79c6&#34;&gt;,&lt;/span&gt;target&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+            elapsed &lt;span style=&#34;color:#ff79c6&#34;&gt;+=&lt;/span&gt; System&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;currentTimeMillis&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;()&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;-&lt;/span&gt; startTime&lt;span style=&#34;color:#ff79c6&#34;&gt;;&lt;/span&gt;
+            target&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;delete&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+        System&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;out&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;println&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;test&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;getClass&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;().&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;getName&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;()+&lt;/span&gt;&lt;span style=&#34;color:#f1fa8c&#34;&gt;&amp;#34;平均用时:&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;+&lt;/span&gt;elapsed&lt;span style=&#34;color:#ff79c6&#34;&gt;/&lt;/span&gt;TEST_ROUNDS&lt;span style=&#34;color:#ff79c6&#34;&gt;+&lt;/span&gt;&lt;span style=&#34;color:#f1fa8c&#34;&gt;&amp;#34;ms&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+    &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;blockquote&gt;
+&lt;p&gt;测试结果：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://logseq.oss-cn-chengdu.aliyuncs.com/noteImg/202201241327030.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;不使用缓冲区一个字节一个字节拷贝大文件实在太慢了&amp;hellip;.&lt;/p&gt;
+&lt;h3 id=&#34;总结&#34;&gt;总结&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;缓冲区的使用对性能的提升效果非常明显&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;除了 &lt;code&gt;noBufferStreamCopy&lt;/code&gt; 其他方法拷贝方式性能表现差不多&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;但是随着文件增大，nioTransferCopy 的性能更好一些&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;其他拷贝性能差距不大的原因是：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;NIO 在 JDK4 版本中推出，和 JDK3 中 BIO 方法对比性能有较大提升&lt;/li&gt;
+&lt;li&gt;但 Java 之后的版本，传统 IO 的底层实现已经使用 NIO 新的方式重新实现&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+- https://blog.wvuuvw.xyz/posts/java%E6%9C%AC%E5%9C%B0%E6%96%87%E4%BB%B6%E6%8B%B7%E8%B4%9D/ - </description>
+        </item>
+    
     
     
     
