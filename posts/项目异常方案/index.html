@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html><head>
+<title>通用异常处理方案总结</title>
+
+
+
+
+<meta charset="utf-8">
+<meta name="X-UA-Compatible" content="IE=edge">
+<meta name="google-site-verification" content="">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
+<meta content="telephone=no" name="format-detection">
+<meta name="description" content="介绍SpringBoot项目中通用的统一异常处理方式">
+<meta name="renderer" content="webkit">
+<meta name="theme-color" content="#ffffff">
+
+
+
+
+
+
+
+
+
+
+
+<link type="text/css" rel="stylesheet" href="/vendor/css/bootstrap.min.css">
+
+
+  
+
+
+
+
+<link rel="icon" href="https://logseq.oss-cn-chengdu.aliyuncs.com/noteImg/202203191023457.png">
+
+
+
+<link rel="stylesheet" href="https://blog.wvuuvw.xyz/scss/journal.min.75229c530b3f6aa895d7c569612d6ca3e5bef57767db1972945785a7a418f179.css" integrity="sha256-dSKcUws/aqiV18VpYS1so&#43;W&#43;9Xdn2xlylFeFp6QY8Xk=" media="screen">
+
+
+
+<link rel="stylesheet" href="https://blog.wvuuvw.xyz/scss/dark-mode.min.c4db381abcd93bb0867e0779702d9c25d111348a10647020dbc43f1f0cb14cbb.css" integrity="sha256-xNs4GrzZO7CGfgd5cC2cJdERNIoQZHAg28Q/HwyxTLs=" media="screen">
+
+
+<script src="/vendor/js/loadCSS.js"></script>
+<script>
+  loadCSS("https://fonts.googleapis.com/css?family=Noto+Sans+SC");
+</script>
+<script>
+  loadCSS("https://fonts.googleapis.com/css?family=Source+Code+Pro|Fira+Mono|Material+Icons");
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+<body>
+    	<div id="app"><div id="sideContainer" class="side-container">
+    
+    <a class="a-block nav-head false" href="https://blog.wvuuvw.xyz/">
+    
+        <div class="nav-title">
+            ZackYJ&#39;s Blog
+        </div>
+        
+        <div class="nav-subtitle">
+            Stay hungry , Stay foolish
+        </div>
+        
+    </a>
+
+    <div class="nav-link-list">
+        
+        
+            
+            
+            
+                
+            
+            
+            
+            <a class="a-block nav-link-item active" href="/posts">
+                📑 文章
+            </a>
+            
+        
+            
+            
+            
+            
+            
+            <a class="a-block nav-link-item false" href="/categories">
+                🗄 分类
+            </a>
+            
+        
+            
+            
+            
+            
+            
+            <a class="a-block nav-link-item false" href="/tags">
+                🏷 标签 
+            </a>
+            
+        
+            
+            
+            
+            
+            
+            <a class="a-block nav-link-item false" href="/project/project">
+                📇 项目
+            </a>
+            
+        
+            
+            
+            
+            
+            
+            <a class="a-block nav-link-item false" href="/about/aboutme">
+                👨‍💻 关于
+            </a>
+            
+        
+    </div>
+
+    
+
+    <div class="nav-footer">
+        
+Powered by <a href="https://github.com/gohugoio/hugo">hugo</a>
+<br>
+
+&copy;
+	
+	2022 ZackYJ&#39;s Blog
+	
+
+    </div>
+    
+</div><div id="extraContainer" class="extra-container">
+    
+    
+    <div class="pagination">
+        <a id="globalBackToTop" class="pagination-action animated-visibility" href="#top" :class="{ invisible: scrollY == 0 }">
+            <i class="material-icons pagination-action-icon">
+                keyboard_arrow_up
+            </i>
+        </a>
+        
+        <a type="button" class="pagination-action" id="darkModeToggleButton">
+            <span class="material-icons pagination-action-icon" id="darkModeToggleIcon">
+                dark_mode
+            </span>
+        </a>
+        
+        
+    </div>
+</div>
+<div class="single-column-drawer-container" id="drawer"
+     v-bind:class="{ 'single-column-drawer-container-active': isDrawerOpen }">
+    <div class="drawer-content">
+        <div class="drawer-menu">
+            
+            
+            
+                
+                
+                
+                    
+                
+                
+                
+                <a class="a-block drawer-menu-item active" href="/posts">
+                    📑 文章
+                </a>
+                
+            
+                
+                
+                
+                
+                
+                <a class="a-block drawer-menu-item false" href="/categories">
+                    🗄 分类
+                </a>
+                
+            
+                
+                
+                
+                
+                
+                <a class="a-block drawer-menu-item false" href="/tags">
+                    🏷 标签 
+                </a>
+                
+            
+                
+                
+                
+                
+                
+                <a class="a-block drawer-menu-item false" href="/project/project">
+                    📇 项目
+                </a>
+                
+            
+                
+                
+                
+                
+                
+                <a class="a-block drawer-menu-item false" href="/about/aboutme">
+                    👨‍💻 关于
+                </a>
+                
+            
+            
+            <div class="toc">
+
+
+	<div class="toc-content">
+	
+		
+		
+		
+		<center>- 目录 -</center>
+		
+		
+		<ul>
+			
+				
+				
+					
+						
+						
+						
+						
+							
+								
+									<ul>
+								
+							
+						
+						
+							<li>
+								<a href="#springmvc-%e5%bc%82%e5%b8%b8%e6%9c%ba%e5%88%b6" onclick="onNavClick(`#springmvc-异常机制-nav`)" id="springmvc-异常机制-nav">
+									SpringMVC 异常机制
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+						
+						
+							<li>
+								<a href="#%e6%9c%80%e4%bd%b3%e5%ae%9e%e8%b7%b5" onclick="onNavClick(`#最佳实践-nav`)" id="最佳实践-nav">
+									最佳实践
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+						
+							
+								
+									<ul>
+								
+							
+								
+									<ul>
+								
+							
+						
+						
+							<li>
+								<a href="#%e5%bc%82%e5%b8%b8%e6%9e%9a%e4%b8%be" onclick="onNavClick(`#异常枚举-nav`)" id="异常枚举-nav">
+									异常枚举
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+						
+						
+							<li>
+								<a href="#%e5%b0%81%e8%a3%85%e4%b8%9a%e5%8a%a1%e5%bc%82%e5%b8%b8%e7%b1%bb" onclick="onNavClick(`#封装业务异常类-nav`)" id="封装业务异常类-nav">
+									封装业务异常类
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+						
+						
+							<li>
+								<a href="#%e5%85%a8%e5%b1%80%e5%bc%82%e5%b8%b8%e5%a4%84%e7%90%86%e5%99%a8" onclick="onNavClick(`#全局异常处理器-nav`)" id="全局异常处理器-nav">
+									全局异常处理器
+								</a>
+							</li>
+						
+						
+					
+				
+			
+		</ul>
+	</div>
+
+</div>
+            
+        </div>
+    </div>
+</div>
+<transition name="fade">
+    <div id="drawer-mask" v-bind:class="{ 'single-column-drawer-mask': mounted }" v-if="isDrawerOpen" v-on:click="toggleDrawer"></div>
+</transition>
+<nav id="navBar" class="navbar sticky-top navbar-light single-column-nav-container">
+    <div id="navBackground" class="nav-background"></div>
+    <div class="container container-narrow nav-content">
+        <button id="nav_dropdown_btn" class="nav-dropdown-toggle" type="button" v-on:click="toggleDrawer">
+            <i class="material-icons">
+                menu
+            </i>
+        </button>
+        <a id="navTitle" class="navbar-brand" href="https://blog.wvuuvw.xyz/">
+            ZackYJ&#39;s Blog
+        </a>
+        
+        <button type="button" class="nav-darkmode-toggle" id="darkModeToggleButton2">
+            <i class="material-icons" id="darkModeToggleIcon2">
+                dark_mode
+            </i>
+        </button>
+        
+    </div>
+</nav>
+<div class="single-column-header-container" id="pageHead"
+     v-bind:style="{ transform: 'translateZ(0px) translateY('+.3*scrollY+'px)', opacity: 1-navOpacity }">
+    <a href="https://blog.wvuuvw.xyz/">
+        <div class="single-column-header-title">ZackYJ&#39;s Blog</div>
+        
+        <div class="single-column-header-subtitle">Stay hungry , Stay foolish</div>
+        
+
+    </a>
+</div>
+
+            <div id="content">
+                <div id="streamContainer" class="stream-container">
+
+    <div class="post-list-container post-list-container-shadow">
+        <div class="post">
+            
+            
+            
+                
+            
+
+            <div class="post-head-wrapper"
+                
+                    
+                    
+                    style="background-image: url('https://logseq.oss-cn-chengdu.aliyuncs.com/noteImg/202204081837802.png')"
+                    
+                
+            >
+                <div class="post-title">
+                    通用异常处理方案总结
+                    
+                    <div class="post-subtitle">
+                        介绍SpringBoot项目中通用的统一异常处理方式
+                    </div>
+                    
+                    <div class="post-meta">
+                        
+                        <time itemprop="datePublished">
+                            2022-01-21 08:31
+                        </time>
+                        
+
+                        
+                            <i class="material-icons" style="">folder</i>
+                                <a href="/categories/java">Java</a>
+                                &nbsp;
+                        
+
+                        
+                            <i class="material-icons" style="">label</i>
+                            
+                                <a href="/tags/%E9%A1%B9%E7%9B%AE">项目</a>
+                                &nbsp;
+                            
+                        
+                        
+                    </div>
+                </div>
+            </div>
+            
+            <div class="post-body-wrapper">
+                
+                <div class="post-body" v-pre>
+                
+                    <h2 id="springmvc-异常机制">SpringMVC 异常机制</h2>
+<blockquote>
+<p>原则：MVC 三层出现的异常都通过 throws 抛出，最终由前端控制器 DispatcherServlet 捕获，交由异常处理器 HandlerExceptionResolver 处理</p>
+</blockquote>
+<ul>
+<li>
+<p>HandlerExceptionResolver 是异常处理器接口，实现这个接口可以自定义异常处理器</p>
+</li>
+<li>
+<p>HTTP 异常可以在 web.xml 中配置自定义异常页面</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml"><span style="color:#6272a4">&lt;!--处理500异常--&gt;</span>
+<span style="color:#ff79c6">&lt;error-page&gt;</span>
+  <span style="color:#ff79c6">&lt;error-code&gt;</span>500<span style="color:#ff79c6">&lt;/error-code&gt;</span>
+  <span style="color:#ff79c6">&lt;location&gt;</span>/500.html<span style="color:#ff79c6">&lt;/location&gt;</span>
+<span style="color:#ff79c6">&lt;/error-page&gt;</span>
+<span style="color:#6272a4">&lt;!--处理404异常--&gt;</span>
+<span style="color:#ff79c6">&lt;error-page&gt;</span>
+  <span style="color:#ff79c6">&lt;error-code&gt;</span>404<span style="color:#ff79c6">&lt;/error-code&gt;</span>
+  <span style="color:#ff79c6">&lt;location&gt;</span>/404.html<span style="color:#ff79c6">&lt;/location&gt;</span>
+<span style="color:#ff79c6">&lt;/error-page&gt;</span>
+</code></pre></div></li>
+</ul>
+<h2 id="最佳实践">最佳实践</h2>
+<h4 id="异常枚举">异常枚举</h4>
+<p>异常枚举 <code>ExceptionEnum</code> 用于和和前端约定好异常状态码和消息，并传入自定义的异常类进行统一处理</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">enum</span> ExceptionEnum <span style="color:#ff79c6">{</span>
+    <span style="color:#6272a4">/*
+</span><span style="color:#6272a4">    * 用户模块异常
+</span><span style="color:#6272a4">    * */</span>
+    NEED_USR_NAME<span style="color:#ff79c6">(</span>10001<span style="color:#ff79c6">,</span><span style="color:#f1fa8c">&#34;用户名不能为空&#34;</span><span style="color:#ff79c6">),</span>
+    <span style="color:#6272a4">/*
+</span><span style="color:#6272a4">    * 系统异常*/</span>
+    SYSTEM_ERROR<span style="color:#ff79c6">(</span>20000<span style="color:#ff79c6">,</span><span style="color:#f1fa8c">&#34;服务器内部异常&#34;</span><span style="color:#ff79c6">);</span>
+
+
+    Integer code<span style="color:#ff79c6">;</span>
+    String msg<span style="color:#ff79c6">;</span>
+
+    ExceptionEnum<span style="color:#ff79c6">(</span>Integer code<span style="color:#ff79c6">,</span> String msg<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+        <span style="color:#ff79c6">this</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">code</span> <span style="color:#ff79c6">=</span> code<span style="color:#ff79c6">;</span>
+        <span style="color:#ff79c6">this</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">msg</span> <span style="color:#ff79c6">=</span> msg<span style="color:#ff79c6">;</span>
+    <span style="color:#ff79c6">}</span>
+
+    <span style="color:#8be9fd;font-style:italic">public</span> Integer <span style="color:#50fa7b">getCode</span><span style="color:#ff79c6">()</span> <span style="color:#ff79c6">{</span>
+        <span style="color:#ff79c6">return</span> code<span style="color:#ff79c6">;</span>
+    <span style="color:#ff79c6">}</span>
+
+    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">setCode</span><span style="color:#ff79c6">(</span>Integer code<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+        <span style="color:#ff79c6">this</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">code</span> <span style="color:#ff79c6">=</span> code<span style="color:#ff79c6">;</span>
+    <span style="color:#ff79c6">}</span>
+
+    <span style="color:#8be9fd;font-style:italic">public</span> String <span style="color:#50fa7b">getMsg</span><span style="color:#ff79c6">()</span> <span style="color:#ff79c6">{</span>
+        <span style="color:#ff79c6">return</span> msg<span style="color:#ff79c6">;</span>
+    <span style="color:#ff79c6">}</span>
+
+    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd">void</span> <span style="color:#50fa7b">setMsg</span><span style="color:#ff79c6">(</span>String msg<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+        <span style="color:#ff79c6">this</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">msg</span> <span style="color:#ff79c6">=</span> msg<span style="color:#ff79c6">;</span>
+    <span style="color:#ff79c6">}</span>
+<span style="color:#ff79c6">}</span>
+</code></pre></div><h4 id="封装业务异常类">封装业务异常类</h4>
+<p>封装 BusinessException 继承 RuntimeException ，用来规定异常的消息结构，封装异常操作的相关方法</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">class</span> <span style="color:#50fa7b">BusinessException</span> <span style="color:#8be9fd;font-style:italic">extends</span> RuntimeException <span style="color:#ff79c6">{</span>
+    <span style="color:#6272a4">/**
+</span><span style="color:#6272a4">     * 异常状态码
+</span><span style="color:#6272a4">     */</span>
+    <span style="color:#8be9fd;font-style:italic">private</span> Integer code <span style="color:#ff79c6">=</span> 500<span style="color:#ff79c6">;</span>
+    <span style="color:#6272a4">/**
+</span><span style="color:#6272a4">     * 异常描述信息
+</span><span style="color:#6272a4">     */</span>
+    <span style="color:#8be9fd;font-style:italic">private</span> String msg<span style="color:#ff79c6">;</span>
+
+    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#50fa7b">BusinessException</span><span style="color:#ff79c6">(</span>Integer code<span style="color:#ff79c6">,</span> String msg<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+        <span style="color:#ff79c6">this</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">code</span> <span style="color:#ff79c6">=</span> code<span style="color:#ff79c6">;</span>
+        <span style="color:#ff79c6">this</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">msg</span> <span style="color:#ff79c6">=</span> msg<span style="color:#ff79c6">;</span>
+    <span style="color:#ff79c6">}</span>
+
+    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#50fa7b">BusinessException</span><span style="color:#ff79c6">(</span>String msg<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+        <span style="color:#8be9fd;font-style:italic">super</span><span style="color:#ff79c6">(</span>msg<span style="color:#ff79c6">);</span>
+        <span style="color:#ff79c6">this</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">msg</span> <span style="color:#ff79c6">=</span> msg<span style="color:#ff79c6">;</span>
+    <span style="color:#ff79c6">}</span>
+
+    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#50fa7b">BusinessException</span><span style="color:#ff79c6">(</span>String msg<span style="color:#ff79c6">,</span> Throwable e<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+        <span style="color:#8be9fd;font-style:italic">super</span><span style="color:#ff79c6">(</span>msg<span style="color:#ff79c6">,</span> e<span style="color:#ff79c6">);</span>
+        <span style="color:#ff79c6">this</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">msg</span> <span style="color:#ff79c6">=</span> msg<span style="color:#ff79c6">;</span>
+    <span style="color:#ff79c6">}</span>
+
+    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#50fa7b">BusinessException</span><span style="color:#ff79c6">(</span>Integer code<span style="color:#ff79c6">,</span> String msg<span style="color:#ff79c6">,</span> Throwable e<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+        <span style="color:#8be9fd;font-style:italic">super</span><span style="color:#ff79c6">(</span>msg<span style="color:#ff79c6">,</span> e<span style="color:#ff79c6">);</span>
+        <span style="color:#ff79c6">this</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">code</span> <span style="color:#ff79c6">=</span> code<span style="color:#ff79c6">;</span>
+        <span style="color:#ff79c6">this</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">msg</span> <span style="color:#ff79c6">=</span> msg<span style="color:#ff79c6">;</span>
+    <span style="color:#ff79c6">}</span>
+</code></pre></div><h4 id="全局异常处理器">全局异常处理器</h4>
+<ul>
+<li>
+<p>创建 GlobalExceptionHandler 实现 HandlerExceptionResolver接口</p>
+<p>重写resolveException方法，并配置为Bean，使用 @ControllerAdvice 注解设置为全局异常处理类</p>
+</li>
+<li>
+<p>@ExceptionHandler 可以指定方法所拦截的异常类型，实现异常的分类处理</p>
+</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">@ControllerAdvice
+<span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">class</span> <span style="color:#50fa7b">GlobalExceptionHandler</span> <span style="color:#ff79c6">{</span>
+    <span style="color:#8be9fd;font-style:italic">private</span> <span style="color:#8be9fd;font-style:italic">final</span> Logger log<span style="color:#ff79c6">=</span> LoggerFactory<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getLogger</span><span style="color:#ff79c6">(</span>GlobalExceptionHandler<span style="color:#ff79c6">.</span><span style="color:#50fa7b">class</span><span style="color:#ff79c6">);</span>
+
+    @ExceptionHandler<span style="color:#ff79c6">(</span>Exception<span style="color:#ff79c6">.</span><span style="color:#50fa7b">class</span><span style="color:#ff79c6">)</span>
+    @ResponseBody
+    <span style="color:#8be9fd;font-style:italic">public</span> Object <span style="color:#50fa7b">handleException</span><span style="color:#ff79c6">(</span>Exception e<span style="color:#ff79c6">){</span>
+        log<span style="color:#ff79c6">.</span><span style="color:#50fa7b">error</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;SYSTEM Exception：&#34;</span><span style="color:#ff79c6">+</span>e<span style="color:#ff79c6">);</span>
+        <span style="color:#ff79c6">return</span> ApiCommonResponse<span style="color:#ff79c6">.</span><span style="color:#50fa7b">error</span><span style="color:#ff79c6">(</span>ExceptionEnum<span style="color:#ff79c6">.</span><span style="color:#50fa7b">SYSTEM_ERROR</span><span style="color:#ff79c6">);</span>
+    <span style="color:#ff79c6">}</span>
+
+    @ExceptionHandler<span style="color:#ff79c6">(</span>CommonException<span style="color:#ff79c6">.</span><span style="color:#50fa7b">class</span><span style="color:#ff79c6">)</span>
+    @ResponseBody
+    <span style="color:#8be9fd;font-style:italic">public</span> Object <span style="color:#50fa7b">handleException</span><span style="color:#ff79c6">(</span>CommonException e<span style="color:#ff79c6">){</span>
+        log<span style="color:#ff79c6">.</span><span style="color:#50fa7b">error</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;CommonException：&#34;</span><span style="color:#ff79c6">+</span>e<span style="color:#ff79c6">);</span>
+        <span style="color:#ff79c6">return</span> ApiCommonResponse<span style="color:#ff79c6">.</span><span style="color:#50fa7b">error</span><span style="color:#ff79c6">(</span>e<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getCode</span><span style="color:#ff79c6">(),</span>e<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getMessage</span><span style="color:#ff79c6">());</span>
+    <span style="color:#ff79c6">}</span>
+<span style="color:#ff79c6">}</span>
+</code></pre></div><p>这里使用了 统一返回对象，在另一篇文章中有介绍，如果不使用统一返回对象进行返回，也可以直接返回异常消息</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">class</span> <span style="color:#50fa7b">GlobalExceptionHandler</span> <span style="color:#ff79c6">{</span>
+    @ResponseBody
+    @ResponseStatus<span style="color:#ff79c6">(</span>HttpStatus<span style="color:#ff79c6">.</span><span style="color:#50fa7b">INTERNAL_SERVER_ERROR</span><span style="color:#ff79c6">)</span>
+    @ExceptionHandler<span style="color:#ff79c6">(</span>Exception<span style="color:#ff79c6">.</span><span style="color:#50fa7b">class</span><span style="color:#ff79c6">)</span>
+    <span style="color:#8be9fd;font-style:italic">public</span> String <span style="color:#50fa7b">exceptionHandler</span><span style="color:#ff79c6">(</span>Exception e<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+        log<span style="color:#ff79c6">.</span><span style="color:#50fa7b">error</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;业务异常&#34;</span><span style="color:#ff79c6">,</span> e<span style="color:#ff79c6">);</span>
+        <span style="color:#ff79c6">if</span> <span style="color:#ff79c6">(</span>e <span style="color:#ff79c6">instanceof</span> MethodArgumentNotValidException<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+            MethodArgumentNotValidException exception <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">(</span>MethodArgumentNotValidException<span style="color:#ff79c6">)</span> e<span style="color:#ff79c6">;</span>
+            <span style="color:#ff79c6">return</span> exception<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getBindingResult</span><span style="color:#ff79c6">().</span><span style="color:#50fa7b">getFieldError</span><span style="color:#ff79c6">().</span><span style="color:#50fa7b">getDefaultMessage</span><span style="color:#ff79c6">();</span>
+        <span style="color:#ff79c6">}</span> <span style="color:#ff79c6">else</span> <span style="color:#ff79c6">if</span> <span style="color:#ff79c6">(</span>e <span style="color:#ff79c6">instanceof</span> BusinessException<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+            BusinessException exception <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">(</span>BusinessException<span style="color:#ff79c6">)</span> e<span style="color:#ff79c6">;</span>
+            <span style="color:#ff79c6">return</span> exception<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getMsg</span><span style="color:#ff79c6">();</span>
+        <span style="color:#ff79c6">}</span> <span style="color:#ff79c6">else</span> <span style="color:#ff79c6">if</span> <span style="color:#ff79c6">(</span>e <span style="color:#ff79c6">instanceof</span> UnauthorizedException<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+            <span style="color:#ff79c6">return</span> <span style="color:#f1fa8c">&#34;权限不足&#34;</span><span style="color:#ff79c6">;</span>
+        <span style="color:#ff79c6">}</span> <span style="color:#ff79c6">else</span> <span style="color:#ff79c6">{</span>
+            BarkMonitorUtil<span style="color:#ff79c6">.</span><span style="color:#50fa7b">sendWithGroup</span><span style="color:#ff79c6">(</span><span style="color:#f1fa8c">&#34;没有预料的异常：&#34;</span> <span style="color:#ff79c6">+</span> e<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getMessage</span><span style="color:#ff79c6">(),</span> <span style="color:#f1fa8c">&#34;YOAS办公系统&#34;</span><span style="color:#ff79c6">);</span>
+            <span style="color:#ff79c6">return</span> <span style="color:#f1fa8c">&#34;系统内部错误&#34;</span><span style="color:#ff79c6">;</span>
+        <span style="color:#ff79c6">}</span>
+    <span style="color:#ff79c6">}</span>
+<span style="color:#ff79c6">}</span>
+</code></pre></div>
+                    
+                    <HR width="100%" id="EOF">
+		    <p style="color:#777;">最后修改于 2022-01-21</p>
+                    
+                </div>
+            </div>
+            
+            
+            <nav class="post-pagination">
+
+                
+                <a class="newer-posts" href="https://blog.wvuuvw.xyz/posts/%E7%BB%9F%E4%B8%80%E8%BF%94%E5%9B%9E%E5%AF%B9%E8%B1%A1/">
+			上一篇<br>API 统一返回对象的两种定义方式
+                </a>
+                
+                
+                
+                <a class="older-posts" href="https://blog.wvuuvw.xyz/posts/%E5%B9%B6%E6%9F%A5%E9%9B%86%E5%AE%9E%E7%8E%B0/">
+			下一篇<br>数据结构：并查集介绍和实现
+                </a>
+                
+            </nav>
+            <div class="post-comment-wrapper">
+                
+
+
+
+
+
+
+
+
+
+
+            </div>
+        </div>
+    </div>
+
+
+                    </div>
+            </div><div id="single-column-footer">
+Powered by <a href="https://github.com/gohugoio/hugo">hugo</a>
+<br>
+
+&copy;
+	
+	2022 ZackYJ&#39;s Blog
+	
+</div>
+            </div>
+    
+    <script src="/js/journal.js"></script>
+    </body>
+</html>

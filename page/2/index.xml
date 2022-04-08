@@ -5,9 +5,407 @@
     <description>Recent content on ZackYJ&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-CN</language>
-    <lastBuildDate>Sun, 14 Nov 2021 11:25:05 -0400</lastBuildDate>
+    <lastBuildDate>Sat, 22 Jan 2022 12:09:23 +0800</lastBuildDate>
     
         <atom:link href="https://blog.wvuuvw.xyz/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    
+        <item>
+        <title>Redis缓存设计案例</title>
+        <link>https://blog.wvuuvw.xyz/posts/redis%E7%BC%93%E5%AD%98%E6%A1%88%E4%BE%8B/</link>
+        <pubDate>Sat, 02 Jan 2021 18:31:23 +0800</pubDate>
+        
+        <guid>https://blog.wvuuvw.xyz/posts/redis%E7%BC%93%E5%AD%98%E6%A1%88%E4%BE%8B/</guid>
+        <description>ZackYJ&#39;s Blog https://blog.wvuuvw.xyz/posts/redis%E7%BC%93%E5%AD%98%E6%A1%88%E4%BE%8B/ -&lt;h2 id=&#34;查询&#34;&gt;查询&lt;/h2&gt;
+&lt;blockquote&gt;
+&lt;p&gt;查询先查 Reids&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;ul&gt;
+&lt;li&gt;先从 Redis 里查询，如果有数据直接返回，没有再去查询 Mysql&lt;/li&gt;
+&lt;li&gt;从 MySQL 查询到数据后，需要将数据写回 Redis 以保障下一次缓存命中
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;      User user &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;null&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;;&lt;/span&gt;
+    String key &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; CACHE_KEY_USER&lt;span style=&#34;color:#ff79c6&#34;&gt;+&lt;/span&gt;id&lt;span style=&#34;color:#ff79c6&#34;&gt;;&lt;/span&gt;
+    &lt;span style=&#34;color:#6272a4&#34;&gt;//先从redis里面查询
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;    user &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;User&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt; redisTemplate&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;opsForValue&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;().&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;get&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;key&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+    &lt;span style=&#34;color:#ff79c6&#34;&gt;if&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;user &lt;span style=&#34;color:#ff79c6&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;null&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt;
+    &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+        &lt;span style=&#34;color:#6272a4&#34;&gt;// redis里面无，继续查询mysql
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;        user &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; userMapper&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;selectByPrimaryKey&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;id&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;if&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;user &lt;span style=&#34;color:#ff79c6&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;null&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt;
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+            &lt;span style=&#34;color:#6272a4&#34;&gt;//都无数据,返回空数据
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;            &lt;span style=&#34;color:#ff79c6&#34;&gt;return&lt;/span&gt; user&lt;span style=&#34;color:#ff79c6&#34;&gt;;&lt;/span&gt;
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;else&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+            &lt;span style=&#34;color:#6272a4&#34;&gt;//数据写回 redis
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;            redisTemplate&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;opsForValue&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;().&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;set&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;key&lt;span style=&#34;color:#ff79c6&#34;&gt;,&lt;/span&gt;user&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+    &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+    &lt;span style=&#34;color:#ff79c6&#34;&gt;return&lt;/span&gt; user&lt;span style=&#34;color:#ff79c6&#34;&gt;;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;p&gt;实际生产环境中，通常 redis 的 key 都会设置过期时间，如果正好遇到过期时间到期，某个热点 key 突然失效，会导致缓存击穿问题&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;击穿：缓存先击中(一开始 Redis 中有数据），但热点 key 突然失效&lt;/p&gt;
+&lt;p&gt;在高并发下，出现大量的查询请求流向 MySQL （打穿）&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;改进&#34;&gt;改进&lt;/h3&gt;
+&lt;p&gt;为了避免缓存击穿，要保证只有一个请求操作，其他请求等待&lt;/p&gt;
+&lt;p&gt;借鉴单例模式的双锁检测（ Double Check）思想&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;       user &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;User&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt;redisTemplate&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;opsForValue&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;().&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;get&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;key&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+				&lt;span style=&#34;color:#6272a4&#34;&gt;//第一重检测
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;        &lt;span style=&#34;color:#ff79c6&#34;&gt;if&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;user &lt;span style=&#34;color:#ff79c6&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;null&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt;
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+           &lt;span style=&#34;color:#6272a4&#34;&gt;//进来就加锁，保证一个请求操作
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;            &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;synchronized&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;UserService&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;class&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;){&lt;/span&gt;
+                &lt;span style=&#34;color:#6272a4&#34;&gt;//加锁后再查一次 redis
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;                user &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;User&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt; redisTemplate&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;opsForValue&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;().&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;get&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;key&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+                &lt;span style=&#34;color:#6272a4&#34;&gt;//第二重检测，如果二次 Redis 还是 null，就可以去查MySQL 了
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;                &lt;span style=&#34;color:#ff79c6&#34;&gt;if&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;user &lt;span style=&#34;color:#ff79c6&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;null&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+                    user &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; userMapper&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;selectByPrimaryKey&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;id&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+                    &lt;span style=&#34;color:#ff79c6&#34;&gt;if&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;user &lt;span style=&#34;color:#ff79c6&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;null&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt; &lt;span style=&#34;color:#6272a4&#34;&gt;//如果还是 null ，刚才被人删了
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;                        &lt;span style=&#34;color:#ff79c6&#34;&gt;return&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;null&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;;&lt;/span&gt;
+                    &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;else&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt; &lt;span style=&#34;color:#6272a4&#34;&gt;//回写 redis 完成一致性的同步工作
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;                     &lt;span style=&#34;color:#ff79c6&#34;&gt;/&lt;/span&gt;redisTemplate&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;opsForValue&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;().&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;setIfAbsent&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;key&lt;span style=&#34;color:#ff79c6&#34;&gt;,&lt;/span&gt;user&lt;span style=&#34;color:#ff79c6&#34;&gt;,&lt;/span&gt;7L&lt;span style=&#34;color:#ff79c6&#34;&gt;,&lt;/span&gt;TimeUnit&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;DAYS&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+                    &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+                &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+            &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;return&lt;/span&gt; user&lt;span style=&#34;color:#ff79c6&#34;&gt;;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;增删改&#34;&gt;增删改&lt;/h2&gt;
+&lt;blockquote&gt;
+&lt;p&gt;修改先操作 MySQL&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;插入用户数据时做第二次判断&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;不仅判断返回的 int 行数 &amp;gt; 1，还要重新查出一次确保正确的插入&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;确定成功后再存进 redis，以保证数据一致性&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span style=&#34;color:#8be9fd&#34;&gt;int&lt;/span&gt; i &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; userMapper&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;insertSelective&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;user&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+
+&lt;span style=&#34;color:#ff79c6&#34;&gt;if&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;i &lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;gt;&lt;/span&gt; 0&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt;
+&lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+  &lt;span style=&#34;color:#6272a4&#34;&gt;//再次查询 mysql 数据捞回来
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;  user &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt;userMapper&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;selectByPrimaryKey&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;user&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;getId&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;());&lt;/span&gt;
+  &lt;span style=&#34;color:#6272a4&#34;&gt;//保证数据一致性
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;  String key &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; CACHE_KEY_USER&lt;span style=&#34;color:#ff79c6&#34;&gt;+&lt;/span&gt;user&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;getId&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+  redisTemplate&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;opsForValue&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;().&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;set&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;key&lt;span style=&#34;color:#ff79c6&#34;&gt;,&lt;/span&gt;user&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+&lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;删除：保证先操作数据库再操作 Redis&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;生产环境下使用逻辑删除居多，方便演示直接使用物理删除&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span style=&#34;color:#8be9fd&#34;&gt;int&lt;/span&gt; i &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; userMapper&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;deleteByPrimaryKey&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;id&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+&lt;span style=&#34;color:#ff79c6&#34;&gt;if&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;i &lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;gt;&lt;/span&gt; 0&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt;
+&lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+  String key &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; CACHE_KEY_USER&lt;span style=&#34;color:#ff79c6&#34;&gt;+&lt;/span&gt;id&lt;span style=&#34;color:#ff79c6&#34;&gt;;&lt;/span&gt;
+  redisTemplate&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;delete&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;key&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+&lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;修改：同样使用修改操作后查询出的数据修改 Redis&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;  &lt;span style=&#34;color:#8be9fd&#34;&gt;int&lt;/span&gt; i &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; userMapper&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;updateByPrimaryKeySelective&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;user&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+&lt;span style=&#34;color:#ff79c6&#34;&gt;if&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;i &lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;gt;&lt;/span&gt; 0&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt;
+&lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+  user &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; userMapper&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;selectByPrimaryKey&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;user&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;getId&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;());&lt;/span&gt;
+  String key &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; CACHE_KEY_USER&lt;span style=&#34;color:#ff79c6&#34;&gt;+&lt;/span&gt;user&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;getId&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+  redisTemplate&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;opsForValue&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;().&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;set&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;key&lt;span style=&#34;color:#ff79c6&#34;&gt;,&lt;/span&gt;user&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+&lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+&lt;/ul&gt;
+- https://blog.wvuuvw.xyz/posts/redis%E7%BC%93%E5%AD%98%E6%A1%88%E4%BE%8B/ - </description>
+        </item>
+    
+    
+    
+        <item>
+        <title>常见三大数据库连接池使用及工具类抽取</title>
+        <link>https://blog.wvuuvw.xyz/posts/%E5%B8%B8%E7%94%A8%E6%95%B0%E6%8D%AE%E5%BA%93%E8%BF%9E%E6%8E%A5%E6%B1%A0/</link>
+        <pubDate>Wed, 18 Nov 2020 11:25:05 -0400</pubDate>
+        
+        <guid>https://blog.wvuuvw.xyz/posts/%E5%B8%B8%E7%94%A8%E6%95%B0%E6%8D%AE%E5%BA%93%E8%BF%9E%E6%8E%A5%E6%B1%A0/</guid>
+        <description>ZackYJ&#39;s Blog https://blog.wvuuvw.xyz/posts/%E5%B8%B8%E7%94%A8%E6%95%B0%E6%8D%AE%E5%BA%93%E8%BF%9E%E6%8E%A5%E6%B1%A0/ -&lt;h3 id=&#34;dbcp&#34;&gt;DBCP&lt;/h3&gt;
+&lt;p&gt;DBCP 是Apache成员之一，在企业开发中也比较常见，也是tomcat内置的连接池&lt;/p&gt;
+&lt;h4 id=&#34;dbcp-工具类&#34;&gt;DBCP 工具类&lt;/h4&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;public&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;class&lt;/span&gt; &lt;span style=&#34;color:#50fa7b&#34;&gt;DBCPUtils&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+
+    &lt;span style=&#34;color:#6272a4&#34;&gt;//1.定义常量 保存数据库连接的相关信息
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;public&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;static&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;final&lt;/span&gt; String DRIVERNAME &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#f1fa8c&#34;&gt;&amp;#34;com.mysql.jdbc.Driver&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;;&lt;/span&gt;
+    &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;public&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;static&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;final&lt;/span&gt; String URL &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#f1fa8c&#34;&gt;&amp;#34;jdbc:mysql://localhost:3306/db5?characterEncoding=UTF-8&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;;&lt;/span&gt;
+    &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;public&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;static&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;final&lt;/span&gt; String USERNAME &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#f1fa8c&#34;&gt;&amp;#34;root&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;;&lt;/span&gt;
+    &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;public&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;static&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;final&lt;/span&gt; String PASSWORD &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#f1fa8c&#34;&gt;&amp;#34;123456&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;;&lt;/span&gt;
+
+    &lt;span style=&#34;color:#6272a4&#34;&gt;//2.创建连接池对象 (有DBCP提供的实现类)
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;public&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;static&lt;/span&gt; BasicDataSource dataSource &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;new&lt;/span&gt; BasicDataSource&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+
+    &lt;span style=&#34;color:#6272a4&#34;&gt;//3.使用静态代码块进行配置
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;static&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+        dataSource&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;setDriverClassName&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;DRIVERNAME&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+        dataSource&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;setUrl&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;URL&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+        dataSource&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;setUsername&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;USERNAME&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+        dataSource&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;setPassword&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;PASSWORD&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+        dataSource&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;setMaxActive&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;20&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+    &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+
+    &lt;span style=&#34;color:#6272a4&#34;&gt;//4.获取连接的方法
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;public&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;static&lt;/span&gt; Connection &lt;span style=&#34;color:#50fa7b&#34;&gt;getConnection&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;()&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;throws&lt;/span&gt; SQLException &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+
+        &lt;span style=&#34;color:#6272a4&#34;&gt;//从连接池中获取连接
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;        Connection connection &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; dataSource&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;getConnection&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;return&lt;/span&gt; connection&lt;span style=&#34;color:#ff79c6&#34;&gt;;&lt;/span&gt;
+    &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+
+    &lt;span style=&#34;color:#6272a4&#34;&gt;//5.释放资源方法
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;public&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;static&lt;/span&gt; &lt;span style=&#34;color:#8be9fd&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#50fa7b&#34;&gt;close&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;Connection con&lt;span style=&#34;color:#ff79c6&#34;&gt;,&lt;/span&gt; Statement statement&lt;span style=&#34;color:#ff79c6&#34;&gt;){&lt;/span&gt;
+
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;if&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;con &lt;span style=&#34;color:#ff79c6&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;null&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; statement &lt;span style=&#34;color:#ff79c6&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;null&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;){&lt;/span&gt;
+            &lt;span style=&#34;color:#ff79c6&#34;&gt;try&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+                statement&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;close&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+                &lt;span style=&#34;color:#6272a4&#34;&gt;//归还连接
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;                con&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;close&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+            &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;catch&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;SQLException e&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+                e&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;printStackTrace&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+            &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+
+    &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+
+    &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;public&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;static&lt;/span&gt; &lt;span style=&#34;color:#8be9fd&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#50fa7b&#34;&gt;close&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;Connection con&lt;span style=&#34;color:#ff79c6&#34;&gt;,&lt;/span&gt; Statement statement&lt;span style=&#34;color:#ff79c6&#34;&gt;,&lt;/span&gt; ResultSet resultSet&lt;span style=&#34;color:#ff79c6&#34;&gt;){&lt;/span&gt;
+
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;if&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;con &lt;span style=&#34;color:#ff79c6&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;null&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; statement &lt;span style=&#34;color:#ff79c6&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;null&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; resultSet &lt;span style=&#34;color:#ff79c6&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;null&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;){&lt;/span&gt;
+            &lt;span style=&#34;color:#ff79c6&#34;&gt;try&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+                resultSet&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;close&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+                statement&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;close&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+                &lt;span style=&#34;color:#6272a4&#34;&gt;//归还连接
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;                con&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;close&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+            &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;catch&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;SQLException e&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+                e&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;printStackTrace&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+            &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+
+    &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+
+&lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h4 id=&#34;常见配置项&#34;&gt;常见配置项&lt;/h4&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;driverClassName 数据库驱动名称&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;url 数据库地址&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;username 用户名&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;password 密码&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;maxActive 最大连接数量&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;maxIdle 最大空闲连接&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;minIdle 最小空闲连接&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;initialSize 初始化连接&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;c3p0&#34;&gt;C3P0&lt;/h3&gt;
+&lt;h4 id=&#34;xml-配置&#34;&gt;XML 配置&lt;/h4&gt;
+&lt;p&gt;c3p0-config.xml 配置文件名不可更改&lt;/p&gt;
+&lt;p&gt;放置在 src 或资源目录下，资源目录需要在 IDEA 中 mark as：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://logseq.oss-cn-chengdu.aliyuncs.com/noteImg/202203042120320.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-xml&#34; data-lang=&#34;xml&#34;&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;lt;c3p0-config&amp;gt;&lt;/span&gt;
+&lt;span style=&#34;color:#6272a4&#34;&gt;&amp;lt;!--默认配置--&amp;gt;&lt;/span&gt;
+  &lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;lt;default-config&amp;gt;&lt;/span&gt;
+      &lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;lt;property&lt;/span&gt; &lt;span style=&#34;color:#50fa7b&#34;&gt;name=&lt;/span&gt;&lt;span style=&#34;color:#f1fa8c&#34;&gt;&amp;#34;driverClass&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;gt;&lt;/span&gt;com.mysql.jdbc.Driver&lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;lt;/property&amp;gt;&lt;/span&gt;
+      &lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;lt;property&lt;/span&gt; &lt;span style=&#34;color:#50fa7b&#34;&gt;name=&lt;/span&gt;&lt;span style=&#34;color:#f1fa8c&#34;&gt;&amp;#34;jdbcUrl&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;gt;&lt;/span&gt;jdbc:mysql://localhost:3306/db5?characterEncoding=UTF-8&lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;lt;/property&amp;gt;&lt;/span&gt;
+      &lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;lt;property&lt;/span&gt; &lt;span style=&#34;color:#50fa7b&#34;&gt;name=&lt;/span&gt;&lt;span style=&#34;color:#f1fa8c&#34;&gt;&amp;#34;user&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;gt;&lt;/span&gt;root&lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;lt;/property&amp;gt;&lt;/span&gt;
+      &lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;lt;property&lt;/span&gt; &lt;span style=&#34;color:#50fa7b&#34;&gt;name=&lt;/span&gt;&lt;span style=&#34;color:#f1fa8c&#34;&gt;&amp;#34;password&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;gt;&lt;/span&gt;123456&lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;lt;/property&amp;gt;&lt;/span&gt;
+      &lt;span style=&#34;color:#6272a4&#34;&gt;&amp;lt;!-- initialPoolSize：初始化时获取三个连接，
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;      取值应在minPoolSize与maxPoolSize之间。 --&amp;gt;&lt;/span&gt;
+      &lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;lt;property&lt;/span&gt; &lt;span style=&#34;color:#50fa7b&#34;&gt;name=&lt;/span&gt;&lt;span style=&#34;color:#f1fa8c&#34;&gt;&amp;#34;initialPoolSize&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;gt;&lt;/span&gt;3&lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;lt;/property&amp;gt;&lt;/span&gt;
+      &lt;span style=&#34;color:#6272a4&#34;&gt;&amp;lt;!-- maxIdleTime：最大空闲时间,60秒内未使用则连接被丢弃。若为0则永不丢弃。--&amp;gt;&lt;/span&gt;
+      &lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;lt;property&lt;/span&gt; &lt;span style=&#34;color:#50fa7b&#34;&gt;name=&lt;/span&gt;&lt;span style=&#34;color:#f1fa8c&#34;&gt;&amp;#34;maxIdleTime&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;gt;&lt;/span&gt;60&lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;lt;/property&amp;gt;&lt;/span&gt;
+      &lt;span style=&#34;color:#6272a4&#34;&gt;&amp;lt;!-- maxPoolSize：连接池中保留的最大连接数 --&amp;gt;&lt;/span&gt;
+      &lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;lt;property&lt;/span&gt; &lt;span style=&#34;color:#50fa7b&#34;&gt;name=&lt;/span&gt;&lt;span style=&#34;color:#f1fa8c&#34;&gt;&amp;#34;maxPoolSize&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;gt;&lt;/span&gt;100&lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;lt;/property&amp;gt;&lt;/span&gt;
+      &lt;span style=&#34;color:#6272a4&#34;&gt;&amp;lt;!-- minPoolSize: 连接池中保留的最小连接数 --&amp;gt;&lt;/span&gt;
+      &lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;lt;property&lt;/span&gt; &lt;span style=&#34;color:#50fa7b&#34;&gt;name=&lt;/span&gt;&lt;span style=&#34;color:#f1fa8c&#34;&gt;&amp;#34;minPoolSize&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;gt;&lt;/span&gt;10&lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;lt;/property&amp;gt;&lt;/span&gt;
+  &lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;lt;/default-config&amp;gt;&lt;/span&gt;
+  &lt;span style=&#34;color:#6272a4&#34;&gt;&amp;lt;!--配置连接池mysql--&amp;gt;&lt;/span&gt;
+  &lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;lt;named-config&lt;/span&gt; &lt;span style=&#34;color:#50fa7b&#34;&gt;name=&lt;/span&gt;&lt;span style=&#34;color:#f1fa8c&#34;&gt;&amp;#34;mysql&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;gt;&lt;/span&gt;
+      &lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;lt;property&lt;/span&gt; &lt;span style=&#34;color:#50fa7b&#34;&gt;name=&lt;/span&gt;&lt;span style=&#34;color:#f1fa8c&#34;&gt;&amp;#34;driverClass&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;gt;&lt;/span&gt;com.mysql.jdbc.Driver&lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;lt;/property&amp;gt;&lt;/span&gt;
+      &lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;lt;property&lt;/span&gt; &lt;span style=&#34;color:#50fa7b&#34;&gt;name=&lt;/span&gt;&lt;span style=&#34;color:#f1fa8c&#34;&gt;&amp;#34;jdbcUrl&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;gt;&lt;/span&gt;jdbc:mysql://localhost:3306/db5&lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;lt;/property&amp;gt;&lt;/span&gt;
+      &lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;lt;property&lt;/span&gt; &lt;span style=&#34;color:#50fa7b&#34;&gt;name=&lt;/span&gt;&lt;span style=&#34;color:#f1fa8c&#34;&gt;&amp;#34;user&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;gt;&lt;/span&gt;root&lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;lt;/property&amp;gt;&lt;/span&gt;
+      &lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;lt;property&lt;/span&gt; &lt;span style=&#34;color:#50fa7b&#34;&gt;name=&lt;/span&gt;&lt;span style=&#34;color:#f1fa8c&#34;&gt;&amp;#34;password&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;gt;&lt;/span&gt;123456&lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;lt;/property&amp;gt;&lt;/span&gt;
+      &lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;lt;property&lt;/span&gt; &lt;span style=&#34;color:#50fa7b&#34;&gt;name=&lt;/span&gt;&lt;span style=&#34;color:#f1fa8c&#34;&gt;&amp;#34;initialPoolSize&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;gt;&lt;/span&gt;10&lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;lt;/property&amp;gt;&lt;/span&gt;
+      &lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;lt;property&lt;/span&gt; &lt;span style=&#34;color:#50fa7b&#34;&gt;name=&lt;/span&gt;&lt;span style=&#34;color:#f1fa8c&#34;&gt;&amp;#34;maxIdleTime&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;gt;&lt;/span&gt;30&lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;lt;/property&amp;gt;&lt;/span&gt;
+      &lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;lt;property&lt;/span&gt; &lt;span style=&#34;color:#50fa7b&#34;&gt;name=&lt;/span&gt;&lt;span style=&#34;color:#f1fa8c&#34;&gt;&amp;#34;maxPoolSize&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;gt;&lt;/span&gt;100&lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;lt;/property&amp;gt;&lt;/span&gt;
+      &lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;lt;property&lt;/span&gt; &lt;span style=&#34;color:#50fa7b&#34;&gt;name=&lt;/span&gt;&lt;span style=&#34;color:#f1fa8c&#34;&gt;&amp;#34;minPoolSize&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;gt;&lt;/span&gt;10&lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;lt;/property&amp;gt;&lt;/span&gt;
+  &lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;lt;/named-config&amp;gt;&lt;/span&gt;
+&lt;span style=&#34;color:#6272a4&#34;&gt;&amp;lt;!--配置连接池2,可以配置多个--&amp;gt;&lt;/span&gt;
+&lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;lt;/c3p0-config&amp;gt;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h4 id=&#34;常见配置&#34;&gt;常见配置&lt;/h4&gt;
+&lt;p&gt;&lt;img src=&#34;https://logseq.oss-cn-chengdu.aliyuncs.com/noteImg/202203042122442.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;h4 id=&#34;工具类&#34;&gt;工具类&lt;/h4&gt;
+&lt;p&gt;C3P0提供的核心工具类, ComboPooledDataSource ,&lt;/p&gt;
+&lt;p&gt;如果想使用连接池,就必须创建该类的对象&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;new ComboPooledDataSource(); 使用 默认配置&lt;/li&gt;
+&lt;li&gt;new ComboPooledDataSource(&amp;ldquo;mysql&amp;rdquo;); 使用命名配置&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;public&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;class&lt;/span&gt; &lt;span style=&#34;color:#50fa7b&#34;&gt;C3P0Utils&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+
+    &lt;span style=&#34;color:#6272a4&#34;&gt;//1.创建连接池对象 C3P0对DataSource接口的实现类
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#6272a4&#34;&gt;//使用的配置是 配置文件中的默认配置
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#6272a4&#34;&gt;//public static ComboPooledDataSource dataSource = new ComboPooledDataSource();
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;
+    &lt;span style=&#34;color:#6272a4&#34;&gt;//使用指定的配置
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;public&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;static&lt;/span&gt; ComboPooledDataSource dataSource &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;new&lt;/span&gt; ComboPooledDataSource&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#f1fa8c&#34;&gt;&amp;#34;mysql&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+
+    &lt;span style=&#34;color:#6272a4&#34;&gt;//获取连接的方法
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;public&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;static&lt;/span&gt; Connection &lt;span style=&#34;color:#50fa7b&#34;&gt;getConnection&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;()&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;throws&lt;/span&gt; SQLException &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;return&lt;/span&gt; dataSource&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;getConnection&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+    &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+
+    &lt;span style=&#34;color:#6272a4&#34;&gt;//释放资源
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;public&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;static&lt;/span&gt; &lt;span style=&#34;color:#8be9fd&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#50fa7b&#34;&gt;close&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;Connection con&lt;span style=&#34;color:#ff79c6&#34;&gt;,&lt;/span&gt; Statement statement&lt;span style=&#34;color:#ff79c6&#34;&gt;){&lt;/span&gt;
+
+
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;if&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;con &lt;span style=&#34;color:#ff79c6&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;null&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; statement &lt;span style=&#34;color:#ff79c6&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;null&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;){&lt;/span&gt;
+            &lt;span style=&#34;color:#ff79c6&#34;&gt;try&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+                statement&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;close&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+                &lt;span style=&#34;color:#6272a4&#34;&gt;//归还连接
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;                con&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;close&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+            &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;catch&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;SQLException e&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+                e&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;printStackTrace&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+            &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+
+    &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+
+    &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;public&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;static&lt;/span&gt; &lt;span style=&#34;color:#8be9fd&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#50fa7b&#34;&gt;close&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;Connection con&lt;span style=&#34;color:#ff79c6&#34;&gt;,&lt;/span&gt; Statement statement&lt;span style=&#34;color:#ff79c6&#34;&gt;,&lt;/span&gt; ResultSet resultSet&lt;span style=&#34;color:#ff79c6&#34;&gt;){&lt;/span&gt;
+
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;if&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;con &lt;span style=&#34;color:#ff79c6&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;null&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; statement &lt;span style=&#34;color:#ff79c6&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;null&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; resultSet &lt;span style=&#34;color:#ff79c6&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;null&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;){&lt;/span&gt;
+            &lt;span style=&#34;color:#ff79c6&#34;&gt;try&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+                resultSet&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;close&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+                statement&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;close&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+                &lt;span style=&#34;color:#6272a4&#34;&gt;//归还连接
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;                con&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;close&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+            &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;catch&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;SQLException e&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+                e&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;printStackTrace&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+            &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+
+    &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+&lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;druid&#34;&gt;Druid&lt;/h3&gt;
+&lt;p&gt;阿里巴巴开发的号称为监控而生的数据库连接池，Druid是目前最好的数据库连接池。在功能、性能、扩展性方面，都超过其他数据库连接池，同时加入了日志监控，可以很好的监控DB池连接和SQL的执行情况&lt;/p&gt;
+&lt;h4 id=&#34;properties-配置文件&#34;&gt;properties 配置文件&lt;/h4&gt;
+&lt;ul&gt;
+&lt;li&gt;.properties 格式&lt;/li&gt;
+&lt;li&gt;文件名任意，目录也任意&lt;/li&gt;
+&lt;/ul&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code class=&#34;language-properties&#34; data-lang=&#34;properties&#34;&gt;driverClassName=com.mysql.jdbc.Driver
+url=jdbc:mysql://127.0.0.1:3306/db5?characterEncoding=UTF-8
+username=root
+password=123456
+initialSize=5
+maxActive=10
+maxWait=3000
+&lt;/code&gt;&lt;/pre&gt;&lt;h4 id=&#34;工具类-1&#34;&gt;工具类&lt;/h4&gt;
+&lt;p&gt;通过工厂来来获取 DruidDataSourceFactory类的createDataSource方法&lt;/p&gt;
+&lt;p&gt;createDataSource(Properties p) 方法参数可以是一个属性集对象&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;public&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;class&lt;/span&gt; &lt;span style=&#34;color:#50fa7b&#34;&gt;DruidUtils&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+
+    &lt;span style=&#34;color:#6272a4&#34;&gt;//1.定义成员变量
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;public&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;static&lt;/span&gt; DataSource dataSource&lt;span style=&#34;color:#ff79c6&#34;&gt;;&lt;/span&gt;
+
+    &lt;span style=&#34;color:#6272a4&#34;&gt;//2.静态代码块
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;static&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;try&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+            &lt;span style=&#34;color:#6272a4&#34;&gt;//3.创建属性集对象
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;            Properties p &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;new&lt;/span&gt; Properties&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+
+            &lt;span style=&#34;color:#6272a4&#34;&gt;//4.加载配置文件 Druid 连接池不能够主动加载配置文件 ,需要指定文件
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;            InputStream inputStream &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; DruidUtils&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;class&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;getClassLoader&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;().&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;getResourceAsStream&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;&lt;span style=&#34;color:#f1fa8c&#34;&gt;&amp;#34;druid.properties&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+
+            &lt;span style=&#34;color:#6272a4&#34;&gt;//5. 使用Properties对象的 load方法 从字节流中读取配置信息
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;            p&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;load&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;inputStream&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+
+            &lt;span style=&#34;color:#6272a4&#34;&gt;//6. 通过工厂类获取连接池对象
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;            dataSource &lt;span style=&#34;color:#ff79c6&#34;&gt;=&lt;/span&gt; DruidDataSourceFactory&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;createDataSource&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;p&lt;span style=&#34;color:#ff79c6&#34;&gt;);&lt;/span&gt;
+
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;catch&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;Exception e&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+            e&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;printStackTrace&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+    &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+
+    &lt;span style=&#34;color:#6272a4&#34;&gt;//获取连接的方法
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;public&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;static&lt;/span&gt; Connection &lt;span style=&#34;color:#50fa7b&#34;&gt;getConnection&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(){&lt;/span&gt;
+
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;try&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+
+            &lt;span style=&#34;color:#ff79c6&#34;&gt;return&lt;/span&gt; dataSource&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;getConnection&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;catch&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;SQLException e&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+            e&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;printStackTrace&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+            &lt;span style=&#34;color:#ff79c6&#34;&gt;return&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;null&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;;&lt;/span&gt;
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+    &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+
+    &lt;span style=&#34;color:#6272a4&#34;&gt;//获取Druid连接池对象的方法
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;public&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;static&lt;/span&gt; DataSource &lt;span style=&#34;color:#50fa7b&#34;&gt;getDataSource&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(){&lt;/span&gt;
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;return&lt;/span&gt; dataSource&lt;span style=&#34;color:#ff79c6&#34;&gt;;&lt;/span&gt;
+    &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+
+
+    &lt;span style=&#34;color:#6272a4&#34;&gt;//释放资源
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;public&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;static&lt;/span&gt; &lt;span style=&#34;color:#8be9fd&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#50fa7b&#34;&gt;close&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;Connection con&lt;span style=&#34;color:#ff79c6&#34;&gt;,&lt;/span&gt; Statement statement&lt;span style=&#34;color:#ff79c6&#34;&gt;){&lt;/span&gt;
+
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;if&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;con &lt;span style=&#34;color:#ff79c6&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;null&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; statement &lt;span style=&#34;color:#ff79c6&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;null&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;){&lt;/span&gt;
+            &lt;span style=&#34;color:#ff79c6&#34;&gt;try&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+                statement&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;close&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+                &lt;span style=&#34;color:#6272a4&#34;&gt;//归还连接
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;                con&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;close&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+            &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;catch&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;SQLException e&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+                e&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;printStackTrace&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+            &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+
+    &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+
+    &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;public&lt;/span&gt; &lt;span style=&#34;color:#8be9fd;font-style:italic&#34;&gt;static&lt;/span&gt; &lt;span style=&#34;color:#8be9fd&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#50fa7b&#34;&gt;close&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;Connection con&lt;span style=&#34;color:#ff79c6&#34;&gt;,&lt;/span&gt; Statement statement&lt;span style=&#34;color:#ff79c6&#34;&gt;,&lt;/span&gt; ResultSet resultSet&lt;span style=&#34;color:#ff79c6&#34;&gt;){&lt;/span&gt;
+
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;if&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;con &lt;span style=&#34;color:#ff79c6&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;null&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; statement &lt;span style=&#34;color:#ff79c6&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;null&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; resultSet &lt;span style=&#34;color:#ff79c6&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;null&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;){&lt;/span&gt;
+            &lt;span style=&#34;color:#ff79c6&#34;&gt;try&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+                resultSet&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;close&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+                statement&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;close&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+                &lt;span style=&#34;color:#6272a4&#34;&gt;//归还连接
+&lt;/span&gt;&lt;span style=&#34;color:#6272a4&#34;&gt;&lt;/span&gt;                con&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;close&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+            &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;catch&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;(&lt;/span&gt;SQLException e&lt;span style=&#34;color:#ff79c6&#34;&gt;)&lt;/span&gt; &lt;span style=&#34;color:#ff79c6&#34;&gt;{&lt;/span&gt;
+                e&lt;span style=&#34;color:#ff79c6&#34;&gt;.&lt;/span&gt;&lt;span style=&#34;color:#50fa7b&#34;&gt;printStackTrace&lt;/span&gt;&lt;span style=&#34;color:#ff79c6&#34;&gt;();&lt;/span&gt;
+            &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+        &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+
+    &lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+
+&lt;span style=&#34;color:#ff79c6&#34;&gt;}&lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;- https://blog.wvuuvw.xyz/posts/%E5%B8%B8%E7%94%A8%E6%95%B0%E6%8D%AE%E5%BA%93%E8%BF%9E%E6%8E%A5%E6%B1%A0/ - </description>
+        </item>
     
     
     

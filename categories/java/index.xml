@@ -6,7 +6,31 @@
     <description>Recent content in Java on ZackYJ&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-CN</language>
-    <lastBuildDate>Wed, 03 Mar 2021 12:43:23 +0800</lastBuildDate><atom:link href="https://blog.wvuuvw.xyz/categories/java/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sat, 22 Jan 2022 12:09:23 +0800</lastBuildDate><atom:link href="https://blog.wvuuvw.xyz/categories/java/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>API 统一返回对象的两种定义方式</title>
+      <link>https://blog.wvuuvw.xyz/posts/%E7%BB%9F%E4%B8%80%E8%BF%94%E5%9B%9E%E5%AF%B9%E8%B1%A1/</link>
+      <pubDate>Sat, 22 Jan 2022 12:09:23 +0800</pubDate>
+      
+      <guid>https://blog.wvuuvw.xyz/posts/%E7%BB%9F%E4%B8%80%E8%BF%94%E5%9B%9E%E5%AF%B9%E8%B1%A1/</guid>
+      <description>SpringMVC 异常机制  定义返回 Controller 返回的对象字段和格式，用于统一数据格式，并让 SpringMVC 自动将对象序列化成 JSON 字符串后进行响应
+ 消息结构固定 规定消息结构的三个字段：
+ 状态码 消息 额外数据（响应对象）  public class ApiCommonResponse&amp;lt;T&amp;gt; { private Integer status; private String msg; private T data; //常用的返回码和消息  private static final int OK_CODE = 10000; private static final String OK_MSG = &amp;#34;SUCCESS&amp;#34;; //单参构造函数：不传递参数即默认使用成功的code和msg  public ApiCommonResponse() { this(OK_CODE,OK_MSG); } //三参构造函数  public ApiCommonResponse(Integer status, String msg, T data) { this.status = status; this.msg = msg; this.</description>
+    </item>
+    
+    <item>
+      <title>通用异常处理方案总结</title>
+      <link>https://blog.wvuuvw.xyz/posts/%E9%A1%B9%E7%9B%AE%E5%BC%82%E5%B8%B8%E6%96%B9%E6%A1%88/</link>
+      <pubDate>Fri, 21 Jan 2022 08:31:23 +0800</pubDate>
+      
+      <guid>https://blog.wvuuvw.xyz/posts/%E9%A1%B9%E7%9B%AE%E5%BC%82%E5%B8%B8%E6%96%B9%E6%A1%88/</guid>
+      <description>SpringMVC 异常机制  原则：MVC 三层出现的异常都通过 throws 抛出，最终由前端控制器 DispatcherServlet 捕获，交由异常处理器 HandlerExceptionResolver 处理
+   HandlerExceptionResolver 是异常处理器接口，实现这个接口可以自定义异常处理器
+  HTTP 异常可以在 web.xml 中配置自定义异常页面
+&amp;lt;!--处理500异常--&amp;gt; &amp;lt;error-page&amp;gt; &amp;lt;error-code&amp;gt;500&amp;lt;/error-code&amp;gt; &amp;lt;location&amp;gt;/500.html&amp;lt;/location&amp;gt; &amp;lt;/error-page&amp;gt; &amp;lt;!--处理404异常--&amp;gt; &amp;lt;error-page&amp;gt; &amp;lt;error-code&amp;gt;404&amp;lt;/error-code&amp;gt; &amp;lt;location&amp;gt;/404.html&amp;lt;/location&amp;gt; &amp;lt;/error-page&amp;gt;   最佳实践 异常枚举 异常枚举 ExceptionEnum 用于和和前端约定好异常状态码和消息，并传入自定义的异常类进行统一处理
+public enum ExceptionEnum { /* * 用户模块异常 * */ NEED_USR_NAME(10001,&amp;#34;用户名不能为空&amp;#34;), /* * 系统异常*/ SYSTEM_ERROR(20000,&amp;#34;服务器内部异常&amp;#34;); Integer code; String msg; ExceptionEnum(Integer code, String msg) { this.code = code; this.msg = msg; } public Integer getCode() { return code; } public void setCode(Integer code) { this.</description>
+    </item>
+    
     <item>
       <title>利用 Spring AOP 打印接口日志</title>
       <link>https://blog.wvuuvw.xyz/posts/aop%E6%89%93%E5%8D%B0%E6%8E%A5%E5%8F%A3%E6%97%A5%E5%BF%97/</link>

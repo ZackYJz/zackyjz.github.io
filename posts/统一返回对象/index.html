@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html><head>
+<title>API 统一返回对象的两种定义方式</title>
+
+
+
+
+<meta charset="utf-8">
+<meta name="X-UA-Compatible" content="IE=edge">
+<meta name="google-site-verification" content="">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
+<meta content="telephone=no" name="format-detection">
+<meta name="description" content="介绍 SpringBoot 前后端分离项目中  项目中常用的两种约定 Controller 消息返回结构">
+<meta name="renderer" content="webkit">
+<meta name="theme-color" content="#ffffff">
+
+
+
+
+
+
+
+
+
+
+
+<link type="text/css" rel="stylesheet" href="/vendor/css/bootstrap.min.css">
+
+
+  
+
+
+
+
+<link rel="icon" href="https://logseq.oss-cn-chengdu.aliyuncs.com/noteImg/202203191023457.png">
+
+
+
+<link rel="stylesheet" href="https://blog.wvuuvw.xyz/scss/journal.min.75229c530b3f6aa895d7c569612d6ca3e5bef57767db1972945785a7a418f179.css" integrity="sha256-dSKcUws/aqiV18VpYS1so&#43;W&#43;9Xdn2xlylFeFp6QY8Xk=" media="screen">
+
+
+
+<link rel="stylesheet" href="https://blog.wvuuvw.xyz/scss/dark-mode.min.c4db381abcd93bb0867e0779702d9c25d111348a10647020dbc43f1f0cb14cbb.css" integrity="sha256-xNs4GrzZO7CGfgd5cC2cJdERNIoQZHAg28Q/HwyxTLs=" media="screen">
+
+
+<script src="/vendor/js/loadCSS.js"></script>
+<script>
+  loadCSS("https://fonts.googleapis.com/css?family=Noto+Sans+SC");
+</script>
+<script>
+  loadCSS("https://fonts.googleapis.com/css?family=Source+Code+Pro|Fira+Mono|Material+Icons");
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+<body>
+    	<div id="app"><div id="sideContainer" class="side-container">
+    
+    <a class="a-block nav-head false" href="https://blog.wvuuvw.xyz/">
+    
+        <div class="nav-title">
+            ZackYJ&#39;s Blog
+        </div>
+        
+        <div class="nav-subtitle">
+            Stay hungry , Stay foolish
+        </div>
+        
+    </a>
+
+    <div class="nav-link-list">
+        
+        
+            
+            
+            
+                
+            
+            
+            
+            <a class="a-block nav-link-item active" href="/posts">
+                📑 文章
+            </a>
+            
+        
+            
+            
+            
+            
+            
+            <a class="a-block nav-link-item false" href="/categories">
+                🗄 分类
+            </a>
+            
+        
+            
+            
+            
+            
+            
+            <a class="a-block nav-link-item false" href="/tags">
+                🏷 标签 
+            </a>
+            
+        
+            
+            
+            
+            
+            
+            <a class="a-block nav-link-item false" href="/project/project">
+                📇 项目
+            </a>
+            
+        
+            
+            
+            
+            
+            
+            <a class="a-block nav-link-item false" href="/about/aboutme">
+                👨‍💻 关于
+            </a>
+            
+        
+    </div>
+
+    
+
+    <div class="nav-footer">
+        
+Powered by <a href="https://github.com/gohugoio/hugo">hugo</a>
+<br>
+
+&copy;
+	
+	2022 ZackYJ&#39;s Blog
+	
+
+    </div>
+    
+</div><div id="extraContainer" class="extra-container">
+    
+    
+    <div class="pagination">
+        <a id="globalBackToTop" class="pagination-action animated-visibility" href="#top" :class="{ invisible: scrollY == 0 }">
+            <i class="material-icons pagination-action-icon">
+                keyboard_arrow_up
+            </i>
+        </a>
+        
+        <a type="button" class="pagination-action" id="darkModeToggleButton">
+            <span class="material-icons pagination-action-icon" id="darkModeToggleIcon">
+                dark_mode
+            </span>
+        </a>
+        
+        
+    </div>
+</div>
+<div class="single-column-drawer-container" id="drawer"
+     v-bind:class="{ 'single-column-drawer-container-active': isDrawerOpen }">
+    <div class="drawer-content">
+        <div class="drawer-menu">
+            
+            
+            
+                
+                
+                
+                    
+                
+                
+                
+                <a class="a-block drawer-menu-item active" href="/posts">
+                    📑 文章
+                </a>
+                
+            
+                
+                
+                
+                
+                
+                <a class="a-block drawer-menu-item false" href="/categories">
+                    🗄 分类
+                </a>
+                
+            
+                
+                
+                
+                
+                
+                <a class="a-block drawer-menu-item false" href="/tags">
+                    🏷 标签 
+                </a>
+                
+            
+                
+                
+                
+                
+                
+                <a class="a-block drawer-menu-item false" href="/project/project">
+                    📇 项目
+                </a>
+                
+            
+                
+                
+                
+                
+                
+                <a class="a-block drawer-menu-item false" href="/about/aboutme">
+                    👨‍💻 关于
+                </a>
+                
+            
+            
+            <div class="toc">
+
+
+	<div class="toc-content">
+	
+		
+		
+		
+		<center>- 目录 -</center>
+		
+		
+		<ul>
+			
+				
+				
+					
+						
+						
+						
+						
+							
+								
+									<ul>
+								
+							
+						
+						
+							<li>
+								<a href="#springmvc-%e5%bc%82%e5%b8%b8%e6%9c%ba%e5%88%b6" onclick="onNavClick(`#springmvc-异常机制-nav`)" id="springmvc-异常机制-nav">
+									SpringMVC 异常机制
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+						
+							
+								
+									<ul>
+								
+							
+						
+						
+							<li>
+								<a href="#%e6%b6%88%e6%81%af%e7%bb%93%e6%9e%84%e5%9b%ba%e5%ae%9a" onclick="onNavClick(`#消息结构固定-nav`)" id="消息结构固定-nav">
+									消息结构固定
+								</a>
+							</li>
+						
+						
+					
+				
+			
+				
+				
+					
+						
+						
+						
+						
+						
+							<li>
+								<a href="#hashmap-%e6%89%a9%e5%b1%95%e6%b6%88%e6%81%af%e7%bb%93%e6%9e%84" onclick="onNavClick(`#hashmap-扩展消息结构-nav`)" id="hashmap-扩展消息结构-nav">
+									HashMap 扩展消息结构
+								</a>
+							</li>
+						
+						
+					
+				
+			
+		</ul>
+	</div>
+
+</div>
+            
+        </div>
+    </div>
+</div>
+<transition name="fade">
+    <div id="drawer-mask" v-bind:class="{ 'single-column-drawer-mask': mounted }" v-if="isDrawerOpen" v-on:click="toggleDrawer"></div>
+</transition>
+<nav id="navBar" class="navbar sticky-top navbar-light single-column-nav-container">
+    <div id="navBackground" class="nav-background"></div>
+    <div class="container container-narrow nav-content">
+        <button id="nav_dropdown_btn" class="nav-dropdown-toggle" type="button" v-on:click="toggleDrawer">
+            <i class="material-icons">
+                menu
+            </i>
+        </button>
+        <a id="navTitle" class="navbar-brand" href="https://blog.wvuuvw.xyz/">
+            ZackYJ&#39;s Blog
+        </a>
+        
+        <button type="button" class="nav-darkmode-toggle" id="darkModeToggleButton2">
+            <i class="material-icons" id="darkModeToggleIcon2">
+                dark_mode
+            </i>
+        </button>
+        
+    </div>
+</nav>
+<div class="single-column-header-container" id="pageHead"
+     v-bind:style="{ transform: 'translateZ(0px) translateY('+.3*scrollY+'px)', opacity: 1-navOpacity }">
+    <a href="https://blog.wvuuvw.xyz/">
+        <div class="single-column-header-title">ZackYJ&#39;s Blog</div>
+        
+        <div class="single-column-header-subtitle">Stay hungry , Stay foolish</div>
+        
+
+    </a>
+</div>
+
+            <div id="content">
+                <div id="streamContainer" class="stream-container">
+
+    <div class="post-list-container post-list-container-shadow">
+        <div class="post">
+            
+            
+            
+                
+            
+
+            <div class="post-head-wrapper"
+                
+                    
+                    
+                    style="background-image: url('https://logseq.oss-cn-chengdu.aliyuncs.com/noteImg/202204081836006.png')"
+                    
+                
+            >
+                <div class="post-title">
+                    API 统一返回对象的两种定义方式
+                    
+                    <div class="post-subtitle">
+                        介绍 SpringBoot 前后端分离项目中  项目中常用的两种约定 Controller 消息返回结构
+                    </div>
+                    
+                    <div class="post-meta">
+                        
+                        <time itemprop="datePublished">
+                            2022-01-22 12:09
+                        </time>
+                        
+
+                        
+                            <i class="material-icons" style="">folder</i>
+                                <a href="/categories/java">Java</a>
+                                &nbsp;
+                        
+
+                        
+                            <i class="material-icons" style="">label</i>
+                            
+                                <a href="/tags/%E9%A1%B9%E7%9B%AE">项目</a>
+                                &nbsp;
+                            
+                        
+                        
+                    </div>
+                </div>
+            </div>
+            
+            <div class="post-body-wrapper">
+                
+                <div class="post-body" v-pre>
+                
+                    <h2 id="springmvc-异常机制">SpringMVC 异常机制</h2>
+<blockquote>
+<p>定义返回 Controller 返回的对象字段和格式，用于统一数据格式，并让 SpringMVC 自动将对象序列化成 JSON 字符串后进行响应</p>
+</blockquote>
+<h3 id="消息结构固定">消息结构固定</h3>
+<p>规定消息结构的三个字段：</p>
+<ul>
+<li>状态码</li>
+<li>消息</li>
+<li>额外数据（响应对象）</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">class</span> <span style="color:#50fa7b">ApiCommonResponse</span><span style="color:#ff79c6">&lt;</span>T<span style="color:#ff79c6">&gt;</span> <span style="color:#ff79c6">{</span>
+    <span style="color:#8be9fd;font-style:italic">private</span> Integer status<span style="color:#ff79c6">;</span>
+    <span style="color:#8be9fd;font-style:italic">private</span> String msg<span style="color:#ff79c6">;</span>
+    <span style="color:#8be9fd;font-style:italic">private</span> T data<span style="color:#ff79c6">;</span>
+    <span style="color:#6272a4">//常用的返回码和消息
+</span><span style="color:#6272a4"></span>    <span style="color:#8be9fd;font-style:italic">private</span> <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#8be9fd;font-style:italic">final</span> <span style="color:#8be9fd">int</span> OK_CODE <span style="color:#ff79c6">=</span> 10000<span style="color:#ff79c6">;</span>
+    <span style="color:#8be9fd;font-style:italic">private</span> <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#8be9fd;font-style:italic">final</span> String OK_MSG <span style="color:#ff79c6">=</span> <span style="color:#f1fa8c">&#34;SUCCESS&#34;</span><span style="color:#ff79c6">;</span>
+    
+    <span style="color:#6272a4">//单参构造函数：不传递参数即默认使用成功的code和msg
+</span><span style="color:#6272a4"></span>    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#50fa7b">ApiCommonResponse</span><span style="color:#ff79c6">()</span> <span style="color:#ff79c6">{</span>
+        <span style="color:#ff79c6">this</span><span style="color:#ff79c6">(</span>OK_CODE<span style="color:#ff79c6">,</span>OK_MSG<span style="color:#ff79c6">);</span>
+    <span style="color:#ff79c6">}</span>
+    <span style="color:#6272a4">//三参构造函数
+</span><span style="color:#6272a4"></span>    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#50fa7b">ApiCommonResponse</span><span style="color:#ff79c6">(</span>Integer status<span style="color:#ff79c6">,</span> String msg<span style="color:#ff79c6">,</span> T data<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+        <span style="color:#ff79c6">this</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">status</span> <span style="color:#ff79c6">=</span> status<span style="color:#ff79c6">;</span>
+        <span style="color:#ff79c6">this</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">msg</span> <span style="color:#ff79c6">=</span> msg<span style="color:#ff79c6">;</span>
+        <span style="color:#ff79c6">this</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">data</span> <span style="color:#ff79c6">=</span> data<span style="color:#ff79c6">;</span>
+    <span style="color:#ff79c6">}</span>
+    <span style="color:#6272a4">//双参构造函数
+</span><span style="color:#6272a4"></span>    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#50fa7b">ApiCommonResponse</span><span style="color:#ff79c6">(</span>Integer status<span style="color:#ff79c6">,</span> String msg<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+        <span style="color:#ff79c6">this</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">status</span> <span style="color:#ff79c6">=</span> status<span style="color:#ff79c6">;</span>
+        <span style="color:#ff79c6">this</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">msg</span> <span style="color:#ff79c6">=</span> msg<span style="color:#ff79c6">;</span>
+    <span style="color:#ff79c6">}</span>
+    
+    #getter<span style="color:#ff79c6">&amp;</span>setter
+
+<span style="color:#6272a4">//返回成功的方法
+</span><span style="color:#6272a4"></span>    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#ff79c6">&lt;</span>T<span style="color:#ff79c6">&gt;</span> ApiCommonResponse<span style="color:#ff79c6">&lt;</span>T<span style="color:#ff79c6">&gt;</span> <span style="color:#50fa7b">success</span><span style="color:#ff79c6">(){</span>
+        <span style="color:#ff79c6">return</span> <span style="color:#ff79c6">new</span> ApiCommonResponse<span style="color:#ff79c6">();</span>
+    <span style="color:#ff79c6">}</span>
+
+    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#ff79c6">&lt;</span>T<span style="color:#ff79c6">&gt;</span> ApiCommonResponse<span style="color:#ff79c6">&lt;</span>T<span style="color:#ff79c6">&gt;</span> <span style="color:#50fa7b">success</span><span style="color:#ff79c6">(</span>T result<span style="color:#ff79c6">){</span>
+        ApiCommonResponse<span style="color:#ff79c6">&lt;</span>T<span style="color:#ff79c6">&gt;</span> response <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">new</span> ApiCommonResponse<span style="color:#ff79c6">&lt;&gt;();</span>
+        response<span style="color:#ff79c6">.</span><span style="color:#50fa7b">setData</span><span style="color:#ff79c6">(</span>result<span style="color:#ff79c6">);</span>
+        <span style="color:#ff79c6">return</span> response<span style="color:#ff79c6">;</span>
+    <span style="color:#ff79c6">}</span>
+<span style="color:#6272a4">//返回失败的方法
+</span><span style="color:#6272a4"></span>    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#ff79c6">&lt;</span>T<span style="color:#ff79c6">&gt;</span> ApiCommonResponse<span style="color:#ff79c6">&lt;</span>T<span style="color:#ff79c6">&gt;</span> <span style="color:#50fa7b">error</span><span style="color:#ff79c6">(</span>ExceptionEnum ee<span style="color:#ff79c6">){</span>
+        <span style="color:#ff79c6">return</span> <span style="color:#ff79c6">new</span> ApiCommonResponse<span style="color:#ff79c6">&lt;&gt;(</span>ee<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getCode</span><span style="color:#ff79c6">(),</span>ee<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getMsg</span><span style="color:#ff79c6">());</span>
+    <span style="color:#ff79c6">}</span>
+    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#ff79c6">&lt;</span>T<span style="color:#ff79c6">&gt;</span> ApiCommonResponse<span style="color:#ff79c6">&lt;</span>T<span style="color:#ff79c6">&gt;</span> <span style="color:#50fa7b">error</span><span style="color:#ff79c6">(</span>Integer status<span style="color:#ff79c6">,</span>String msg<span style="color:#ff79c6">){</span>
+        <span style="color:#ff79c6">return</span> <span style="color:#ff79c6">new</span> ApiCommonResponse<span style="color:#ff79c6">&lt;&gt;(</span>status<span style="color:#ff79c6">,</span>msg<span style="color:#ff79c6">);</span>
+    <span style="color:#ff79c6">}</span>
+<span style="color:#ff79c6">}</span>
+</code></pre></div><h3 id="hashmap-扩展消息结构">HashMap 扩展消息结构</h3>
+<p>不固定消息的字段，继承 hashmap 来实现消息结构的扩展</p>
+<p>错误码可以使用 <code>Apache httpcomponents </code>库里的<code>HttpStatus</code>类封装的状态码</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">class</span> <span style="color:#50fa7b">ApiCommonResponse</span><span style="color:#ff79c6">&lt;</span>T<span style="color:#ff79c6">&gt;</span> <span style="color:#ff79c6">{</span>
+    <span style="color:#8be9fd;font-style:italic">private</span> Integer status<span style="color:#ff79c6">;</span>
+    <span style="color:#8be9fd;font-style:italic">private</span> String msg<span style="color:#ff79c6">;</span>
+    <span style="color:#8be9fd;font-style:italic">private</span> T data<span style="color:#ff79c6">;</span>
+    <span style="color:#6272a4">//常用的返回码和消息
+</span><span style="color:#6272a4"></span>    <span style="color:#8be9fd;font-style:italic">private</span> <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#8be9fd;font-style:italic">final</span> <span style="color:#8be9fd">int</span> OK_CODE <span style="color:#ff79c6">=</span> 10000<span style="color:#ff79c6">;</span>
+    <span style="color:#8be9fd;font-style:italic">private</span> <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#8be9fd;font-style:italic">final</span> String OK_MSG <span style="color:#ff79c6">=</span> <span style="color:#f1fa8c">&#34;SUCCESS&#34;</span><span style="color:#ff79c6">;</span>
+    
+    <span style="color:#6272a4">//单参构造函数：不传递参数即默认使用成功的code和msg
+</span><span style="color:#6272a4"></span>    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#50fa7b">ApiCommonResponse</span><span style="color:#ff79c6">()</span> <span style="color:#ff79c6">{</span>
+        <span style="color:#ff79c6">this</span><span style="color:#ff79c6">(</span>OK_CODE<span style="color:#ff79c6">,</span>OK_MSG<span style="color:#ff79c6">);</span>
+    <span style="color:#ff79c6">}</span>
+    <span style="color:#6272a4">//三参构造函数
+</span><span style="color:#6272a4"></span>    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#50fa7b">ApiCommonResponse</span><span style="color:#ff79c6">(</span>Integer status<span style="color:#ff79c6">,</span> String msg<span style="color:#ff79c6">,</span> T data<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+        <span style="color:#ff79c6">this</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">status</span> <span style="color:#ff79c6">=</span> status<span style="color:#ff79c6">;</span>
+        <span style="color:#ff79c6">this</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">msg</span> <span style="color:#ff79c6">=</span> msg<span style="color:#ff79c6">;</span>
+        <span style="color:#ff79c6">this</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">data</span> <span style="color:#ff79c6">=</span> data<span style="color:#ff79c6">;</span>
+    <span style="color:#ff79c6">}</span>
+    <span style="color:#6272a4">//双参构造函数
+</span><span style="color:#6272a4"></span>    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#50fa7b">ApiCommonResponse</span><span style="color:#ff79c6">(</span>Integer status<span style="color:#ff79c6">,</span> String msg<span style="color:#ff79c6">)</span> <span style="color:#ff79c6">{</span>
+        <span style="color:#ff79c6">this</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">status</span> <span style="color:#ff79c6">=</span> status<span style="color:#ff79c6">;</span>
+        <span style="color:#ff79c6">this</span><span style="color:#ff79c6">.</span><span style="color:#50fa7b">msg</span> <span style="color:#ff79c6">=</span> msg<span style="color:#ff79c6">;</span>
+    <span style="color:#ff79c6">}</span>
+    
+    #getter<span style="color:#ff79c6">&amp;</span>setter
+
+<span style="color:#6272a4">//=================返回成功的方法============================
+</span><span style="color:#6272a4"></span>    
+    <span style="color:#6272a4">//
+</span><span style="color:#6272a4"></span>    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#ff79c6">&lt;</span>T<span style="color:#ff79c6">&gt;</span> ApiCommonResponse<span style="color:#ff79c6">&lt;</span>T<span style="color:#ff79c6">&gt;</span> <span style="color:#50fa7b">success</span><span style="color:#ff79c6">(){</span>
+        <span style="color:#ff79c6">return</span> <span style="color:#ff79c6">new</span> ApiCommonResponse<span style="color:#ff79c6">();</span>
+    <span style="color:#ff79c6">}</span>
+
+    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#ff79c6">&lt;</span>T<span style="color:#ff79c6">&gt;</span> ApiCommonResponse<span style="color:#ff79c6">&lt;</span>T<span style="color:#ff79c6">&gt;</span> <span style="color:#50fa7b">success</span><span style="color:#ff79c6">(</span>T result<span style="color:#ff79c6">){</span>
+        ApiCommonResponse<span style="color:#ff79c6">&lt;</span>T<span style="color:#ff79c6">&gt;</span> response <span style="color:#ff79c6">=</span> <span style="color:#ff79c6">new</span> ApiCommonResponse<span style="color:#ff79c6">&lt;&gt;();</span>
+        response<span style="color:#ff79c6">.</span><span style="color:#50fa7b">setData</span><span style="color:#ff79c6">(</span>result<span style="color:#ff79c6">);</span>
+        <span style="color:#ff79c6">return</span> response<span style="color:#ff79c6">;</span>
+    <span style="color:#ff79c6">}</span>
+<span style="color:#6272a4">//==================返回失败的方法==============
+</span><span style="color:#6272a4"></span>    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#ff79c6">&lt;</span>T<span style="color:#ff79c6">&gt;</span> ApiCommonResponse<span style="color:#ff79c6">&lt;</span>T<span style="color:#ff79c6">&gt;</span> <span style="color:#50fa7b">error</span><span style="color:#ff79c6">(</span>ExceptionEnum ee<span style="color:#ff79c6">){</span>
+        <span style="color:#ff79c6">return</span> <span style="color:#ff79c6">new</span> ApiCommonResponse<span style="color:#ff79c6">&lt;&gt;(</span>ee<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getCode</span><span style="color:#ff79c6">(),</span>ee<span style="color:#ff79c6">.</span><span style="color:#50fa7b">getMsg</span><span style="color:#ff79c6">());</span>
+    <span style="color:#ff79c6">}</span>
+    <span style="color:#8be9fd;font-style:italic">public</span> <span style="color:#8be9fd;font-style:italic">static</span> <span style="color:#ff79c6">&lt;</span>T<span style="color:#ff79c6">&gt;</span> ApiCommonResponse<span style="color:#ff79c6">&lt;</span>T<span style="color:#ff79c6">&gt;</span> <span style="color:#50fa7b">error</span><span style="color:#ff79c6">(</span>Integer status<span style="color:#ff79c6">,</span>String msg<span style="color:#ff79c6">){</span>
+        <span style="color:#ff79c6">return</span> <span style="color:#ff79c6">new</span> ApiCommonResponse<span style="color:#ff79c6">&lt;&gt;(</span>status<span style="color:#ff79c6">,</span>msg<span style="color:#ff79c6">);</span>
+    <span style="color:#ff79c6">}</span>
+<span style="color:#ff79c6">}</span>
+</code></pre></div>
+                    
+                    <HR width="100%" id="EOF">
+		    <p style="color:#777;">最后修改于 2022-01-22</p>
+                    
+                </div>
+            </div>
+            
+            
+            <nav class="post-pagination">
+
+                
+                <a class="newer-posts">
+			上一篇<br>没有了😅
+                </a>
+                
+                
+                
+                <a class="older-posts" href="https://blog.wvuuvw.xyz/posts/%E9%A1%B9%E7%9B%AE%E5%BC%82%E5%B8%B8%E6%96%B9%E6%A1%88/">
+			下一篇<br>通用异常处理方案总结
+                </a>
+                
+            </nav>
+            <div class="post-comment-wrapper">
+                
+
+
+
+
+
+
+
+
+
+
+            </div>
+        </div>
+    </div>
+
+
+                    </div>
+            </div><div id="single-column-footer">
+Powered by <a href="https://github.com/gohugoio/hugo">hugo</a>
+<br>
+
+&copy;
+	
+	2022 ZackYJ&#39;s Blog
+	
+</div>
+            </div>
+    
+    <script src="/js/journal.js"></script>
+    </body>
+</html>
